@@ -103,7 +103,8 @@ class ProductController extends Controller
             'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'required|string',
-            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'specifications' => 'nullable|array',
         ]);
 
         try {
@@ -178,6 +179,29 @@ class ProductController extends Controller
                     'files' => $request->files->all()
                 ]);
             }
+            
+            // Handle specifications
+            if ($request->has('specifications')) {
+                // Get all specification type IDs for this category to ensure we only process valid ones
+                $validSpecTypeIds = \App\Models\SpecificationType::where('category_id', $validated['category_id'])
+                    ->pluck('id')
+                    ->toArray();
+                
+                foreach ($request->specifications as $specTypeId => $value) {
+                    // Only process specifications that are valid for this category and have a value
+                    if (in_array($specTypeId, $validSpecTypeIds) && !empty($value)) {
+                        $product->specifications()->create([
+                            'specification_type_id' => $specTypeId,
+                            'value' => $value
+                        ]);
+                    }
+                }
+                
+                \Log::info('Product specifications saved', [
+                    'product_id' => $product->id,
+                    'spec_count' => count($request->specifications)
+                ]);
+            }
 
             DB::commit();
 
@@ -237,7 +261,8 @@ class ProductController extends Controller
             'description' => 'required|string',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'delete_images' => 'nullable|array',
-            'delete_images.*' => 'exists:product_images,id'
+            'delete_images.*' => 'exists:product_images,id',
+            'specifications' => 'nullable|array',
         ]);
 
         try {
@@ -292,6 +317,31 @@ class ProductController extends Controller
             }
 
             $product->update($updateData);
+            
+            // Handle specifications
+            if ($request->has('specifications')) {
+                // Get all specification type IDs for this category to ensure we only process valid ones
+                $validSpecTypeIds = \App\Models\SpecificationType::where('category_id', $validated['category_id'])
+                    ->pluck('id')
+                    ->toArray();
+                
+                foreach ($request->specifications as $specTypeId => $value) {
+                    // Only process specifications that are valid for this category
+                    if (in_array($specTypeId, $validSpecTypeIds) && !empty($value)) {
+                        // Find existing specification or create new one
+                        $product->specifications()->updateOrCreate(
+                            ['specification_type_id' => $specTypeId],
+                            ['value' => $value]
+                        );
+                    }
+                }
+                
+                // Log successful specifications update
+                \Log::info('Product specifications updated', [
+                    'product_id' => $product->id,
+                    'spec_count' => count($request->specifications)
+                ]);
+            }
 
             DB::commit();
 

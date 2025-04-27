@@ -188,8 +188,10 @@
                         <tr>
                             <td>{{ $product->id }}</td>
                             <td class="text-center" style="width: 100px;">
-                                @if($product->image)
-                                    <img src="{{ asset('storage/' . $product->image) }}" class="img-thumbnail" style="max-height: 60px;" alt="{{ $product->name }}">
+                                @if($product->primary_image)
+                                    <img src="{{ $product->primary_image->url }}" class="img-thumbnail" style="max-height: 60px;" alt="{{ $product->name }}">
+                                @elseif($product->images->isNotEmpty())
+                                    <img src="{{ $product->images->first()->url }}" class="img-thumbnail" style="max-height: 60px;" alt="{{ $product->name }}">
                                 @else
                                     <i class="fas fa-image text-muted fa-2x"></i>
                                 @endif

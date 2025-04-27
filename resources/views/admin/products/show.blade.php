@@ -19,15 +19,39 @@
     <div class="col-md-4 mb-4">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0">Product Image</h5>
+                <h5 class="mb-0">Product Images</h5>
             </div>
-            <div class="card-body text-center">
-                @if($product->image)
-                    <img src="{{ asset('storage/' . $product->image) }}" class="img-fluid" alt="{{ $product->name }}">
+            <div class="card-body">
+                @if($product->images->isNotEmpty())
+                    <div id="productImagesCarousel" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner">
+                            @foreach($product->images as $index => $image)
+                                <div class="carousel-item {{ $index === 0 ? 'active' : '' }}">
+                                    <img src="{{ $image->url }}" class="d-block w-100" alt="{{ $product->name }}" style="max-height: 300px; object-fit: contain;">
+                                    @if($image->is_primary)
+                                        <div class="badge bg-primary position-absolute top-0 end-0 m-2">Primary</div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                        @if($product->images->count() > 1)
+                            <button class="carousel-control-prev" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="prev">
+                                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Previous</span>
+                            </button>
+                            <button class="carousel-control-next" type="button" data-bs-target="#productImagesCarousel" data-bs-slide="next">
+                                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                                <span class="visually-hidden">Next</span>
+                            </button>
+                        @endif
+                    </div>
+                    <div class="text-center mt-2">
+                        <small class="text-muted">{{ $product->images->count() }} image(s) available</small>
+                    </div>
                 @else
-                    <div class="py-5">
+                    <div class="py-5 text-center">
                         <i class="fas fa-image fa-8x text-secondary"></i>
-                        <p class="mt-3">No image available</p>
+                        <p class="mt-3">No images available</p>
                     </div>
                 @endif
             </div>

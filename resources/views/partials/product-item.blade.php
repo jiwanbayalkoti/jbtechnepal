@@ -2,9 +2,9 @@
     <div class="card h-100 product-card">
         <div class="position-relative">
             @if($product->primary_image)
-                <img src="{{ Storage::url($product->primary_image->path) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 180px; object-fit: contain;">
+                <img src="{{ $product->primary_image->url }}" class="card-img-top" alt="{{ $product->name }}" style="height: 180px; object-fit: contain;">
             @elseif($product->images->isNotEmpty())
-                <img src="{{ Storage::url($product->images->first()->path) }}" class="card-img-top" alt="{{ $product->name }}" style="height: 180px; object-fit: contain;">
+                <img src="{{ $product->images->first()->url }}" class="card-img-top" alt="{{ $product->name }}" style="height: 180px; object-fit: contain;">
             @else
                 <div class="bg-light text-center py-5">
                     <i class="fas fa-image text-secondary fa-3x"></i>
