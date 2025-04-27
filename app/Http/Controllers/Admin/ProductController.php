@@ -489,4 +489,31 @@ class ProductController extends Controller
             'specValues'
         ));
     }
+
+    /**
+     * Get subcategories for a specific category.
+     * Used for AJAX requests when changing category in product forms.
+     *
+     * @param  int  $categoryId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSubcategories($categoryId)
+    {
+        return($categoryId);
+        if (!$categoryId) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Category ID is required'
+            ], 400);
+        }
+        
+        $subcategories = \App\Models\SubCategory::where('category_id', $categoryId)
+            ->orderBy('name')
+            ->get();
+        
+        return response()->json([
+            'success' => true,
+            'subcategories' => $subcategories
+        ]);
+    }
 } 

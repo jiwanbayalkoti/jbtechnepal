@@ -195,8 +195,8 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
     
     // Return Management
-    Route::get('/returns/get-order-items/{order}', [App\Http\Controllers\Admin\ReturnController::class, 'getOrderItems'])->name('returns.get-order-items');
-    Route::put('/returns/{return}/status', [App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('returns.update-status');
+    Route::get('returns/get-order-items/{order}', [App\Http\Controllers\Admin\ReturnController::class, 'getOrderItems'])->name('returns.get-order-items');
+    Route::put('returns/{return}/status', [App\Http\Controllers\Admin\ReturnController::class, 'updateStatus'])->name('returns.update-status');
     Route::resource('returns', App\Http\Controllers\Admin\ReturnController::class);
 
     // Advertisement routes

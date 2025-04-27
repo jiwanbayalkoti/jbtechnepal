@@ -154,12 +154,12 @@
                                         <td>
                                             <div class="d-flex">
                                                 @if($item->product && $item->product->primary_image)
-                                                    <img src="{{ Storage::url($item->product->primary_image->path) }}" 
+                                                    <img src="{{ $item->product->primary_image->url }}" 
                                                          alt="{{ $item->product_name }}" 
                                                          class="img-thumbnail me-2" 
                                                          style="width: 50px; height: 50px; object-fit: cover;">
                                                 @elseif($item->product && $item->product->images->isNotEmpty())
-                                                    <img src="{{ Storage::url($item->product->images->first()->path) }}" 
+                                                    <img src="{{ $item->product->images->first()->url }}" 
                                                          alt="{{ $item->product_name }}" 
                                                          class="img-thumbnail me-2" 
                                                          style="width: 50px; height: 50px; object-fit: cover;">

@@ -34,6 +34,17 @@
                         @enderror
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="subcategory_id" class="form-label">Subcategory</label>
+                        <select class="form-select @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id">
+                            <option value="">Select Subcategory</option>
+                            <!-- Subcategories will be loaded dynamically -->
+                        </select>
+                        @error('subcategory_id')
+                            <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -121,8 +132,30 @@
     $(document).ready(function() {
         $('#category_id').change(function() {
             const categoryId = $(this).val();
+            const subcategorySelect = $('#subcategory_id');
+            
+            // Clear subcategory dropdown
+            subcategorySelect.empty().append('<option value="">Select Subcategory</option>');
             
             if (categoryId) {
+                // Load subcategories for this category
+                $.ajax({
+                    url: `/admin/subcategories/${categoryId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.subcategories.length > 0) {
+                            // Add subcategories to dropdown
+                            $.each(response.subcategories, function(index, subcategory) {
+                                subcategorySelect.append(`<option value="${subcategory.id}">${subcategory.name}</option>`);
+                            });
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading subcategories:', xhr.responseText);
+                    }
+                });
+                
                 // Load specification types for this category
                 $.ajax({
                     url: `/admin/specification-types/${categoryId}`,

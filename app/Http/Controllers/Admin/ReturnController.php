@@ -5,7 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Order;
-use App\Models\ProductReturn; // Using alias to avoid conflict with PHP reserved keyword
+use App\Models\ProductReturn;
 use App\Models\OrderItem;
 use App\Models\ReturnItem;
 use Illuminate\Support\Facades\DB;
@@ -126,7 +126,7 @@ class ReturnController extends Controller
             DB::beginTransaction();
 
             // Create the return request
-            $return = new ReturnRequest();
+            $return = new ProductReturn();
             $return->order_id = $request->order_id;
             $return->customer_id = $request->customer_id;
             $return->return_number = 'RET-' . strtoupper(uniqid());
@@ -168,7 +168,7 @@ class ReturnController extends Controller
     /**
      * Display the specified return.
      */
-    public function show(ReturnRequest $return)
+    public function show(ProductReturn $return)
     {
         $return->load(['customer', 'order', 'items.orderItem.product']);
         return view('admin.returns.show', compact('return'));
@@ -177,7 +177,7 @@ class ReturnController extends Controller
     /**
      * Show the form for editing the specified return.
      */
-    public function edit(ReturnRequest $return)
+    public function edit(ProductReturn $return)
     {
         $return->load(['customer', 'order', 'items.orderItem.product']);
         return view('admin.returns.edit', compact('return'));
@@ -186,7 +186,7 @@ class ReturnController extends Controller
     /**
      * Update the specified return in storage.
      */
-    public function update(Request $request, ReturnRequest $return)
+    public function update(Request $request, ProductReturn $return)
     {
         $request->validate([
             'status' => 'required|string|in:requested,approved,received,processed,completed,rejected',
@@ -252,7 +252,7 @@ class ReturnController extends Controller
     /**
      * Update return status via AJAX.
      */
-    public function updateStatus(Request $request, ReturnRequest $return)
+    public function updateStatus(Request $request, ProductReturn $return)
     {
         $request->validate([
             'status' => 'required|string|in:requested,approved,received,processed,completed,rejected',
@@ -270,7 +270,7 @@ class ReturnController extends Controller
     /**
      * Remove the specified return from storage.
      */
-    public function destroy(ReturnRequest $return)
+    public function destroy(ProductReturn $return)
     {
         // Only allow deletion of returns in "requested" status
         if ($return->status != 'requested') {

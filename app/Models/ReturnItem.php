@@ -37,7 +37,7 @@ class ReturnItem extends Model
      */
     public function return()
     {
-        return $this->belongsTo(\App\Models\Return::class, 'return_id');
+        return $this->belongsTo(\App\Models\ProductReturn::class, 'return_id');
     }
 
     /**
