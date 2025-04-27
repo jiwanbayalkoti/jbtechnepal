@@ -1,0 +1,221 @@
+/* Admin Settings Page Styles */
+
+/* Card styling */
+.settings-card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    height: 100%;
+}
+
+.settings-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+}
+
+.settings-card .card-header {
+    padding: 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.settings-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Setting item styling */
+.setting-item {
+    padding: 15px;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    margin-bottom: 15px;
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+
+.setting-item:hover {
+    background-color: #fff;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    border-left-color: #3498db;
+}
+
+.setting-item .setting-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.setting-item .setting-description {
+    color: #7f8c8d;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.setting-item .setting-value {
+    padding: 5px 10px;
+    background-color: rgba(52, 152, 219, 0.1);
+    border-radius: 4px;
+    color: #3498db;
+    font-weight: 500;
+    display: inline-block;
+}
+
+/* Modal styling */
+.settings-modal .modal-header {
+    background-color: #f8f9fa;
+    border-bottom: none;
+    padding: 1.5rem;
+}
+
+.settings-modal .modal-title {
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.settings-modal .modal-footer {
+    background-color: #f8f9fa;
+    border-top: none;
+    padding: 1.5rem;
+}
+
+/* Tabs styling */
+.settings-tabs .nav-link {
+    padding: 1rem 1.5rem;
+    font-weight: 600;
+    color: #7f8c8d;
+    border: none;
+    border-radius: 0;
+    position: relative;
+}
+
+.settings-tabs .nav-link:after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 3px;
+    background-color: #3498db;
+    transition: width 0.3s ease;
+}
+
+.settings-tabs .nav-link.active {
+    color: #3498db;
+    background-color: transparent;
+}
+
+.settings-tabs .nav-link.active:after {
+    width: 100%;
+}
+
+.settings-tabs .tab-content {
+    padding: 2rem;
+    background-color: white;
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+}
+
+/* Form controls */
+.settings-form .form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.settings-form .form-control {
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+
+.settings-form .form-control:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 0.25rem rgba(52, 152, 219, 0.25);
+}
+
+.settings-form .form-text {
+    color: #95a5a6;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+/* Button styling */
+.btn-settings-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+    color: white;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-settings-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(52, 152, 219, 0.3);
+}
+
+.btn-settings-secondary {
+    background-color: #ecf0f1;
+    border-color: #ecf0f1;
+    color: #7f8c8d;
+    border-radius: 8px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.btn-settings-secondary:hover {
+    background-color: #bdc3c7;
+    border-color: #bdc3c7;
+    color: #2c3e50;
+}
+
+/* Category Icons */
+.settings-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 15px;
+    flex-shrink: 0;
+    font-size: 1.5rem;
+}
+
+.settings-icon.general {
+    background-color: rgba(52, 152, 219, 0.1);
+    color: #3498db;
+}
+
+.settings-icon.seo {
+    background-color: rgba(155, 89, 182, 0.1);
+    color: #9b59b6;
+}
+
+.settings-icon.contact {
+    background-color: rgba(46, 204, 113, 0.1);
+    color: #2ecc71;
+}
+
+/* Settings header */
+.settings-header {
+    margin-bottom: 2rem;
+}
+
+.settings-header .title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.5rem;
+}
+
+.settings-header .description {
+    color: #7f8c8d;
+    font-size: 1rem;
+} 

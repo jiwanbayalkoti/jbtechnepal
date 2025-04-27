@@ -1,0 +1,109 @@
+/* Contact Page Styles */
+.contact-header {
+    background: url('/img/backgrounds/contact-bg.jpg') center/cover no-repeat;
+    padding: 80px 0;
+}
+
+.contact-header .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(33, 37, 41, 0.85), rgba(33, 37, 41, 0.7));
+}
+
+.contact-badge {
+    display: inline-block;
+    background-color: #ff6b6b;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 600;
+    letter-spacing: 1px;
+}
+
+.contact-info-item {
+    display: flex;
+    align-items: flex-start;
+}
+
+.contact-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 16px;
+    flex-shrink: 0;
+}
+
+.contact-details h5 {
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.contact-details p {
+    margin-bottom: 0;
+    color: #6c757d;
+}
+
+.social-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    color: white;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-link.facebook {
+    background-color: #3b5998;
+}
+
+.social-link.twitter {
+    background-color: #1da1f2;
+}
+
+.social-link.instagram {
+    background-color: #e1306c;
+}
+
+.social-link.linkedin {
+    background-color: #0077b5;
+}
+
+.social-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary {
+    padding: 10px 24px;
+    border-radius: 4px;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem !important;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Card styles */
+.contact-card {
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.contact-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+} 
