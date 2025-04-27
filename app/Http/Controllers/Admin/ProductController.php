@@ -499,7 +499,6 @@ class ProductController extends Controller
      */
     public function getSubcategories($categoryId)
     {
-        return($categoryId);
         if (!$categoryId) {
             return response()->json([
                 'success' => false,

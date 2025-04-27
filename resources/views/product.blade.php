@@ -19,15 +19,21 @@
             <div class="card-body">
                 <!-- Main Image Display -->
                 <div class="main-image-container text-center mb-3">
-                    @if($product->primary_image)
-                        <img src="{{ Storage::url($product->primary_image->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
-                    @elseif($product->images->isNotEmpty())
-                        <img src="{{ Storage::url($product->images->first()->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
-                    @else
-                        <div class="py-5">
-                            <i class="fas fa-laptop fa-7x text-secondary"></i>
+                    <div class="product-image-container position-relative">
+                        @if($product->primary_image)
+                            <img src="{{ Storage::url($product->primary_image->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
+                        @elseif($product->images->isNotEmpty())
+                            <img src="{{ Storage::url($product->images->first()->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
+                        @else
+                            <div class="py-5">
+                                <i class="fas fa-laptop fa-7x text-secondary"></i>
+                            </div>
+                        @endif
+                        <div class="zoom-hint">
+                            <i class="fas fa-search me-1"></i>Hover to zoom
                         </div>
-                    @endif
+                        <div id="zoomResult" class="zoom-result-popup"></div>
+                    </div>
                 </div>
 
                 <!-- Thumbnail Images -->
@@ -246,8 +252,10 @@
 <style>
 .main-product-image {
     max-height: 400px;
+    width: 100%;
     object-fit: contain;
     transition: all 0.3s ease;
+    cursor: crosshair;
 }
 
 .thumbnail-image {
@@ -261,6 +269,43 @@
 
 .thumbnail-item.active .thumbnail-image {
     border-color: #0d6efd;
+}
+
+/* Popup zoom styles */
+.product-image-container {
+    position: relative;
+    overflow: visible;
+}
+
+.zoom-result-popup {
+    position: absolute;
+    width: 350px;
+    height: 350px;
+    border: 1px solid #ddd;
+    background-repeat: no-repeat;
+    background-color: white;
+    overflow: hidden;
+    box-shadow: 0 5px 25px rgba(0,0,0,0.2);
+    border-radius: 5px;
+    z-index: 1000;
+    display: none;
+    pointer-events: none; /* Prevents the popup from interfering with mouse events */
+    top: 0;
+    right: -370px; /* Position to the right of the image */
+}
+
+.zoom-hint {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: #6c757d;
+    font-size: 0.75rem;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 100;
+    transition: opacity 0.3s ease;
 }
 </style>
 
@@ -276,16 +321,70 @@ function changeMainImage(src) {
             item.classList.add('active');
         }
     });
+    
+    // Reset zoom view
+    const zoomResult = document.getElementById('zoomResult');
+    zoomResult.style.backgroundImage = '';
+    zoomResult.style.display = 'none';
 }
 
 // Set initial active thumbnail
 document.addEventListener('DOMContentLoaded', function() {
     const mainImage = document.getElementById('mainImage');
-    if (mainImage) {
+    const zoomResult = document.getElementById('zoomResult');
+    const zoomHint = document.querySelector('.zoom-hint');
+    
+    if (mainImage && zoomResult) {
+        // Set active thumbnail
         document.querySelectorAll('.thumbnail-item').forEach(item => {
             if (item.querySelector('img').src === mainImage.src) {
                 item.classList.add('active');
             }
+        });
+        
+        // Get main image natural dimensions for accurate zooming
+        let imgWidth, imgHeight;
+        
+        // Initialize with default size
+        imgWidth = mainImage.naturalWidth || mainImage.width;
+        imgHeight = mainImage.naturalHeight || mainImage.height;
+        
+        // Update when image is fully loaded
+        mainImage.onload = function() {
+            imgWidth = this.naturalWidth;
+            imgHeight = this.naturalHeight;
+        };
+        
+        // Initialize zoom functionality
+        const zoom = 3; // Zoom level
+        
+        // Add event listeners for zoom
+        mainImage.addEventListener('mousemove', function(e) {
+            // Show zoom result
+            zoomResult.style.display = 'block';
+            
+            // Hide hint when zooming
+            if (zoomHint) zoomHint.style.opacity = '0.3';
+            
+            // Get cursor position relative to the image
+            const bounds = mainImage.getBoundingClientRect();
+            const x = (e.clientX - bounds.left) / bounds.width;
+            const y = (e.clientY - bounds.top) / bounds.height;
+            
+            // Calculate background position for zoom result
+            const bgX = Math.min(Math.max(x * 100, 0), 100);
+            const bgY = Math.min(Math.max(y * 100, 0), 100);
+            
+            // Display the zoomed result (no need to reposition, only update background)
+            zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
+            zoomResult.style.backgroundSize = `${zoom * 100}%`;
+            zoomResult.style.backgroundPosition = `${bgX}% ${bgY}%`;
+        });
+        
+        // Hide zoom when mouse leaves the image
+        mainImage.addEventListener('mouseleave', function() {
+            zoomResult.style.display = 'none';
+            if (zoomHint) zoomHint.style.opacity = '1';
         });
     }
 });
