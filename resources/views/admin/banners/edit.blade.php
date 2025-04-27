@@ -76,23 +76,50 @@
                     
                     <div class="col-md-6">
                         <div class="mb-3">
-                            <label for="image" class="form-label">Banner Image</label>
-                            <input type="file" class="form-control @error('image') is-invalid @enderror" id="image" name="image" accept="image/*">
-                            @error('image')
+                            <label for="new_images" class="form-label">Banner Images</label>
+                            <input type="file" class="form-control @error('new_images.*') is-invalid @enderror" id="new_images" name="new_images[]" accept="image/*" multiple>
+                            @error('new_images.*')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Recommended size: 1200×400 pixels, Max 2MB. Leave empty to keep the current image.</div>
+                            <div class="form-text">Recommended size: 1200×400 pixels, Max 2MB per image. You can select multiple images.</div>
                         </div>
                         
-                        <div class="mt-3">
-                            <div class="image-preview-container">
-                                <img id="image-preview" src="{{ $banner->image_path ? Storage::url($banner->image_path) : asset('img/no-image.png') }}" alt="{{ $banner->title }}" class="img-fluid img-thumbnail">
+                        <!-- Current Images Section -->
+                        <div class="mt-4">
+                            <label class="form-label">Current Images</label>
+                            <div class="row" id="current-images">
+                                @if($banner->images && $banner->images->count() > 0)
+                                    @foreach($banner->images as $image)
+                                    <div class="col-md-6 mb-3">
+                                        <div class="card">
+                                            <img src="{{ $image->image_url }}" alt="Banner Image" class="card-img-top">
+                                            <div class="card-body p-2">
+                                                <div class="form-check">
+                                                    <input class="form-check-input" type="radio" name="primary_image_id" 
+                                                           id="primary_image_{{ $image->id }}" value="{{ $image->id }}"
+                                                           {{ $image->is_primary ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="primary_image_{{ $image->id }}">
+                                                        Set as primary
+                                                    </label>
+                                                </div>
+                                                <div class="form-check mt-1">
+                                                    <input class="form-check-input" type="checkbox" name="delete_images[]" 
+                                                           id="delete_image_{{ $image->id }}" value="{{ $image->id }}">
+                                                    <label class="form-check-label text-danger" for="delete_image_{{ $image->id }}">
+                                                        Delete
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    @endforeach
+                                @else
+                                    <div class="col-12">
+                                        <div class="alert alert-info">No images uploaded yet.</div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
-                        
-                        @if($banner->image_path)
-                            <div class="form-text mt-2">Current image: {{ basename($banner->image_path) }}</div>
-                        @endif
                     </div>
                 </div>
                 
@@ -109,20 +136,55 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Image preview
-        const imageInput = document.getElementById('image');
-        const imagePreview = document.getElementById('image-preview');
+        // Preview for new images
+        const imageInput = document.getElementById('new_images');
+        const currentImagesContainer = document.getElementById('current-images');
         
-        if (imageInput && imagePreview) {
+        if (imageInput) {
             imageInput.addEventListener('change', function() {
-                if (this.files && this.files[0]) {
-                    const reader = new FileReader();
+                // Remove any previous preview elements
+                const existingPreviews = document.querySelectorAll('.new-image-preview');
+                existingPreviews.forEach(preview => preview.remove());
+                
+                // Add preview for each selected file
+                if (this.files && this.files.length > 0) {
+                    const previewRow = document.createElement('div');
+                    previewRow.className = 'row mt-3 new-image-preview';
                     
-                    reader.onload = function(e) {
-                        imagePreview.src = e.target.result;
+                    const previewTitle = document.createElement('h6');
+                    previewTitle.textContent = 'New Images Preview:';
+                    previewRow.appendChild(previewTitle);
+                    
+                    for (let i = 0; i < this.files.length; i++) {
+                        const file = this.files[i];
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const previewCol = document.createElement('div');
+                            previewCol.className = 'col-md-4 mb-2';
+                            
+                            const previewCard = document.createElement('div');
+                            previewCard.className = 'card';
+                            
+                            const previewImg = document.createElement('img');
+                            previewImg.src = e.target.result;
+                            previewImg.className = 'card-img-top';
+                            previewImg.alt = 'New Image Preview';
+                            
+                            const previewCardBody = document.createElement('div');
+                            previewCardBody.className = 'card-body p-2';
+                            previewCardBody.textContent = file.name;
+                            
+                            previewCard.appendChild(previewImg);
+                            previewCard.appendChild(previewCardBody);
+                            previewCol.appendChild(previewCard);
+                            previewRow.appendChild(previewCol);
+                        }
+                        
+                        reader.readAsDataURL(file);
                     }
                     
-                    reader.readAsDataURL(this.files[0]);
+                    currentImagesContainer.parentNode.insertBefore(previewRow, currentImagesContainer.nextSibling);
                 }
             });
         }
