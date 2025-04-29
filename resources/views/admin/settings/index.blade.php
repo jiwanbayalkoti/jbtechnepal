@@ -2,6 +2,173 @@
 
 @section('title', 'System Settings')
 
+@section('styles')
+<style>
+    .settings-header {
+        padding: 1.5rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .settings-header .title {
+        font-size: 1.75rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .settings-header .description {
+        color: #6c757d;
+    }
+    
+    .settings-card {
+        height: 100%;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+    
+    .settings-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .settings-card .card-header {
+        padding: 1rem;
+        border-bottom: 0;
+    }
+    
+    .settings-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+    }
+    
+    .settings-icon.general {
+        background-color: rgba(255,255,255,0.2);
+    }
+    
+    .settings-icon.seo {
+        background-color: rgba(255,255,255,0.2);
+    }
+    
+    .settings-icon.contact {
+        background-color: rgba(255,255,255,0.2);
+    }
+    
+    .settings-icon.social {
+        background-color: rgba(255,255,255,0.2);
+    }
+    
+    .setting-item {
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .setting-item:last-child {
+        border-bottom: 0;
+    }
+    
+    .setting-label {
+        font-weight: 600;
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .setting-description {
+        font-size: 0.8rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .setting-value {
+        font-size: 0.85rem;
+        color: #495057;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-settings-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+        color: #fff;
+    }
+    
+    .btn-settings-primary:hover {
+        background-color: #2e59d9;
+        border-color: #2653d4;
+        color: #fff;
+    }
+    
+    .btn-settings-secondary {
+        background-color: #858796;
+        border-color: #858796;
+        color: #fff;
+    }
+    
+    .btn-settings-secondary:hover {
+        background-color: #717384;
+        border-color: #6b6d7d;
+        color: #fff;
+    }
+    
+    .settings-tabs .nav-link {
+        padding: 0.75rem 1.25rem;
+        border-radius: 0.25rem 0.25rem 0 0;
+        font-weight: 500;
+    }
+    
+    .settings-tabs .nav-link.active {
+        background-color: #f8f9fc;
+        border-color: #ddd #ddd #f8f9fc;
+        color: #4e73df;
+    }
+    
+    .settings-tab-content {
+        background-color: #f8f9fc;
+    }
+    
+    .settings-modal .modal-content {
+        border: none;
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+    }
+    
+    .settings-modal .modal-header {
+        background-color: #4e73df;
+        color: #fff;
+    }
+    
+    .settings-modal .modal-title {
+        font-weight: 600;
+    }
+    
+    .setting-item.p-3 {
+        background-color: #fff;
+        border-radius: 0.375rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .setting-item.p-3:hover {
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+    }
+    
+    .image-preview-container {
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-radius: 0.25rem;
+        text-align: center;
+    }
+    
+    /* Custom color for social media tab */
+    .bg-purple {
+        background-color: #6f42c1 !important;
+    }
+</style>
+@endsection
+
 @section('content')
 <div class="container-fluid">
     <div class="settings-header">
@@ -112,6 +279,44 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <div class="col-md-4">
+                            <div class="settings-card">
+                                <div class="card-header bg-purple text-white d-flex align-items-center">
+                                    <div class="settings-icon social">
+                                        <i class="fas fa-share-alt"></i>
+                                    </div>
+                                    <h5 class="mb-0">Social Media</h5>
+                                </div>
+                                <div class="card-body">
+                                    @foreach($socialSettings as $setting)
+                                        <div class="setting-item">
+                                            <div class="setting-label">
+                                                @if(strpos($setting->key, 'facebook') !== false)
+                                                    <i class="fab fa-facebook text-primary me-1"></i>
+                                                @elseif(strpos($setting->key, 'instagram') !== false)
+                                                    <i class="fab fa-instagram text-danger me-1"></i>
+                                                @elseif(strpos($setting->key, 'twitter') !== false)
+                                                    <i class="fab fa-twitter text-info me-1"></i>
+                                                @elseif(strpos($setting->key, 'linkedin') !== false)
+                                                    <i class="fab fa-linkedin text-primary me-1"></i>
+                                                @elseif(strpos($setting->key, 'youtube') !== false)
+                                                    <i class="fab fa-youtube text-danger me-1"></i>
+                                                @endif
+                                                {{ $setting->label }}
+                                            </div>
+                                            <div class="setting-value">
+                                                @if($setting->type == 'checkbox')
+                                                    {!! $setting->value ? '<i class="fas fa-check-circle"></i> Enabled' : '<i class="fas fa-times-circle"></i> Disabled' !!}
+                                                @else
+                                                    {{ Str::limit($setting->value, 30) }}
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -144,6 +349,11 @@
                             <li class="nav-item" role="presentation">
                                 <button class="nav-link" id="contact-tab" data-bs-toggle="tab" data-bs-target="#contact" type="button" role="tab">
                                     <i class="fas fa-envelope me-2"></i>Contact
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="social-tab" data-bs-toggle="tab" data-bs-target="#social" type="button" role="tab">
+                                    <i class="fas fa-share-alt me-2"></i>Social Media
                                 </button>
                             </li>
                         </ul>
@@ -284,6 +494,61 @@
                                             </div>
                                     </div>
                                 @endforeach
+                                </div>
+                            </div>
+                            
+                            <!-- Social Media Settings -->
+                            <div class="tab-pane fade" id="social" role="tabpanel">
+                                <div class="d-flex align-items-center mb-4">
+                                    <div class="settings-icon social me-3">
+                                        <i class="fas fa-share-alt"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="mb-1">Social Media Settings</h4>
+                                        <p class="text-muted mb-0">Configure your social media profiles and sharing options</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    @foreach($socialSettings as $setting)
+                                        <div class="col-md-6 mb-4">
+                                            <div class="setting-item p-3">
+                                                <label for="{{ $setting->key }}" class="form-label">
+                                                    @if(strpos($setting->key, 'facebook') !== false)
+                                                        <i class="fab fa-facebook text-primary me-2"></i>
+                                                    @elseif(strpos($setting->key, 'instagram') !== false)
+                                                        <i class="fab fa-instagram text-danger me-2"></i>
+                                                    @elseif(strpos($setting->key, 'twitter') !== false)
+                                                        <i class="fab fa-twitter text-info me-2"></i>
+                                                    @elseif(strpos($setting->key, 'linkedin') !== false)
+                                                        <i class="fab fa-linkedin text-primary me-2"></i>
+                                                    @elseif(strpos($setting->key, 'youtube') !== false)
+                                                        <i class="fab fa-youtube text-danger me-2"></i>
+                                                    @elseif(strpos($setting->key, 'pinterest') !== false)
+                                                        <i class="fab fa-pinterest text-danger me-2"></i>
+                                                    @elseif(strpos($setting->key, 'tiktok') !== false)
+                                                        <i class="fab fa-tiktok text-dark me-2"></i>
+                                                    @else
+                                                        <i class="fas fa-share-alt me-2"></i>
+                                                    @endif
+                                                    {{ $setting->label }}
+                                                </label>
+                                                
+                                                @if($setting->type == 'url')
+                                                    <input type="url" class="form-control" id="{{ $setting->key }}" name="{{ $setting->key }}" value="{{ $setting->value }}">
+                                                @elseif($setting->type == 'checkbox')
+                                                    <div class="form-check form-switch">
+                                                        <input type="checkbox" class="form-check-input" id="{{ $setting->key }}" name="{{ $setting->key }}" value="1" {{ $setting->value ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="{{ $setting->key }}"></label>
+                                                    </div>
+                                                @endif
+                                                
+                                                @if($setting->description)
+                                                    <div class="form-text text-muted">{{ $setting->description }}</div>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
                                 </div>
                             </div>
                         </div>

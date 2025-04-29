@@ -145,6 +145,8 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+        console.log("Return creation form loaded - Debug version");
+        
         // When order is selected
         $('#order_id').change(function() {
             const orderId = $(this).val();
@@ -177,11 +179,21 @@
                         $('#itemCount').text(response.items_count);
                         
                         // Get returnable items via AJAX
+                        // Try both route helper and direct URL construction
+                        const routeUrl = `{{ route('admin.returns.get-order-items', ['order' => '__id__']) }}`.replace('__id__', orderId);
+                        // Use a more explicit direct URL construction with base URL
+                        const baseUrl = '{{ url('/') }}';
+                        const directUrl = `${baseUrl}/admin/returns/get-order-items/${orderId}`;
+                        
+                        console.log("Route URL:", routeUrl);
+                        console.log("Direct URL:", directUrl);
+                        
                         $.ajax({
-                            url: `{{ route('admin.returns.get-order-items', ['order' => '__id__']) }}`.replace('__id__', orderId),
                             type: 'GET',
+                            url: directUrl, // Use the direct URL construction
                             dataType: 'json',
                             success: function(data) {
+                                console.log("Received data:", data);
                                 // Clear loading state
                                 $('#itemsTableBody').empty();
                                 
@@ -249,7 +261,9 @@
                                     $('#submitBtn').prop('disabled', true);
                                 }
                             },
-                            error: function(xhr) {
+                            error: function(xhr, status, error) {
+                                console.error("AJAX Error:", status, error);
+                                console.error("Response:", xhr.responseText);
                                 $('#itemsTableBody').html('<tr><td colspan="7" class="text-center text-danger">Error loading order items. Please try again.</td></tr>');
                             }
                         });

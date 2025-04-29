@@ -113,9 +113,17 @@
                             <h6 class="mb-0">Adjust Inventory</h6>
                         </div>
                         <div class="card-body">
-                            <form action="{{ route('admin.inventory.update-stock', $inventory->id) }}" method="POST">
+                            <!-- Debug information to help troubleshoot -->
+                            <div class="alert alert-info mb-3">
+                                <p><strong>Route Information:</strong></p>
+                                <p>Expected HTTP Method: POST</p>
+                                <p>Route URL: {{ route('admin.inventory.update-stock', $inventory->id) }}</p>
+                            </div>
+
+                            <!-- New form with direct absolute URL and explicit POST method -->
+                            <form action="{{ url('/admin/inventory/' . $inventory->id . '/update-stock') }}" method="POST">
                                 @csrf
-                                @method('PATCH')
+                                <!-- No method spoofing directives at all -->
                                 
                                 <div class="mb-3">
                                     <label for="adjustment_type" class="form-label">Adjustment Type <span class="text-danger">*</span></label>

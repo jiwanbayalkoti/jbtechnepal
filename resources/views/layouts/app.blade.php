@@ -38,7 +38,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
-    <link rel="stylesheet" href="{{ asset('css/main.css') }}">
     <link rel="stylesheet" href="{{ asset('css/banner-styles.css') }}">
     @if(request()->routeIs('about'))
     <link rel="stylesheet" href="{{ asset('css/about.css') }}">
@@ -54,6 +53,303 @@
             --bs-primary: {{ $primaryColor }};
             --bs-primary-rgb: {{ implode(', ', sscanf($primaryColor, "#%02x%02x%02x")) }};
         }
+
+        .btn-primary {
+            background-color: var(--bs-primary);
+            border-color: var(--bs-primary);
+        }
+
+        .bg-primary {
+            background-color: var(--bs-primary) !important;
+        }
+
+        .text-primary {
+            color: var(--bs-primary) !important;
+        }
+        
+        /* Promotional Banner Styles */
+        .promotional-banner {
+            padding: 10px 0;
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+        }
+        
+        .promotional-banner .container {
+            position: relative;
+        }
+        
+        .promotional-banner a {
+            color: inherit;
+            text-decoration: none;
+            display: block;
+        }
+        
+        .promotional-banner a:hover {
+            text-decoration: underline;
+        }
+        
+        .promotional-banner .close-banner {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+        
+        .promotional-banner .close-banner:hover {
+            opacity: 1;
+        }
+        
+        .compare-badge {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            z-index: 999;
+        }
+        .product-card {
+            height: 100%;
+            transition: all 0.3s;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .spec-table th {
+            width: 30%;
+        }
+        .chart-container {
+            height: 350px;
+            width: 100%;
+        }
+        .ad-container {
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border-radius: 0.25rem;
+        }
+        .sidebar-ad {
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        .banner-ad {
+            border-radius: 0.25rem;
+            overflow: hidden;
+        }
+        
+        /* Product Slider Styles */
+        .product-slider-section {
+            padding: 2rem 0;
+            margin-bottom: 1.5rem;
+        }
+        
+        .product-slider-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .product-slider-header h2 {
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .product-slider-header p {
+            color: #6c757d;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        
+        .product-slider {
+            position: relative;
+            padding: 0 40px;
+        }
+        
+        .product-slide {
+            padding: 15px;
+        }
+        
+        .product-slide-inner {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            padding: 15px;
+            transition: all 0.3s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .product-slide-inner:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+        
+        .product-slide-image {
+            position: relative;
+            padding-top: 75%; /* 4:3 Aspect Ratio */
+            overflow: hidden;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .product-slide-image img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .product-slide-category {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #6c757d;
+            margin-bottom: 5px;
+        }
+        
+        .product-slide-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 2.5rem;
+        }
+        
+        .product-slide-price {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+        
+        .product-slide-regular-price {
+            font-size: 1.1rem;
+            font-weight: 700;
+        }
+        
+        .product-slide-discount-price {
+            font-size: 0.9rem;
+            color: #dc3545;
+            text-decoration: line-through;
+        }
+        
+        .product-slide-button {
+            margin-top: auto;
+        }
+        
+        .swiper-button-next, .swiper-button-prev {
+            color: var(--bs-primary);
+            background: #fff;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            opacity: 0.9;
+        }
+        
+        .swiper-button-next:after, .swiper-button-prev:after {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .swiper-button-next:hover, .swiper-button-prev:hover {
+            opacity: 1;
+        }
+        
+        .swiper-pagination-bullet {
+            background: var(--bs-primary);
+        }
+        
+        @media (max-width: 768px) {
+            .product-slider {
+                padding: 0 25px;
+            }
+            
+            .product-slide-title {
+                font-size: 0.9rem;
+            }
+        }
+        
+        /* Skeleton Loader */
+        .skeleton {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+        }
+        
+        .skeleton-loader .product-slide-image {
+            height: 150px;
+        }
+        
+        .skeleton-loader .product-slide-category {
+            height: 12px;
+            width: 60%;
+            margin-bottom: 10px;
+        }
+        
+        .skeleton-loader .product-slide-title {
+            height: 40px;
+            margin-bottom: 15px;
+        }
+        
+        .skeleton-loader .product-slide-regular-price {
+            height: 24px;
+            width: 80px;
+        }
+        
+        .skeleton-loader .product-slide-button {
+            height: 32px;
+            margin-top: 15px;
+        }
+        
+        @keyframes loading {
+            0% {
+                background-position: 200% 0;
+            }
+            100% {
+                background-position: -200% 0;
+            }
+        }
+        
+        /* Quick View Styles */
+        .quick-view-btn {
+            width: 38px;
+            height: 38px;
+            padding: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px 0 0 4px;
+            transition: all 0.2s;
+        }
+        
+        .quick-view-btn:hover {
+            background-color: #0dcaf0;
+        }
+        
+        #quickViewModal .product-image-container {
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        #quickViewModal img {
+            max-height: 100%;
+            object-fit: contain;
+        }
+        
+        /* End Quick View Styles */
     </style>
 </head>
 <body>
@@ -70,25 +366,6 @@
             </button>
         </div>
     </div>
-    @else
-    <!-- Banner is disabled in settings -->
-    @endif
-    
-    @if($bannerEnabled)
-    <div class="promotional-banner" style="background-color: {{ $bannerBgColor }}; color: {{ $bannerTextColor }}; display: block !important;">
-        <div class="container">
-            @if($bannerLink)
-                <a href="{{ $bannerLink }}">{{ $bannerText }}</a>
-            @else
-                {{ $bannerText }}
-            @endif
-            <button type="button" class="close-banner" aria-label="Close" style="color: {{ $bannerTextColor }}">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    </div>
-    @else
-    <!-- Banner is disabled in settings -->
     @endif
     
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
@@ -128,7 +405,7 @@
                                 <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ $menuItem->id }}">
                                     @foreach($menuItem->children as $child)
                                         <li>
-                                            <a class="dropdown-item {{ request()->routeIs($child->route_name) ? 'active' : '' }}" 
+                                            <a class="dropdown-item" 
                                                href="{{ $child->url ?? ($child->route_name ? route($child->route_name) : '#') }}">
                                                 @if($child->icon)
                                                     <i class="{{ $child->icon }} me-1"></i>
@@ -143,49 +420,47 @@
                     @endforeach
                 </ul>
                 
+               
+                
                 <div class="d-flex">
                     @auth
-                        <div class="dropdown">
-                            <button class="btn btn-outline-light dropdown-toggle" type="button" id="userDropdown" 
-                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-user-circle me-1"></i>
-                                {{ Auth::user()->name }}
+                        <div class="dropdown me-3">
+                            <button class="btn btn-light dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user me-1"></i>{{ Auth::user()->name }}
                             </button>
                             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                @if(Auth::user()->is_admin)
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('admin.dashboard') }}">
-                                        <i class="fas fa-tachometer-alt me-1"></i>Admin Dashboard
+                                    <a href="{{ route('profile.show') }}" class="dropdown-item">
+                                        <i class="fas fa-user-circle me-1"></i>My Profile
+                                    </a>
+                                </li>
+                                <li>
+                                    <a href="{{ route('contact.my-messages') }}" class="dropdown-item">
+                                        <i class="fas fa-envelope me-1"></i>My Messages
+                                        @php
+                                            $unreadMessagesCount = Auth::user()->contactMessages()->whereIn('status', ['read', 'replied'])->count();
+                                        @endphp
+                                        @if($unreadMessagesCount > 0)
+                                            <span class="badge bg-success rounded-pill ms-2">{{ $unreadMessagesCount }}</span>
+                                        @endif
                                     </a>
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
-                                @endif
-                                
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('profile.show') }}">
-                                        <i class="fas fa-id-card me-1"></i>My Profile
-                                    </a>
+                                    <form method="POST" action="{{ route('logout') }}">
+                                        @csrf
+                                        <button type="submit" class="dropdown-item">
+                                            <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                        </button>
+                                    </form>
                                 </li>
-                                
-                                @if(optional(Auth::user()->watchlists)->isNotEmpty())
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('watchlists.index') }}">
-                                        <i class="fas fa-eye me-1"></i>My Watchlists
-                                    </a>
-                                </li>
-                                @endif
-                                
-                                <li>
-                                    <a class="dropdown-item" href="{{ route('logout') }}" 
-                                       onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                        <i class="fas fa-sign-out-alt me-1"></i>Logout
-                                    </a>
-                                </li>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                                    @csrf
-                                </form>
                             </ul>
                         </div>
+                        @if(Auth::user()->is_admin)
+                            <a href="{{ route('admin.dashboard') }}" class="btn btn-warning">
+                                <i class="fas fa-user-cog me-1"></i>Admin Panel
+                            </a>
+                        @endif
                     @else
                         <a href="{{ route('login') }}" class="btn btn-outline-light me-2">
                             <i class="fas fa-sign-in-alt me-1"></i>Login
@@ -194,187 +469,134 @@
                             <i class="fas fa-user-plus me-1"></i>Register
                         </a>
                     @endauth
+                    
+                    <!-- Cart Icon -->
+                    <a href="{{ route('cart.index') }}" class="btn btn-success ms-2 position-relative">
+                        <i class="fas fa-shopping-cart"></i>
+                        @php
+                            $cartCount = session('cart') ? count(session('cart')) : 0;
+                        @endphp
+                        @if($cartCount > 0)
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
                 </div>
             </div>
         </div>
     </nav>
-    
-    <!-- Main Content -->
-    <main class="py-4">
-        @if(Session::has('success'))
-            <div class="container">
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    {{ Session::get('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-        
-        @if(Session::has('error'))
-            <div class="container">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    {{ Session::get('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-        
-        @if($errors->any())
-            <div class="container">
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <ul class="mb-0">
-                        @foreach($errors->all() as $error)
-                            <li>{{ $error }}</li>
-                        @endforeach
-                    </ul>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            </div>
-        @endif
-        
-        <!-- Product Slider Section (if enabled) -->
-        @if($sliderEnabled)
-        <div class="product-slider-section" style="background-color: {{ $sliderBgColor }};">
-            <div class="container">
-                <div class="product-slider-header">
-                    <h2>{{ $sliderTitle }}</h2>
-                    <p>{{ $sliderSubtitle }}</p>
-                </div>
-                
-                <div class="product-slider">
-                    <div class="swiper product-swiper">
-                        <div class="swiper-wrapper" id="product-slider-items">
-                            <!-- Skeleton loaders -->
-                            @for($i = 0; $i < 5; $i++)
-                            <div class="swiper-slide product-slide skeleton-loader">
-                                <div class="product-slide-inner">
-                                    <div class="product-slide-image skeleton"></div>
-                                    <div class="product-slide-category skeleton"></div>
-                                    <div class="product-slide-title skeleton"></div>
-                                    <div class="product-slide-regular-price skeleton"></div>
-                                    <div class="product-slide-button skeleton"></div>
-                                </div>
-                            </div>
-                            @endfor
-                        </div>
-                        
-                        <div class="swiper-pagination"></div>
-                        <div class="swiper-button-next"></div>
-                        <div class="swiper-button-prev"></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
-        
-        @yield('content')
-    </main>
-    
-    <!-- Footer -->
-    <footer class="bg-dark text-light py-4 mt-5">
+
+    @if($sliderEnabled)
+    <div class="product-slider-section" style="background-color: {{ $sliderBgColor }};">
         <div class="container">
-            <div class="row">
-                <div class="col-md-3 mb-4 mb-md-0">
-                    <h5 class="text-uppercase mb-3">About Us</h5>
-                    <p class="small">{{ \App\Models\Setting::get('site_description', 'Our comparison system helps you make informed decisions on electronics purchases.') }}</p>
-                    <div class="social-icons mt-3">
-                        @if($facebook = \App\Models\Setting::get('facebook_url'))
-                            <a href="{{ $facebook }}" target="_blank" class="text-light me-2"><i class="fab fa-facebook-f"></i></a>
-                        @endif
-                        @if($twitter = \App\Models\Setting::get('twitter_url'))
-                            <a href="{{ $twitter }}" target="_blank" class="text-light me-2"><i class="fab fa-twitter"></i></a>
-                        @endif
-                        @if($instagram = \App\Models\Setting::get('instagram_url'))
-                            <a href="{{ $instagram }}" target="_blank" class="text-light me-2"><i class="fab fa-instagram"></i></a>
-                        @endif
-                        @if($youtube = \App\Models\Setting::get('youtube_url'))
-                            <a href="{{ $youtube }}" target="_blank" class="text-light"><i class="fab fa-youtube"></i></a>
-                        @endif
-                    </div>
-                </div>
-                
-                <div class="col-md-3 mb-4 mb-md-0">
-                    <h5 class="text-uppercase mb-3">Quick Links</h5>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="{{ route('home') }}" class="text-light text-decoration-none">Home</a></li>
-                        <li class="mb-2"><a href="{{ route('about') }}" class="text-light text-decoration-none">About Us</a></li>
-                        <li class="mb-2"><a href="{{ route('contact') }}" class="text-light text-decoration-none">Contact Us</a></li>
-                        <li class="mb-2"><a href="{{ url('/faq') }}" class="text-light text-decoration-none">FAQ</a></li>
-                    </ul>
-                </div>
-                
-                <div class="col-md-3 mb-4 mb-md-0">
-                    <h5 class="text-uppercase mb-3">Categories</h5>
-                    <ul class="list-unstyled">
-                        @if(isset($footerCategories) && count($footerCategories) > 0)
-                            @foreach($footerCategories as $category)
-                                <li class="mb-2">
-                                    <a href="{{ route('categories.show', $category->slug) }}" class="text-light text-decoration-none">
-                                        {{ $category->name }}
-                                    </a>
-                                </li>
-                            @endforeach
-                        @else
-                            <li class="mb-2">
-                                <a href="{{ route('home') }}" class="text-light text-decoration-none">All Products</a>
-                            </li>
-                        @endif
-                    </ul>
-                </div>
-                
-                <div class="col-md-3">
-                    <h5 class="text-uppercase mb-3">Contact Info</h5>
-                    <ul class="list-unstyled">
-                        @if($address = \App\Models\Setting::get('company_address'))
-                            <li class="mb-2 d-flex">
-                                <i class="fas fa-map-marker-alt me-2 mt-1"></i>
-                                <span>{{ $address }}</span>
-                            </li>
-                        @endif
-                        @if($email = \App\Models\Setting::get('contact_email'))
-                            <li class="mb-2 d-flex">
-                                <i class="fas fa-envelope me-2 mt-1"></i>
-                                <a href="mailto:{{ $email }}" class="text-light text-decoration-none">{{ $email }}</a>
-                            </li>
-                        @endif
-                        @if($phone = \App\Models\Setting::get('contact_phone'))
-                            <li class="d-flex">
-                                <i class="fas fa-phone-alt me-2 mt-1"></i>
-                                <a href="tel:{{ $phone }}" class="text-light text-decoration-none">{{ $phone }}</a>
-                            </li>
-                        @endif
-                    </ul>
-                </div>
+             <!-- SWAPPED: Banner Slider Section SECOND -->
+     <div id="homeBannerSlider" class="mb-4" data-banner-slider data-autoplay="true" data-interval="5000"></div>
+            <div class="product-slider-header">
+                <h2>{{ $sliderTitle }}</h2>
+                <p>{{ $sliderSubtitle }}</p>
             </div>
             
-            <hr class="mt-4 mb-3">
-            
-            <div class="row">
-                <div class="col-md-6 text-center text-md-start">
-                    <p class="small mb-0">&copy; {{ date('Y') }} {{ $siteTitle }}. All rights reserved.</p>
-                </div>
-                <div class="col-md-6 text-center text-md-end">
-                    <p class="small mb-0">
-                        <a href="{{ url('/privacy') }}" class="text-light text-decoration-none">Privacy Policy</a> | 
-                        <a href="{{ url('/terms') }}" class="text-light text-decoration-none">Terms of Service</a>
-                    </p>
+            <div class="product-slider">
+                <div class="swiper product-swiper">
+                    <div class="swiper-wrapper" id="product-slider-items">
+                        <!-- Products will be loaded here via JavaScript -->
+                        <div class="swiper-slide product-slide">
+                            <div class="product-slide-inner skeleton-loader">
+                                <div class="product-slide-image skeleton"></div>
+                                <div class="product-slide-category skeleton"></div>
+                                <div class="product-slide-title skeleton"></div>
+                                <div class="product-slide-price">
+                                    <div class="product-slide-regular-price skeleton"></div>
+                                </div>
+                                <div class="product-slide-button skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="swiper-pagination"></div>
+                    <div class="swiper-button-prev"></div>
+                    <div class="swiper-button-next"></div>
                 </div>
             </div>
         </div>
-    </footer>
-    
-    <!-- Compare Products Badge -->
-    <div id="compareCounter" class="compare-badge">
-        @if(session('compare_products') && count(session('compare_products')) > 0)
+    </div>
+    @endif
+
+    <div class="container my-4">
+        @if (session('success'))
+            <div class="alert alert-success alert-dismissible fade show">
+                {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        @endif
+
+        @yield('content')
+    </div>
+
+    <div class="compare-badge" id="compareCounter">
+        @php $compareCount = session('compare_list') ? count(session('compare_list')) : 0; @endphp
+        @if($compareCount > 0)
             <a href="{{ route('compare') }}" class="btn btn-danger rounded-circle position-relative p-3">
                 <i class="fas fa-balance-scale fa-lg"></i>
                 <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
-                    {{ count(session('compare_products')) }}
+                    {{ $compareCount }}
                 </span>
             </a>
         @endif
     </div>
-    
+
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5>{{ $siteTitle }}</h5>
+                    <p>Compare electronic products like laptops, PCs, and mobile phones to make informed purchase decisions.</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        @foreach($footerMenu as $menuItem)
+                            <li>
+                                <a class="text-white" 
+                                   href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}">
+                                    @if($menuItem->icon)
+                                        <i class="{{ $menuItem->icon }} me-1"></i>
+                                    @endif
+                                    {{ $menuItem->name }}
+                                </a>
+                            </li>
+                        @endforeach
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Admin</h5>
+                    <ul class="list-unstyled">
+                        @auth
+                            @if(Auth::user()->is_admin)
+                                <li><a class="text-white" href="{{ route('admin.dashboard') }}">Dashboard</a></li>
+                                <li><a class="text-white" href="{{ route('admin.categories.index') }}">Categories</a></li>
+                                <li><a class="text-white" href="{{ route('admin.products.index') }}">Products</a></li>
+                                <li><a class="text-white" href="{{ route('admin.menus.index') }}">Menu Management</a></li>
+                                <li><a class="text-white" href="{{ route('admin.advertisements.index') }}">Advertisements</a></li>
+                            @endif
+                        @endauth
+                    </ul>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <p class="mb-0">&copy; {{ date('Y') }} {{ $siteTitle }}. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
@@ -382,30 +604,333 @@
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
     
+    <!-- AJAX CSRF Setup -->
     <script>
-        // Define variables for JavaScript files
-        const csrfToken = '{{ csrf_token() }}';
-        const addToCompareUrl = '{{ route("add.to.compare") }}';
-        const removeFromCompareUrl = '{{ route("remove.from.compare") }}';
-        const compareUrl = '{{ route("compare") }}';
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
     </script>
     
-    <!-- App-wide JavaScript -->
-    <script src="{{ asset('js/app.js') }}"></script>
     <script src="{{ asset('js/advertisements.js') }}"></script>
-    <script src="{{ asset('js/banner-slider.js') }}"></script>
+    
+    <script>
+        $(document).ready(function() {
+            $('.add-to-compare').click(function(e) {
+                e.preventDefault();
+                
+                const productId = $(this).data('product-id');
+                
+                $.ajax({
+                    url: '{{ route("add.to.compare") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        product_id: productId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            updateCompareCounter(response.count);
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            });
+            
+            $('.remove-from-compare').click(function(e) {
+                e.preventDefault();
+                
+                const productId = $(this).data('product-id');
+                
+                $.ajax({
+                    url: '{{ route("remove.from.compare") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        product_id: productId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            updateCompareCounter(response.count);
+                            location.reload();
+                        }
+                    }
+                });
+            });
+        });
+        
+        function updateCompareCounter(count) {
+            if (count > 0) {
+                $('#compareCounter').html(`
+                    <a href="{{ route('compare') }}" class="btn btn-danger rounded-circle position-relative p-3">
+                        <i class="fas fa-balance-scale fa-lg"></i>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-dark">
+                            ${count}
+                        </span>
+                    </a>
+                `);
+            } else {
+                $('#compareCounter').html('');
+            }
+        }
+    </script>
+    
+    <script>
+        // Initialize tooltips
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+        
+        // Promotional banner close functionality
+        $(document).ready(function() {
+            // Check if the banner was closed before
+            if (getCookie('promotional_banner_closed') !== 'true') {
+                $('.promotional-banner').show();
+            } else {
+                $('.promotional-banner').hide();
+            }
+            
+            // Close banner button click
+            $('.close-banner').on('click', function() {
+                $(this).closest('.promotional-banner').slideUp();
+                setCookie('promotional_banner_closed', 'true', 1); // Set cookie to expire in 1 day
+            });
+            
+            // Helper function to set a cookie
+            function setCookie(name, value, days) {
+                var expires = "";
+                if (days) {
+                    var date = new Date();
+                    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                    expires = "; expires=" + date.toUTCString();
+                }
+                document.cookie = name + "=" + (value || "") + expires + "; path=/";
+            }
+            
+            // Helper function to get a cookie
+            function getCookie(name) {
+                var nameEQ = name + "=";
+                var ca = document.cookie.split(';');
+                for(var i=0; i < ca.length; i++) {
+                    var c = ca[i];
+                    while (c.charAt(0)==' ') c = c.substring(1,c.length);
+                    if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+                }
+                return null;
+            }
+        });
+    </script>
     
     @if($sliderEnabled)
     <script>
-        // Product slider variables
-        const newestProductsUrl = '{{ route("api.newest-products", ["limit" => $sliderCount]) }}';
-        const sliderAutoplay = {{ $sliderAutoplay ? 'true' : 'false' }};
+        // Initialize product slider
+        $(document).ready(function() {
+            // Load newest products
+            $.ajax({
+                url: '{{ route("api.newest-products", ["limit" => $sliderCount]) }}',
+                type: 'GET',
+                success: function(response) {
+                    if (response.success && response.data.length > 0) {
+                        // Clear skeleton loader
+                        $('#product-slider-items').empty();
+                        
+                        // Add products to slider
+                        $.each(response.data, function(index, product) {
+                            let priceHtml = '';
+                            
+                            if (product.discount_price) {
+                                priceHtml = `
+                                    <div class="product-slide-regular-price">${formatPrice(product.discount_price)}</div>
+                                    <div class="product-slide-discount-price">${formatPrice(product.price)}</div>
+                                `;
+                            } else {
+                                priceHtml = `
+                                    <div class="product-slide-regular-price">${formatPrice(product.price)}</div>
+                                `;
+                            }
+                            
+                            let slide = `
+                                <div class="swiper-slide product-slide">
+                                    <div class="product-slide-inner">
+                                        <a href="${product.url}" class="product-slide-image">
+                                            <img src="${product.image}" alt="${product.name}">
+                                        </a>
+                                        <div class="product-slide-category">${product.category || 'Uncategorized'}</div>
+                                        <h3 class="product-slide-title">
+                                            <a href="${product.url}" class="text-decoration-none text-dark">${product.name}</a>
+                                        </h3>
+                                        <div class="product-slide-price">
+                                            ${priceHtml}
+                                        </div>
+                                        <div class="product-slide-button">
+                                            <div class="btn-group w-100">
+                                                <button class="btn btn-info btn-sm quick-view-btn" 
+                                                        data-product-id="${product.id}"
+                                                        data-product-slug="${product.slug || ''}"
+                                                        data-product-name="${product.name}"
+                                                        data-product-price="${product.price || ''}"
+                                                        data-product-brand="${product.brand || ''}"
+                                                        data-product-model="${product.model || ''}"
+                                                        data-product-description="${product.description || ''}"
+                                                        data-product-image="${product.image || ''}"
+                                                        data-bs-toggle="modal" 
+                                                        data-bs-target="#quickViewModal">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                                <a href="${product.url}" class="btn btn-primary btn-sm flex-grow-1">View Details</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                            
+                            $('#product-slider-items').append(slide);
+                        });
+                        
+                        // Initialize Swiper
+                        initProductSwiper();
+                    } else {
+                        // If no products found, hide the slider section
+                        $('.product-slider-section').hide();
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading newest products:', error);
+                    // Hide the slider section on error
+                    $('.product-slider-section').hide();
+                }
+            });
+            
+            // Helper function to format price
+            function formatPrice(price) {
+                return '$' + parseFloat(price).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            }
+            
+            // Initialize Swiper
+            function initProductSwiper() {
+                new Swiper('.product-swiper', {
+                    slidesPerView: 1,
+                    spaceBetween: 20,
+                    loop: true,
+                    pagination: {
+                        el: '.swiper-pagination',
+                        clickable: true,
+                    },
+                    navigation: {
+                        nextEl: '.swiper-button-next',
+                        prevEl: '.swiper-button-prev',
+                    },
+                    autoplay: {{ $sliderAutoplay ? 'true' : 'false' }} ? {
+                        delay: 5000,
+                        disableOnInteraction: false,
+                    } : false,
+                    breakpoints: {
+                        // when window width is >= 576px
+                        576: {
+                            slidesPerView: 2,
+                        },
+                        // when window width is >= 768px
+                        768: {
+                            slidesPerView: 3,
+                        },
+                        // when window width is >= 992px
+                        992: {
+                            slidesPerView: 4,
+                        },
+                        // when window width is >= 1200px
+                        1200: {
+                            slidesPerView: 5,
+                        },
+                    }
+                });
+            }
+            
+            // Quick View Modal functionality
+            const quickViewModal = document.getElementById('quickViewModal');
+            if (quickViewModal) {
+                // When the modal is about to be shown
+                quickViewModal.addEventListener('show.bs.modal', function (event) {
+                    const button = event.relatedTarget;
+                    
+                    // Extract product info from data attributes
+                    const productId = button.getAttribute('data-product-id');
+                    const productSlug = button.getAttribute('data-product-slug');
+                    const productName = button.getAttribute('data-product-name');
+                    const productPrice = button.getAttribute('data-product-price');
+                    const productBrand = button.getAttribute('data-product-brand');
+                    const productModel = button.getAttribute('data-product-model');
+                    const productDesc = button.getAttribute('data-product-description');
+                    const productImage = button.getAttribute('data-product-image');
+                    
+                    // Update modal content
+                    document.getElementById('quickViewName').textContent = productName;
+                    document.getElementById('quickViewPrice').textContent = productPrice ? '$' + parseFloat(productPrice).toFixed(2) : 'Price not available';
+                    
+                    let brandModelText = '';
+                    if (productBrand) brandModelText += productBrand;
+                    if (productModel) brandModelText += ' | ' + productModel;
+                    document.getElementById('quickViewBrandModel').textContent = brandModelText;
+                    
+                    document.getElementById('quickViewDescription').textContent = productDesc || 'No description available.';
+                    
+                    const imageEl = document.getElementById('quickViewImage');
+                    if (productImage) {
+                        imageEl.src = productImage;
+                        imageEl.style.display = 'block';
+                    } else {
+                        imageEl.style.display = 'none';
+                    }
+                    
+                    // Set product ID for the compare button
+                    document.querySelector('.quick-view-compare').setAttribute('data-product-id', productId);
+                    
+                    // Set details link
+                    const detailsBtn = document.getElementById('quickViewDetailsBtn');
+                    detailsBtn.href = productSlug ? `/product/${productSlug}` : `/products/${productId}`;
+                });
+                
+                // Handle add to compare from quick view
+                document.querySelector('.quick-view-compare').addEventListener('click', function(e) {
+                    const productId = this.getAttribute('data-product-id');
+                    if (productId) {
+                        // Implement the comparison logic
+                        addToCompare(productId);
+                    }
+                });
+            }
+            
+            // Function to add product to compare
+            function addToCompare(productId) {
+                $.ajax({
+                    url: '{{ route("add.to.compare") }}',
+                    type: 'POST',
+                    data: {
+                        _token: '{{ csrf_token() }}',
+                        product_id: productId
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            updateCompareCounter(response.count);
+                            alert(response.message);
+                        } else {
+                            alert(response.message);
+                        }
+                    }
+                });
+            }
+        });
     </script>
-    <script src="{{ asset('js/product-slider.js') }}"></script>
     @endif
     
     @stack('scripts')
     @yield('scripts')
+    
+    <!-- Banner JS -->
+    <script src="{{ asset('js/banner-slider.js') }}"></script>
     
     <!-- Quick View Modal -->
     <div class="modal fade" id="quickViewModal" tabindex="-1" aria-labelledby="quickViewModalLabel" aria-hidden="true">

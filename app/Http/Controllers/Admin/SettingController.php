@@ -17,11 +17,13 @@ class SettingController extends Controller
         $generalSettings = Setting::getByGroup('general');
         $seoSettings = Setting::getByGroup('seo');
         $contactSettings = Setting::getByGroup('contact');
+        $socialSettings = Setting::getByGroup('social');
         
         return view('admin.settings.index', compact(
             'generalSettings', 
             'seoSettings', 
-            'contactSettings'
+            'contactSettings',
+            'socialSettings'
         ));
     }
     
@@ -178,6 +180,56 @@ class SettingController extends Controller
             }
             
             return redirect()->back()->with('error', 'Error updating contact settings: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Update Social Media settings.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function updateSocialSettings(Request $request)
+    {
+        try {
+            foreach ($request->except('_token', '_method') as $key => $value) {
+                $setting = Setting::where('key', $key)->where('group', 'social')->first();
+                
+                if ($setting) {
+                    Setting::set($key, $value);
+                }
+            }
+            
+            // Special handling for checkbox values that aren't submitted when unchecked
+            $checkboxSettings = ['show_social_share', 'show_social_follow'];
+            foreach ($checkboxSettings as $key) {
+                if (!$request->has($key)) {
+                    $setting = Setting::where('key', $key)->where('group', 'social')->first();
+                    if ($setting) {
+                        Setting::set($key, false);
+                    }
+                }
+            }
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Social media settings updated successfully'
+                ]);
+            }
+            
+            return redirect()->back()->with('success', 'Social media settings updated successfully');
+        } catch (\Exception $e) {
+            \Log::error('Error updating social media settings: ' . $e->getMessage());
+            
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error updating social media settings: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Error updating social media settings: ' . $e->getMessage());
         }
     }
 }

@@ -82,28 +82,47 @@ class ReturnController extends Controller
      */
     public function getOrderItems(Order $order)
     {
-        $order->load(['items.returns']);
-        
-        $items = $order->items->map(function ($item) {
-            $returnedQuantity = $item->returnedQuantity();
-            $availableQuantity = $item->quantity - $returnedQuantity;
+        try {
+            // Log the order ID for debugging
+            \Log::info('getOrderItems called with order ID: ' . $order->id);
             
-            return [
-                'id' => $item->id,
-                'product_id' => $item->product_id,
-                'product_name' => $item->product_name,
-                'price' => $item->price,
-                'quantity' => $item->quantity,
-                'returned_quantity' => $returnedQuantity,
-                'available_quantity' => $availableQuantity,
-                'can_return' => $availableQuantity > 0,
+            $order->load(['items.returns']);
+            
+            $items = $order->items->map(function ($item) {
+                $returnedQuantity = $item->returnedQuantity();
+                $availableQuantity = $item->quantity - $returnedQuantity;
+                
+                return [
+                    'id' => $item->id,
+                    'product_id' => $item->product_id,
+                    'product_name' => $item->product_name,
+                    'price' => $item->price,
+                    'quantity' => $item->quantity,
+                    'returned_quantity' => $returnedQuantity,
+                    'available_quantity' => $availableQuantity,
+                    'can_return' => $availableQuantity > 0,
+                ];
+            });
+            
+            $response = [
+                'order_id' => $order->id,
+                'items' => $items
             ];
-        });
-        
-        return response()->json([
-            'order_id' => $order->id,
-            'items' => $items
-        ]);
+            
+            // Log the response for debugging
+            \Log::info('getOrderItems response: ' . json_encode($response));
+            
+            return response()->json($response);
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Error in getOrderItems: ' . $e->getMessage());
+            
+            return response()->json([
+                'error' => true,
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
+        }
     }
 
     /**

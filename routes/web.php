@@ -158,6 +158,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::post('/settings', [SettingController::class, 'update'])->name('settings.update');
     Route::put('/settings/seo', [SettingController::class, 'updateSeoSettings'])->name('settings.seo.update');
     Route::put('/settings/contact', [SettingController::class, 'updateContactSettings'])->name('settings.contact.update');
+    Route::put('/settings/social', [SettingController::class, 'updateSocialSettings'])->name('settings.social.update');
     
     // Menu Management
     Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
@@ -176,7 +177,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     
     // Inventory Management
     Route::get('/inventory/{id}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'showAdjust'])->name('inventory.adjust');
-    Route::post('/inventory/{id}/update-stock', [App\Http\Controllers\Admin\InventoryController::class, 'updateStock'])->name('inventory.update-stock');
+    Route::match(['post', 'patch'], '/inventory/{id}/update-stock', [App\Http\Controllers\Admin\InventoryController::class, 'updateStock'])->name('inventory.update-stock');
     Route::get('/inventory/{id}/history', [App\Http\Controllers\Admin\InventoryController::class, 'history'])->name('inventory.history');
     Route::get('/inventory/export', [App\Http\Controllers\Admin\InventoryController::class, 'export'])->name('inventory.export');
     Route::resource('inventory', App\Http\Controllers\Admin\InventoryController::class);
@@ -232,3 +233,6 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/api/newest-products/{limit?}', [HomeController::class, 'getNewestProducts'])->name('api.newest-products');
+
+// Debug routes - remove in production
+Route::get('/debug-returns/{order}', [App\Http\Controllers\Admin\ReturnController::class, 'getOrderItems'])->name('debug.returns.get-order-items');
