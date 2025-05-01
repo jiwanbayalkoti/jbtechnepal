@@ -291,4 +291,14 @@ class OrderController extends Controller
             return back()->with('error', 'Error deleting order: ' . $e->getMessage());
         }
     }
+
+    public function getOrderItem($orderId)
+    {
+        $orderDetails = Order::join('order_items', 'orders.id', '=', 'order_items.order_id')
+        ->join('products', 'order_items.product_id', '=', 'products.id')
+        ->join('customers', 'orders.customer_id', '=', 'customers.id')
+        ->where('orders.id', $orderId)->first();
+        // dd($orderDetails);
+        return response()->json($orderDetails); 
+    }
 } 

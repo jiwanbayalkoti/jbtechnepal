@@ -164,19 +164,23 @@
                 // Get order details and items via AJAX
                 $.ajax({
                     url: `/admin/orders/${orderId}`,
-                    type: 'GET',
+                    type: 'POST',
                     dataType: 'json',
                     success: function(response) {
+                        console.log("Order details response:", response);
                         // Set hidden customer ID field
                         $('#customer_id').val(response.customer_id);
                         
                         // Update order details
                         $('#orderNumber').text(response.order_number);
-                        $('#orderDate').text(response.formatted_date);
-                        $('#orderStatus').html(`<span class="badge bg-${response.status_badge_color} text-white">${response.status}</span>`);
-                        $('#customerName').text(response.customer_name);
+                        var rawDate = response.updated_at;
+                        var formattedDate = new Date(rawDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+                        $('#orderDate').text(formattedDate);
+                        // $('#orderStatus').html(`<span class="badge bg-${response.status_badge_color} text-white">${response.status}</span>`);
+                        $('#orderStatus').text(response.status);
+                        $('#customerName').text(response.first_name + ' ' + response.last_name);
                         $('#orderTotal').text(`$${response.total}`);
-                        $('#itemCount').text(response.items_count);
+                        $('#itemCount').text(response.quantity);
                         
                         // Get returnable items via AJAX
                         // Try both route helper and direct URL construction

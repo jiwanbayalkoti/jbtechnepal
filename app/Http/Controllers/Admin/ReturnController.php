@@ -91,7 +91,7 @@ class ReturnController extends Controller
             $items = $order->items->map(function ($item) {
                 $returnedQuantity = $item->returnedQuantity();
                 $availableQuantity = $item->quantity - $returnedQuantity;
-                
+                dd($availableQuantity);
                 return [
                     'id' => $item->id,
                     'product_id' => $item->product_id,

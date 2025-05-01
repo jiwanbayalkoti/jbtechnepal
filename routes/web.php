@@ -6,7 +6,6 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CompareController;
-use App\Http\Controllers\OrderController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Auth\AdminAuthController;
 use App\Http\Controllers\Auth\UserAuthController;
@@ -194,6 +193,7 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::patch('/orders/{order}/payment', [App\Http\Controllers\Admin\OrderController::class, 'updatePayment'])->name('orders.update-payment');
     Route::post('/orders/{order}/send-email', [App\Http\Controllers\Admin\OrderController::class, 'sendEmail'])->name('orders.send-email');
     Route::resource('orders', App\Http\Controllers\Admin\OrderController::class);
+    Route::post('/orders/{orderId}', [App\Http\Controllers\Admin\OrderController::class, 'getOrderItem']);
     
     // Return Management
     Route::get('returns/get-order-items/{order}', [App\Http\Controllers\Admin\ReturnController::class, 'getOrderItems'])->name('returns.get-order-items');
