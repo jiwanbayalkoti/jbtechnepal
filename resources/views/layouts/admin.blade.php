@@ -34,6 +34,9 @@
     <link rel="stylesheet" href="{{ asset('css/admin-settings.css') }}">
     @endif
     
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
+    
     <style>
         :root {
             --bs-primary: {{ $primaryColor }};

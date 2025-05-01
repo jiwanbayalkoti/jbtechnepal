@@ -555,9 +555,24 @@
     <footer class="bg-dark text-white py-4 mt-5">
         <div class="container">
             <div class="row">
-                <div class="col-md-6">
+                <div class="col-md-3">
                     <h5>{{ $siteTitle }}</h5>
                     <p>Compare electronic products like laptops, PCs, and mobile phones to make informed purchase decisions.</p>
+                    
+                    @php
+                        $showSocialFollow = \App\Helpers\SettingsHelper::get('show_social_follow', true);
+                        $socialMedia = \App\Helpers\SettingsHelper::getSocialMedia();
+                    @endphp
+                    
+                    @if($showSocialFollow && count($socialMedia) > 0)
+                    <div class="social-links mt-3">
+                        @foreach($socialMedia as $key => $social)
+                            <a href="{{ $social['url'] }}" target="_blank" class="social-icon me-2" data-bs-toggle="tooltip" title="{{ $social['label'] }}">
+                                <i class="{{ $social['icon'] }}"></i>
+                            </a>
+                        @endforeach
+                    </div>
+                    @endif
                 </div>
                 <div class="col-md-3">
                     <h5>Quick Links</h5>
@@ -573,6 +588,46 @@
                                 </a>
                             </li>
                         @endforeach
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Contact Us</h5>
+                    @php
+                        $contactInfo = \App\Helpers\SettingsHelper::getContactInfo();
+                    @endphp
+                    
+                    <ul class="list-unstyled contact-info">
+                        @if(isset($contactInfo['phone_number']))
+                        <li class="mb-2">
+                            <i class="{{ $contactInfo['phone_number']['icon'] }} me-2"></i>
+                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $contactInfo['phone_number']['value']) }}" class="text-white">
+                                {{ $contactInfo['phone_number']['value'] }}
+                            </a>
+                        </li>
+                        @endif
+                        
+                        @if(isset($contactInfo['contact_email']))
+                        <li class="mb-2">
+                            <i class="{{ $contactInfo['contact_email']['icon'] }} me-2"></i>
+                            <a href="mailto:{{ $contactInfo['contact_email']['value'] }}" class="text-white">
+                                {{ $contactInfo['contact_email']['value'] }}
+                            </a>
+                        </li>
+                        @endif
+                        
+                        @if(isset($contactInfo['business_hours']))
+                        <li class="mb-2">
+                            <i class="{{ $contactInfo['business_hours']['icon'] }} me-2"></i>
+                            {{ $contactInfo['business_hours']['value'] }}
+                        </li>
+                        @endif
+                        
+                        @if(isset($contactInfo['address']))
+                        <li>
+                            <i class="{{ $contactInfo['address']['icon'] }} me-2"></i>
+                            {{ $contactInfo['address']['value'] }}
+                        </li>
+                        @endif
                     </ul>
                 </div>
                 <div class="col-md-3">

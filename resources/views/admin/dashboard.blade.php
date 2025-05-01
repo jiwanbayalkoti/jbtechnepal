@@ -272,7 +272,33 @@
     </div>
 </div>
 
+<!-- Documentation Row -->
 <div class="row mt-4">
+    <div class="col-md-6 mb-4">
+        <div class="card">
+            <div class="card-header bg-purple text-white d-flex align-items-center">
+                <div class="me-2">
+                    <i class="fas fa-file-alt fa-lg"></i>
+                </div>
+                <h5 class="mb-0">System Documentation</h5>
+            </div>
+            <div class="card-body">
+                <p>Access comprehensive system documentation for the Product Comparison System.</p>
+                <ul>
+                    <li>Detailed user role descriptions</li>
+                    <li>User and admin use cases</li>
+                    <li>System workflow diagrams</li>
+                    <li>Component relationship explanations</li>
+                </ul>
+                <div class="mt-3">
+                    <a href="{{ asset('docs/use_cases.html') }}" class="btn documentation-btn text-white" target="_blank">
+                        <i class="fas fa-download me-2"></i>View Use Cases Documentation
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header">
@@ -283,7 +309,9 @@
             </div>
         </div>
     </div>
+</div>
 
+<div class="row mt-4">
     <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header">
@@ -294,10 +322,8 @@
             </div>
         </div>
     </div>
-</div>
 
-<div class="row mt-4">
-    <div class="col-md-12 mb-4">
+    <div class="col-md-6 mb-4">
         <div class="card">
             <div class="card-header">
                 <h5 class="mb-0">Monthly Product Additions</h5>

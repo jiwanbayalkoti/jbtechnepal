@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Use Case Documentation - JB Tech Nepal</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eaeaea;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #4e73df;
+            letter-spacing: 0.5px;
+        }
+        
+        .subtitle {
+            font-size: 16px;
+            color: #666;
+            margin-top: 10px;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            font-size: 26px;
+            margin-top: 30px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4e73df;
+        }
+        
+        h2 {
+            color: #3498db;
+            font-size: 22px;
+            margin-top: 25px;
+        }
+        
+        h3 {
+            color: #2c3e50;
+            font-size: 18px;
+            margin-top: 20px;
+        }
+        
+        .section {
+            margin-bottom: 30px;
+        }
+        
+        .use-case {
+            background-color: #f9f9f9;
+            border-left: 4px solid #4e73df;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            border-radius: 0 4px 4px 0;
+        }
+        
+        .use-case h4 {
+            margin-top: 0;
+            color: #4e73df;
+        }
+        
+        .use-case p {
+            margin-bottom: 10px;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .table th, .table td {
+            border: 1px solid #ddd;
+            padding: 12px 15px;
+            text-align: left;
+        }
+        
+        .table th {
+            background-color: #f2f6ff;
+            color: #333;
+            font-weight: 600;
+        }
+        
+        .table tr:nth-child(even) {
+            background-color: #f8f9fc;
+        }
+        
+        .flow-diagram {
+            background-color: #f8f9fc;
+            border: 1px solid #e3e6f0;
+            border-radius: 6px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .flow-step {
+            display: flex;
+            margin-bottom: 10px;
+            align-items: center;
+        }
+        
+        .step-number {
+            background-color: #4e73df;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 15px;
+            flex-shrink: 0;
+        }
+        
+        .step-description {
+            flex-grow: 1;
+        }
+        
+        .arrow {
+            color: #4e73df;
+            font-size: 20px;
+            margin: 5px 0 5px 14px;
+        }
+        
+        footer {
+            margin-top: 50px;
+            text-align: center;
+            color: #777;
+            font-size: 14px;
+            padding-top: 20px;
+            border-top: 1px solid #eaeaea;
+        }
+        
+        .print-button {
+            display: block;
+            background-color: #4e73df;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+            border-radius: 4px;
+            margin: 30px auto;
+            width: 200px;
+            text-decoration: none;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+        }
+        
+        @media print {
+            .print-button {
+                display: none;
+            }
+            
+            body {
+                padding: 0;
+                font-size: 12px;
+            }
+            
+            h1 {
+                font-size: 20px;
+            }
+            
+            h2 {
+                font-size: 18px;
+            }
+            
+            h3 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">JB Tech Nepal</div>
+        <div class="subtitle">Use Case Documentation for Users and Administrators</div>
+    </div>
+    
+    <button onclick="window.print()" class="print-button">Print / Save as PDF</button>
+    
+    <div class="section">
+        <h1>1. Introduction</h1>
+        <p>This document outlines the use cases for the JB Tech Nepal, a comprehensive online store that specializes in electronic products such as computers, laptops, mobile phones, tablets, and accessories. The platform enables users to browse products, compare specifications, make informed purchasing decisions, and complete transactions. The system is managed by administrators who oversee product listings, user accounts, orders, and system settings.</p>
+        
+        <h2>1.1 System Overview</h2>
+        <p>The JB Tech Nepal is designed to provide customers with a convenient and informative shopping experience for electronic devices and accessories. It offers standard ecommerce functionality along with specialized features for electronics shopping, including detailed technical specifications, product comparisons, and AI-powered recommendations to help users find the best products for their needs and budget.</p>
+        
+        <h2>1.2 User Roles</h2>
+        <p>The system recognizes two primary roles:</p>
+        <ul>
+            <li><strong>Regular Users:</strong> Customers who browse electronics products, view technical specifications, compare devices, place orders, and manage their accounts.</li>
+            <li><strong>Administrators:</strong> Staff members who manage the website, including product listings, categories, customer information, orders, returns, and system settings.</li>
+        </ul>
+    </div>
+    
+    <div class="section">
+        <h1>2. User Use Cases</h1>
+        
+        <div class="use-case">
+            <h4>UC-U1: Account Management</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can create accounts, log in, update their profile information, view their order history, and manage their contact information.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User registers for a new account by providing required information</li>
+                <li>User receives confirmation email</li>
+                <li>User logs in with their credentials</li>
+                <li>User can view and edit their profile information</li>
+                <li>User can change their password</li>
+                <li>User can view their order history</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U2: Product Browsing</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can browse electronic products by category (laptops, smartphones, tablets, accessories, etc.), use search functionality, filter results by specifications (processor, RAM, storage, screen size, etc.), and view detailed product information.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User navigates to product categories from the main menu (e.g., Computers, Phones, Audio)</li>
+                <li>User can browse products within specific categories and subcategories (e.g., Gaming Laptops, Business Laptops)</li>
+                <li>User can filter products based on technical specifications (RAM, processor, storage), price range, brand, etc.</li>
+                <li>User can search for specific products using the search bar (e.g., "iPhone 13 Pro", "Dell XPS 15")</li>
+                <li>User can view detailed product pages with technical specifications, images, and pricing</li>
+                <li>User can view related products and accessories</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U3: Product Comparison</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can select multiple electronic products to compare side by side, highlighting differences in technical specifications such as processor speed, RAM capacity, display quality, and battery life.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User selects products to compare by clicking "Add to Compare" on product cards (e.g., comparing different laptop models)</li>
+                <li>User navigates to the comparison page</li>
+                <li>System displays products side by side with their technical specifications</li>
+                <li>System highlights key differences between products (e.g., better RAM in one laptop, faster processor in another)</li>
+                <li>User can filter which specifications to compare (e.g., focus only on performance specs)</li>
+                <li>User can remove products from comparison or add new ones</li>
+                <li>User can request AI-powered recommendations based on comparison criteria</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U4: Shopping Cart Management</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can add electronic products to their shopping cart, update quantities, remove items, and proceed to checkout.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User adds products to cart from product page or comparison page</li>
+                <li>User views the cart contents</li>
+                <li>User can update product quantities</li>
+                <li>User can remove products from cart</li>
+                <li>User can add recommended accessories for their selected devices</li>
+                <li>User can continue shopping or proceed to checkout</li>
+                <li>System calculates subtotal, tax, and shipping costs</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U5: Checkout Process</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can complete the purchase by providing shipping information, selecting payment methods, and confirming the order.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User enters or selects shipping address</li>
+                <li>User selects shipping method</li>
+                <li>User is offered warranty or protection plans for electronic devices</li>
+                <li>User selects payment method</li>
+                <li>User reviews order summary</li>
+                <li>User confirms the order</li>
+                <li>System processes payment</li>
+                <li>System displays order confirmation and sends confirmation email</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U6: Order Tracking</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can track the status of their electronics orders, view order details, and track shipping information.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User navigates to the order history page</li>
+                <li>User selects an order to view details</li>
+                <li>User can see order status, items, quantities, prices, and shipping information</li>
+                <li>User can track shipping if tracking information is available</li>
+                <li>User can view warranty information for purchased devices</li>
+                <li>User can print or download order invoice</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U7: Return Request</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can initiate return requests for electronic products they have purchased, providing reason (defective, not as described, etc.) and condition information.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User navigates to order details</li>
+                <li>User selects "Request Return" option</li>
+                <li>User selects items to return</li>
+                <li>User provides reason for return (e.g., defective screen, wrong model) and condition of items</li>
+                <li>User uploads photos of defective items if applicable</li>
+                <li>User submits return request</li>
+                <li>System confirms return request and provides return instructions</li>
+                <li>User can track return status</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U8: Technical Support</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can contact technical support with questions about product specifications, compatibility issues, or troubleshooting for purchased electronics.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User navigates to the support page</li>
+                <li>User views self-help resources like FAQs and troubleshooting guides</li>
+                <li>User fills out technical support form with device details, issue description, and contact information</li>
+                <li>User submits the form</li>
+                <li>System confirms receipt of support request</li>
+                <li>User receives auto-reply email with support ticket number</li>
+                <li>User can view support ticket history in their account</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-U9: AI-Powered Product Recommendation</h4>
+            <p><strong>Actor:</strong> Regular User</p>
+            <p><strong>Description:</strong> Users can request and receive AI-generated recommendations for electronic products based on their preferences, usage requirements, and budget constraints.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>User navigates to the product recommendation tool</li>
+                <li>User specifies their requirements (e.g., laptop for gaming or business, budget range)</li>
+                <li>User specifies must-have features (e.g., minimum RAM, dedicated graphics)</li>
+                <li>System analyzes user preferences and available product data</li>
+                <li>System presents personalized recommendations with explanations (e.g., "This laptop is recommended for its superior gaming performance")</li>
+                <li>User can refine criteria for better recommendations</li>
+                <li>User can add recommended products to comparison or cart</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h1>3. Administrator Use Cases</h1>
+        
+        <div class="use-case">
+            <h4>UC-A1: Dashboard Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can access a dashboard providing an overview of system statistics, recent orders, customer activity, and alerts.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin logs into the administrative panel</li>
+                <li>System displays dashboard with key metrics (sales, top-selling electronics, low stock alerts)</li>
+                <li>Admin can view recent orders, new customers, and system alerts</li>
+                <li>Admin can view performance metrics by product category (computers, phones, accessories)</li>
+                <li>Admin can navigate to various management sections from the dashboard</li>
+                <li>Admin can customize dashboard view and widgets</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A2: Product Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can add, edit, and remove electronic products, including detailed technical specifications, images, pricing, and inventory.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to product management section</li>
+                <li>Admin can view list of all products with filtering and search options</li>
+                <li>Admin can create new products with detailed technical specifications (processor, RAM, storage, display, etc.)</li>
+                <li>Admin can upload multiple product images showing different angles and features</li>
+                <li>Admin can set product pricing, discounts, and availability</li>
+                <li>Admin can manage product inventory and stock levels</li>
+                <li>Admin can batch import products from manufacturer databases via API or CSV upload</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A3: Category Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can create, edit, and organize electronic product categories and subcategories, including specification types for each category.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to category management section</li>
+                <li>Admin can view category hierarchy (e.g., Electronics > Computers > Laptops > Gaming Laptops)</li>
+                <li>Admin can create new categories and subcategories</li>
+                <li>Admin can edit category details, including name, description, and images</li>
+                <li>Admin can define specification types for each category (e.g., processor speed for computers, camera resolution for phones)</li>
+                <li>Admin can organize the order of categories and specifications</li>
+                <li>Admin can deactivate or delete categories (if not in use)</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A4: Order Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can view, process, and manage customer orders for electronic products, including order status updates, payment verification, and shipping information.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to order management section</li>
+                <li>Admin can view all orders with filtering options (by date, status, customer, etc.)</li>
+                <li>Admin can view detailed order information including purchased electronic devices</li>
+                <li>Admin can verify serial numbers for high-value electronics</li>
+                <li>Admin can update order status (processing, shipped, delivered, etc.)</li>
+                <li>Admin can update payment status</li>
+                <li>Admin can add tracking information</li>
+                <li>Admin can generate and print invoices</li>
+                <li>Admin can communicate with customer about the order</li>
+                <li>Admin can export order data</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A5: Return Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can process return requests for electronic products, approve or reject returns, assess item condition, and process refunds.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to return management section</li>
+                <li>Admin can view all return requests with status information</li>
+                <li>Admin can review detailed return request with reason and item condition</li>
+                <li>Admin can review photos of defective items submitted by customers</li>
+                <li>Admin can approve or reject return requests</li>
+                <li>Admin can update return status (approved, received, inspected, processed)</li>
+                <li>Admin can process refunds, exchanges, or repairs for defective electronics</li>
+                <li>Admin can add notes and communicate with customer</li>
+                <li>Admin can update inventory when items are returned</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A6: Customer Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can view and manage customer accounts, including account details, purchase history, and communication.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to customer management section</li>
+                <li>Admin can view list of all customers with search and filtering options</li>
+                <li>Admin can view detailed customer information and order history</li>
+                <li>Admin can view customer's purchased devices and warranty information</li>
+                <li>Admin can edit customer information</li>
+                <li>Admin can reset customer passwords</li>
+                <li>Admin can enable/disable customer accounts</li>
+                <li>Admin can view and respond to customer messages</li>
+                <li>Admin can export customer data</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A7: Inventory Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can manage electronic product inventory, update stock levels, receive notifications for low stock, and view inventory history.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to inventory management section</li>
+                <li>Admin can view current stock levels for all electronic products</li>
+                <li>Admin can update stock quantities manually</li>
+                <li>Admin can track serial numbers for high-value electronics</li>
+                <li>Admin can adjust inventory (add or remove stock)</li>
+                <li>Admin can set low stock thresholds for notifications</li>
+                <li>Admin can view inventory history for each product</li>
+                <li>Admin can export inventory data</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A8: Content Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can manage website content, including promotional banners for new electronic devices, tech news, and deals.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to content management section</li>
+                <li>Admin can create, edit, and publish web pages</li>
+                <li>Admin can manage banners for new product launches (e.g., "New iPhone Release")</li>
+                <li>Admin can create tech guides and tutorials for popular products</li>
+                <li>Admin can setup and manage advertisements for featured electronics</li>
+                <li>Admin can track advertisement performance</li>
+                <li>Admin can schedule content publication</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A9: Settings Management</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Administrators can configure various system settings, including general settings, SEO settings, contact information, and social media integration.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to settings management section</li>
+                <li>Admin can configure general system settings</li>
+                <li>Admin can manage SEO settings for better search engine visibility</li>
+                <li>Admin can update contact information displayed on the website</li>
+                <li>Admin can configure social media links and sharing options</li>
+                <li>Admin can manage email templates for various notifications</li>
+                <li>Admin can configure payment and shipping options</li>
+            </ol>
+        </div>
+        
+        <div class="use-case">
+            <h4>UC-A10: User Administration</h4>
+            <p><strong>Actor:</strong> Administrator</p>
+            <p><strong>Description:</strong> Admin users can manage other administrators and staff accounts, including access permissions and roles.</p>
+            <p><strong>Flow:</strong></p>
+            <ol>
+                <li>Admin navigates to user administration section</li>
+                <li>Admin can view list of all staff accounts</li>
+                <li>Admin can create new staff accounts with specific roles</li>
+                <li>Admin can assign specialized roles (e.g., technical support specialist, product manager)</li>
+                <li>Admin can edit staff information and permissions</li>
+                <li>Admin can disable or delete staff accounts</li>
+                <li>Admin can assign roles with different levels of access</li>
+                <li>Admin can view staff activity logs</li>
+            </ol>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h1>4. Use Case Flow Diagrams</h1>
+        
+        <h2>4.1 Product Comparison Flow</h2>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-description">User browses electronics category (e.g., laptops, smartphones)</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-description">User adds products to comparison (e.g., multiple laptop models)</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-description">User navigates to comparison page</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-description">System displays products side by side with technical specifications</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-description">System highlights key differences (e.g., processor speed, RAM, battery life)</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-description">User can request AI recommendations based on technical requirements</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-description">User adds preferred electronic device to cart or continues browsing</div>
+            </div>
+        </div>
+        
+        <h2>4.2 Order Processing Flow</h2>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-description">Customer places order for electronic products</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-description">System creates order with "pending" status</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-description">Admin receives notification of new order</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-description">Admin verifies payment and updates order status to "processing"</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-description">System updates inventory quantities for electronic products</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-description">Admin records serial numbers for high-value electronics</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-description">Admin prepares order for shipping and updates status to "shipped"</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">8</div>
+                <div class="step-description">System sends shipping notification to customer with tracking info</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">9</div>
+                <div class="step-description">Admin updates order status to "delivered" when delivery is confirmed</div>
+            </div>
+        </div>
+        
+        <h2>4.3 Electronic Product Return Flow</h2>
+        <div class="flow-diagram">
+            <div class="flow-step">
+                <div class="step-number">1</div>
+                <div class="step-description">Customer initiates return request for electronic device</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">2</div>
+                <div class="step-description">Customer specifies return reason (e.g., defective screen, wrong specs)</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">3</div>
+                <div class="step-description">Customer uploads photos of defective product if applicable</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">4</div>
+                <div class="step-description">Admin reviews return request and technical issues</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">5</div>
+                <div class="step-description">Admin approves return and provides return shipping label</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">6</div>
+                <div class="step-description">Admin marks return as "received" when device arrives back</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">7</div>
+                <div class="step-description">Admin inspects electronic device and verifies issues</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">8</div>
+                <div class="step-description">Admin processes refund, exchange, or repair as appropriate</div>
+            </div>
+            <div class="arrow">↓</div>
+            <div class="flow-step">
+                <div class="step-number">9</div>
+                <div class="step-description">System updates inventory and order status</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="section">
+        <h1>5. Use Case Relationships</h1>
+        
+        <h2>5.1 User Use Case Relationships</h2>
+        <p>The following table shows how user use cases relate to each other:</p>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Use Case</th>
+                    <th>Related Use Cases</th>
+                    <th>Relationship</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>UC-U1: Account Management</td>
+                    <td>UC-U6: Order Tracking</td>
+                    <td>Order history for electronic purchases is viewed through the account management interface</td>
+                </tr>
+                <tr>
+                    <td>UC-U2: Product Browsing</td>
+                    <td>UC-U3: Product Comparison</td>
+                    <td>Electronic products are selected for comparison during browsing</td>
+                </tr>
+                <tr>
+                    <td>UC-U2: Product Browsing</td>
+                    <td>UC-U9: AI-Powered Recommendation</td>
+                    <td>Product recommendations can be triggered while browsing categories</td>
+                </tr>
+                <tr>
+                    <td>UC-U3: Product Comparison</td>
+                    <td>UC-U4: Shopping Cart Management</td>
+                    <td>Products can be added to cart directly from comparison view</td>
+                </tr>
+                <tr>
+                    <td>UC-U3: Product Comparison</td>
+                    <td>UC-U9: AI-Powered Recommendation</td>
+                    <td>AI recommendations can be generated from comparison of technical specifications</td>
+                </tr>
+                <tr>
+                    <td>UC-U4: Shopping Cart Management</td>
+                    <td>UC-U5: Checkout Process</td>
+                    <td>Shopping cart containing electronic products is reviewed during checkout</td>
+                </tr>
+                <tr>
+                    <td>UC-U5: Checkout Process</td>
+                    <td>UC-U6: Order Tracking</td>
+                    <td>Orders created during checkout can be tracked</td>
+                </tr>
+                <tr>
+                    <td>UC-U6: Order Tracking</td>
+                    <td>UC-U7: Return Request</td>
+                    <td>Return requests for electronic devices are initiated from order details</td>
+                </tr>
+                <tr>
+                    <td>UC-U6: Order Tracking</td>
+                    <td>UC-U8: Technical Support</td>
+                    <td>Technical support may be contacted regarding specific electronic devices</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2>5.2 Administrator Use Case Relationships</h2>
+        <p>The following table shows how administrator use cases relate to each other:</p>
+        
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Use Case</th>
+                    <th>Related Use Cases</th>
+                    <th>Relationship</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>UC-A1: Dashboard Management</td>
+                    <td>All other admin use cases</td>
+                    <td>Dashboard provides overview of electronics sales and navigation to all areas</td>
+                </tr>
+                <tr>
+                    <td>UC-A2: Product Management</td>
+                    <td>UC-A3: Category Management</td>
+                    <td>Electronic products are assigned to appropriate categories (laptops, phones, etc.)</td>
+                </tr>
+                <tr>
+                    <td>UC-A2: Product Management</td>
+                    <td>UC-A7: Inventory Management</td>
+                    <td>Product stock levels are managed through inventory management</td>
+                </tr>
+                <tr>
+                    <td>UC-A4: Order Management</td>
+                    <td>UC-A6: Customer Management</td>
+                    <td>Orders for electronic products are associated with customer accounts</td>
+                </tr>
+                <tr>
+                    <td>UC-A4: Order Management</td>
+                    <td>UC-A7: Inventory Management</td>
+                    <td>Order fulfillment affects inventory levels of electronic products</td>
+                </tr>
+                <tr>
+                    <td>UC-A4: Order Management</td>
+                    <td>UC-A5: Return Management</td>
+                    <td>Return requests for electronic devices are tied to specific orders</td>
+                </tr>
+                <tr>
+                    <td>UC-A5: Return Management</td>
+                    <td>UC-A7: Inventory Management</td>
+                    <td>Returned electronic items affect inventory levels</td>
+                </tr>
+                <tr>
+                    <td>UC-A8: Content Management</td>
+                    <td>UC-A9: Settings Management</td>
+                    <td>System settings may affect content display for electronics promotions</td>
+                </tr>
+                <tr>
+                    <td>UC-A9: Settings Management</td>
+                    <td>UC-A10: User Administration</td>
+                    <td>System settings may include user permission configurations</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    
+    <div class="section">
+        <h1>6. Conclusion</h1>
+        <p>This document has outlined the primary use cases for both regular users and administrators of the JB Tech Nepal. These use cases serve as a foundation for understanding the system's functionality and how different components interact with each other.</p>
+        
+        <p>The JB Tech Nepal combines traditional ecommerce capabilities with specialized features for electronic products, providing a comprehensive platform for both customers and administrators. Users can browse electronic products, view detailed technical specifications, make informed comparisons, receive AI-powered recommendations, and complete purchases. Administrators have the tools needed to manage products, categories, orders, returns, inventory, customers, content, and system settings.</p>
+        
+        <p>As the system evolves, additional use cases may be identified and existing ones may be refined to better meet the needs of all stakeholders. This living document should be updated regularly to reflect changes in system functionality and requirements.</p>
+    </div>
+    
+    <footer>
+        <p>JB Tech Nepal - Use Case Documentation</p>
+        <p>&copy; 2025 JB Tech Nepal. All rights reserved.</p>
+    </footer>
+    
+    <button onclick="window.print()" class="print-button">Print / Save as PDF</button>
+    
+    <script>
+        // Add any JavaScript here if needed for interactivity
+    </script>
+</body>
+</html> 

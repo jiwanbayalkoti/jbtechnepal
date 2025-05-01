@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Setting;
+use App\Helpers\SettingsHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -72,6 +73,9 @@ class SettingController extends Controller
                 Setting::set($key, $value);
             }
             
+            // Clear settings cache
+            SettingsHelper::clearCache();
+            
             return redirect()->back()->with('success', 'Settings updated successfully');
         } catch (\Exception $e) {
             \Log::error('Error updating settings: ' . $e->getMessage());
@@ -122,6 +126,9 @@ class SettingController extends Controller
                 }
             }
             
+            // Clear settings cache
+            SettingsHelper::clearCache();
+            
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
@@ -160,6 +167,9 @@ class SettingController extends Controller
                     Setting::set($key, $value);
                 }
             }
+            
+            // Clear settings cache
+            SettingsHelper::clearCache();
             
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -210,6 +220,9 @@ class SettingController extends Controller
                     }
                 }
             }
+            
+            // Clear settings cache
+            SettingsHelper::clearCache();
             
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([

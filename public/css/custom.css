@@ -1,0 +1,74 @@
+/* Custom CSS for Product Comparison System */
+
+.bg-purple {
+    background-color: #6f42c1 !important;
+    color: #fff !important;
+}
+
+/* Documentation card styles */
+.card .card-header.bg-purple {
+    border-bottom: 0;
+}
+
+.documentation-btn {
+    background-color: #6f42c1;
+    border-color: #6f42c1;
+    transition: all 0.3s ease;
+}
+
+.documentation-btn:hover {
+    background-color: #5a32a3;
+    border-color: #5a32a3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Footer Styles */
+.social-links .social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.social-links .social-icon:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-3px);
+    color: #fff;
+}
+
+.contact-info li {
+    margin-bottom: 10px;
+}
+
+.contact-info a {
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.contact-info a:hover {
+    color: #e9ecef !important;
+    text-decoration: underline;
+}
+
+footer h5 {
+    position: relative;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+}
+
+footer h5:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 40px;
+    height: 2px;
+    background-color: rgba(255, 255, 255, 0.5);
+} 
