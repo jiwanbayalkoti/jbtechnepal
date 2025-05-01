@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use App\Models\SubCategory;
 
 class ProductController extends Controller
 {
@@ -22,7 +23,7 @@ class ProductController extends Controller
             $query->where('category_id', $request->category);
             
             // Load subcategories for the selected category
-            $subcategories = \App\Models\SubCategory::where('category_id', $request->category)
+            $subcategories = SubCategory::where('category_id', $request->category)
                 ->orderBy('name')
                 ->get();
         } else {
@@ -452,7 +453,7 @@ class ProductController extends Controller
         $categories = Category::orderBy('name')->get();
         
         // Get subcategories for the product's category
-        $subcategories = \App\Models\SubCategory::where('category_id', $product->category_id)
+        $subcategories = SubCategory::where('category_id', $product->category_id)
             ->orderBy('name')
             ->get();
         
@@ -506,10 +507,9 @@ class ProductController extends Controller
             ], 400);
         }
         
-        $subcategories = \App\Models\SubCategory::where('category_id', $categoryId)
+        $subcategories = SubCategory::where('category_id', $categoryId)
             ->orderBy('name')
             ->get();
-        
         return response()->json([
             'success' => true,
             'subcategories' => $subcategories

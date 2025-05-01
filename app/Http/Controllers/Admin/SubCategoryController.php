@@ -100,7 +100,11 @@ class SubCategoryController extends Controller
     public function show(string $id)
     {
         $subcategory = SubCategory::with('category')->findOrFail($id);
-        return view('admin.subcategories.show', compact('subcategory'));
+        // return view('admin.subcategories.show', compact('subcategory'));
+         return response()->json([
+            'success' => true,
+            'subcategory' => $subcategory
+        ]);
     }
 
     /**

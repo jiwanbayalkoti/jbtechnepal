@@ -130,13 +130,15 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // Categories
     Route::resource('categories', CategoryController::class);
     
-    // Subcategories
+    // Subcategories AJAX route (must be before resource route to avoid conflict)
+    Route::get('subcategories/{categoryId}', [App\Http\Controllers\Admin\ProductController::class, 'getSubcategories'])->name('subcategories.get');
+
+    // Subcategories resource routes
     Route::resource('subcategories', App\Http\Controllers\Admin\SubCategoryController::class);
-    
+
     // Products
     Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
     Route::get('specification-types/{categoryId}', [App\Http\Controllers\Admin\ProductController::class, 'getSpecificationTypes'])->name('specification.types');
-    Route::get('subcategories/{categoryId}', [App\Http\Controllers\Admin\ProductController::class, 'getSubcategories'])->name('subcategories.get');
     
     // Specification Types
     Route::get('category/{categoryId}/specifications', [AdminController::class, 'specificationTypes'])->name('specifications');

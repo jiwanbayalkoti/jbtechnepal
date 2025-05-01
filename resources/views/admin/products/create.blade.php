@@ -8,7 +8,7 @@
         <h5 class="mb-0">Add New Product</h5>
     </div>
     <div class="card-body">
-        <form action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
+        <form id="createProductForm" action="{{ route('admin.products.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             
             <div class="row">

@@ -215,22 +215,26 @@ class ReturnController extends Controller
         try {
             DB::beginTransaction();
 
+            // Determine old and new status
             $oldStatus = $return->status;
-            $return->status = $request->status;
+            $newStatus = $request->status;
+            $return->status = $newStatus;
             $return->admin_notes = $request->admin_notes;
             
-            // If status changed to processed or completed, handle refund details
-            if (($request->status == 'processed' || $request->status == 'completed') && 
-                ($oldStatus != 'processed' && $oldStatus != 'completed')) {
-                
+            // Handle refund details for processed or completed status
+            if ($newStatus === 'processed' || $newStatus === 'completed') {
+                // Validate refund inputs
                 $request->validate([
                     'refund_method' => 'required|string|in:credit,original_payment,exchange',
                     'refund_amount' => 'required|numeric|min:0',
                 ]);
-                
+                // Update refund details
                 $return->refund_method = $request->refund_method;
                 $return->refund_amount = $request->refund_amount;
-                $return->processed_at = Carbon::now();
+                // Set processed_at timestamp if transitioning into processed/completed
+                if ($oldStatus !== 'processed' && $oldStatus !== 'completed') {
+                    $return->processed_at = Carbon::now();
+                }
             }
             
             // Update tracking number if provided

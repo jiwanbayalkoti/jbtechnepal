@@ -461,6 +461,7 @@
             }
             
             if (categoryId) {
+                console.log(categoryId);
                 // Show loading indicator in the subcategory dropdown
                 const loadingOption = document.createElement('option');
                 loadingOption.textContent = 'Loading...';
@@ -474,7 +475,7 @@
                         // Remove loading option
                         subcategorySelect.remove(subcategorySelect.options.length - 1);
                         
-                        if (data.success && data.subcategories) {
+                        if (data && data.subcategories) {
                             // Add new options
                             data.subcategories.forEach(subcategory => {
                                 const option = document.createElement('option');
@@ -488,9 +489,14 @@
                                 noOption.textContent = 'No subcategories available';
                                 noOption.disabled = true;
                                 subcategorySelect.appendChild(noOption);
+                                }
+                            } else {
+                                const errorOption = document.createElement('option');
+                                errorOption.textContent = 'Error: Invalid data received';
+                                errorOption.disabled = true;
+                                subcategorySelect.appendChild(errorOption);
                             }
-                        }
-                    })
+                        })
                     .catch(error => {
                         console.error('Error fetching subcategories:', error);
                         // Remove loading option on error
