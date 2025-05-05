@@ -45,13 +45,24 @@ class SettingsServiceProvider extends ServiceProvider
         
         if (Schema::hasTable('menu_items')) {
             // Share menu items with all views
-            $mainMenu = Cache::remember('main_menu', 3600, function () {
+            $mainMenu = Cache::remember('main_menu', 300, function () {
                 return MenuItem::getMenuItems('main');
             });
             
-            $footerMenu = Cache::remember('footer_menu', 3600, function () {
+            $footerMenu = Cache::remember('footer_menu', 300, function () {
                 return MenuItem::getMenuItems('footer');
             });
+            
+            // Check if we have any cached menu item changes
+            if (Cache::has('menu_updated')) {
+                Cache::forget('main_menu');
+                Cache::forget('footer_menu');
+                Cache::forget('menu_updated');
+                
+                // Reload the fresh data
+                $mainMenu = MenuItem::getMenuItems('main');
+                $footerMenu = MenuItem::getMenuItems('footer');
+            }
             
             View::share('mainMenu', $mainMenu);
             View::share('footerMenu', $footerMenu);

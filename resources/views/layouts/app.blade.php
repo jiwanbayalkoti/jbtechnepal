@@ -1,5 +1,6 @@
 @php
     use Illuminate\Support\Facades\Storage;
+    use Illuminate\Support\Facades\Cache;
     $siteTitle = \App\Models\Setting::get('site_title', config('app.name', 'Product Compare'));
     $siteLogo = \App\Models\Setting::get('site_logo');
     $favicon = \App\Models\Setting::get('favicon');
@@ -19,6 +20,11 @@
     $sliderCount = (int)\App\Models\Setting::get('product_slider_count', 10);
     $sliderBgColor = \App\Models\Setting::get('product_slider_bg_color', '#f8f9fa');
     $sliderAutoplay = (bool)\App\Models\Setting::get('product_slider_autoplay', true);
+    
+    // Load brands for mega menu
+    $allBrands = Cache::remember('all_brands', 300, function () {
+        return \App\Models\Brand::where('is_active', true)->orderBy('name')->get();
+    });
 @endphp
 <!DOCTYPE html>
 <html lang="en">
@@ -39,6 +45,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/apexcharts@3.40.0/dist/apexcharts.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
     <link rel="stylesheet" href="{{ asset('css/banner-styles.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/custom.css') }}">
     @if(request()->routeIs('about'))
     <link rel="stylesheet" href="{{ asset('css/about.css') }}">
     @endif
@@ -104,6 +111,101 @@
         
         .promotional-banner .close-banner:hover {
             opacity: 1;
+        }
+        
+        /* Mega Menu Styles */
+        .mega-menu {
+            width: 100%;
+            left: 0;
+            right: 0;
+            padding: 1.5rem 0;
+            border-radius: 0;
+            border-top: 3px solid var(--bs-primary);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .mega-menu-column {
+            padding: 0 1.5rem;
+        }
+        
+        .mega-menu-header {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: var(--bs-primary);
+        }
+        
+        .mega-menu .dropdown-item {
+            padding: 8px 5px;
+            font-size: 0.95rem;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .mega-menu .dropdown-item:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            transform: translateX(3px);
+        }
+        
+        .mega-menu .dropdown-item i {
+            width: 20px;
+            text-align: center;
+            margin-right: 5px;
+            font-size: 0.9em;
+        }
+        
+        .mega-menu .brand-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        
+        .mega-menu .brand-item {
+            padding: 5px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        
+        .mega-menu .brand-item:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+            transform: translateY(-2px);
+        }
+        
+        .mega-menu .brand-logo {
+            height: 40px;
+            width: 40px;
+            object-fit: contain;
+            margin-bottom: 5px;
+        }
+        
+        .mega-menu .brand-name {
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin: 0;
+        }
+        
+        .mega-menu .see-all {
+            display: block;
+            text-align: right;
+            margin-top: 10px;
+            font-weight: 500;
+            color: var(--bs-primary);
+        }
+        
+        /* Position the dropdown to show on hover */
+        .dropdown-mega:hover .dropdown-menu {
+            display: block;
+        }
+        
+        /* Makes the dropdown stay open while hovering over it */
+        .dropdown-mega .dropdown-menu:hover {
+            display: block;
         }
         
         .compare-badge {
@@ -383,18 +485,63 @@
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                     @foreach($mainMenu as $menuItem)
-                        @if($menuItem->children->isEmpty())
+                        @if($menuItem->children->isEmpty() && $menuItem->name !== 'Brands')
                             <li class="nav-item">
                                 <a class="nav-link {{ request()->routeIs($menuItem->route_name) ? 'active' : '' }}" 
-                                   href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}">
+                                   href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
                                     @if($menuItem->icon)
                                         <i class="{{ $menuItem->icon }} me-1"></i>
                                     @endif
                                     {{ $menuItem->name }}
                                 </a>
                             </li>
+                        @elseif($menuItem->name === 'Brands')
+                            <li class="nav-item dropdown dropdown-mega position-static">
+                                <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" 
+                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-trademark me-1"></i>
+                                    Brands
+                                </a>
+                                <div class="dropdown-menu mega-menu p-4" aria-labelledby="brandsDropdown">
+                                    <div class="container">
+                                        <div class="row">
+                                            <div class="col-md-9">
+                                                <h5 class="mega-menu-header">Popular Brands</h5>
+                                                <div class="brand-grid">
+                                                    @foreach($allBrands->take(15) as $brand)
+                                                        <a href="{{ route('brand.show', $brand->slug) }}" class="brand-item">
+                                                            @if($brand->logo)
+                                                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-logo">
+                                                            @else
+                                                                <div class="brand-logo d-flex align-items-center justify-content-center bg-light rounded-circle">
+                                                                    <i class="fas fa-trademark text-primary"></i>
+                                                                </div>
+                                                            @endif
+                                                            <span class="brand-name">{{ $brand->name }}</span>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                                <a href="{{ route('brands.all') }}" class="see-all">See all brands <i class="fas fa-arrow-right ms-1"></i></a>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <h5 class="mega-menu-header">Featured</h5>
+                                                <div class="card border-0 shadow-sm">
+                                                    @if($allBrands->isNotEmpty() && $allBrands->first()->logo)
+                                                        <img src="{{ asset('storage/' . $allBrands->first()->logo) }}" class="card-img-top p-3" alt="Featured Brand">
+                                                    @endif
+                                                    <div class="card-body">
+                                                        <h6 class="card-title">Browse by Category</h6>
+                                                        <p class="card-text small">Find the best brands in each category for your needs.</p>
+                                                        <a href="{{ route('categories') }}" class="btn btn-sm btn-primary">Explore Categories</a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
                         @else
-                            <li class="nav-item dropdown">
+                            <li class="nav-item dropdown dropdown-mega position-static">
                                 <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown{{ $menuItem->id }}" 
                                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                     @if($menuItem->icon)
@@ -402,25 +549,58 @@
                                     @endif
                                     {{ $menuItem->name }}
                                 </a>
-                                <ul class="dropdown-menu" aria-labelledby="navbarDropdown{{ $menuItem->id }}">
-                                    @foreach($menuItem->children as $child)
-                                        <li>
-                                            <a class="dropdown-item" 
-                                               href="{{ $child->url ?? ($child->route_name ? route($child->route_name) : '#') }}">
-                                                @if($child->icon)
-                                                    <i class="{{ $child->icon }} me-1"></i>
-                                                @endif
-                                                {{ $child->name }}
-                                            </a>
-                                        </li>
-                                    @endforeach
-                                </ul>
+                                <div class="dropdown-menu mega-menu p-4" aria-labelledby="navbarDropdown{{ $menuItem->id }}">
+                                    <div class="container">
+                                        <div class="row">
+                                            @if($menuItem->children->count() > 0)
+                                                <div class="col-md-9">
+                                                    <div class="row">
+                                                        @foreach($menuItem->children->chunk(4) as $chunk)
+                                                            <div class="col-md-4 mega-menu-column">
+                                                                @foreach($chunk as $child)
+                                                                    <a class="dropdown-item" 
+                                                                       href="{{ $child->is_dynamic_page ? route('dynamic.page', $child->slug) : ($child->url ?? ($child->route_name ? route($child->route_name) : '#')) }}">
+                                                                        @if($child->icon)
+                                                                            <i class="{{ $child->icon }}"></i>
+                                                                        @endif
+                                                                        {{ $child->name }}
+                                                                    </a>
+                                                                @endforeach
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <div class="p-3 bg-light rounded">
+                                                        <h5 class="mega-menu-header">{{ $menuItem->name }}</h5>
+                                                        <p class="mb-2 small">Explore all options in our {{ strtolower($menuItem->name) }} section.</p>
+                                                        @if($menuItem->category_id && $menuItem->category && $menuItem->category->slug)
+                                                            <a href="{{ route('category.all', ['slug' => $menuItem->category->slug]) }}" class="btn btn-sm btn-primary">
+                                                                View All <i class="fas fa-arrow-right ms-1"></i>
+                                                            </a>
+                                                        @elseif($menuItem->slug)
+                                                            <a href="{{ route('category.all', ['slug' => $menuItem->slug]) }}" class="btn btn-sm btn-primary">
+                                                                View All <i class="fas fa-arrow-right ms-1"></i>
+                                                            </a>
+                                                        @else
+                                                            <a href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}" class="btn btn-sm btn-primary">
+                                                                View All <i class="fas fa-arrow-right ms-1"></i>
+                                                            </a>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <div class="col-12 text-center py-4">
+                                                    <p>No items found in this category.</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
                             </li>
                         @endif
                     @endforeach
                 </ul>
-                
-               
                 
                 <div class="d-flex">
                     @auth
@@ -580,7 +760,7 @@
                         @foreach($footerMenu as $menuItem)
                             <li>
                                 <a class="text-white" 
-                                   href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}">
+                                   href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
                                     @if($menuItem->icon)
                                         <i class="{{ $menuItem->icon }} me-1"></i>
                                     @endif

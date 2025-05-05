@@ -6,7 +6,7 @@
 <div class="container">
     <h1 class="mb-4">Shopping Cart</h1>
     
-    @if(count($cartItems) > 0)
+    @if(isset($products) && count($products) > 0)
         <div class="row">
             <div class="col-lg-8">
                 <div class="card shadow-sm mb-4">
@@ -27,7 +27,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($cartItems as $id => $item)
+                                    @foreach($products as $id => $item)
                                         <tr>
                                             <td>
                                                 <img src="{{ $item['product']->primary_image ? 
@@ -63,7 +63,7 @@
                                                     </button>
                                                 </form>
                                             </td>
-                                            <td>${{ number_format($item['total'], 2) }}</td>
+                                            <td>${{ number_format($item['subtotal'], 2) }}</td>
                                             <td>
                                                 <form action="{{ route('cart.remove') }}" method="POST">
                                                     @csrf
@@ -90,7 +90,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between mb-3">
                             <span>Subtotal:</span>
-                            <span>${{ number_format($subtotal, 2) }}</span>
+                            <span>${{ number_format($total, 2) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-3">
                             <span>Shipping:</span>
@@ -98,12 +98,12 @@
                         </div>
                         <div class="d-flex justify-content-between mb-3">
                             <span>Tax (5%):</span>
-                            <span>${{ number_format($subtotal * 0.05, 2) }}</span>
+                            <span>${{ number_format($total * 0.05, 2) }}</span>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between mb-3 fw-bold">
                             <span>Total:</span>
-                            <span>${{ number_format($subtotal + 10.00 + ($subtotal * 0.05), 2) }}</span>
+                            <span>${{ number_format($total + 10.00 + ($total * 0.05), 2) }}</span>
                         </div>
                         <a href="{{ route('checkout.index') }}" class="btn btn-success w-100">
                             <i class="fas fa-credit-card me-2"></i>Proceed to Checkout

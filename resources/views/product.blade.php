@@ -20,15 +20,15 @@
                 <!-- Main Image Display -->
                 <div class="main-image-container text-center mb-3">
                     <div class="product-image-container position-relative">
-                        @if($product->primary_image)
-                            <img src="{{ Storage::url($product->primary_image->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
-                        @elseif($product->images->isNotEmpty())
-                            <img src="{{ Storage::url($product->images->first()->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
-                        @else
-                            <div class="py-5">
-                                <i class="fas fa-laptop fa-7x text-secondary"></i>
-                            </div>
-                        @endif
+                    @if($product->primary_image)
+                        <img src="{{ Storage::url($product->primary_image->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
+                    @elseif($product->images->isNotEmpty())
+                        <img src="{{ Storage::url($product->images->first()->path) }}" class="img-fluid main-product-image" alt="{{ $product->name }}" id="mainImage">
+                    @else
+                        <div class="py-5">
+                            <i class="fas fa-laptop fa-7x text-secondary"></i>
+                        </div>
+                    @endif
                         <div class="zoom-hint">
                             <i class="fas fa-search me-1"></i>Hover to zoom
                         </div>

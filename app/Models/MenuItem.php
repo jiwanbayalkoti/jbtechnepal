@@ -23,6 +23,10 @@ class MenuItem extends Model
         'active',
         'order',
         'parent_id',
+        'category_id',
+        'slug',
+        'content',
+        'is_dynamic_page',
     ];
 
     /**
@@ -33,6 +37,7 @@ class MenuItem extends Model
     protected $casts = [
         'active' => 'boolean',
         'order' => 'integer',
+        'is_dynamic_page' => 'boolean',
     ];
 
     /**
@@ -80,5 +85,25 @@ class MenuItem extends Model
                 $query->active()->orderBy('order');
             }])
             ->get();
+    }
+
+    /**
+     * Get the related category if this menu item represents a category.
+     */
+    public function category()
+    {
+        return $this->belongsTo(Category::class, 'category_id');
+    }
+
+    /**
+     * Get the dynamic page URL if this menu item is a dynamic page
+     */
+    public function getDynamicPageUrlAttribute()
+    {
+        if ($this->is_dynamic_page && $this->slug) {
+            return route('dynamic.page', $this->slug);
+        }
+        
+        return null;
     }
 }

@@ -348,4 +348,168 @@ class ProductController extends Controller
             'specValues'
         ));
     }
+
+    /**
+     * Display all products from a specific category with filtering options.
+     * Used by the "View All" link in the mega menu.
+     *
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function categoryProducts(string $slug, Request $request)
+    {
+        // Find the category by slug
+        $category = Category::where('slug', $slug)->firstOrFail();
+        
+        // Start query with the category
+        $query = Product::where('category_id', $category->id)
+                        ->where('is_active', true)
+                        ->with(['category', 'subcategory', 'images']);
+        
+        // Apply subcategory filter
+        if ($request->filled('subcategory')) {
+            $query->where('subcategory_id', $request->subcategory);
+        }
+        
+        // Apply brand filter
+        if ($request->filled('brand')) {
+            $query->where('brand', $request->brand);
+        }
+        
+        // Apply price range filter
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+        
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        if (in_array($sortBy, ['name', 'price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+        }
+        
+        // Get the products with pagination
+        $products = $query->paginate(12)->withQueryString();
+        
+        // Get subcategories for the category
+        $subcategories = \App\Models\SubCategory::where('category_id', $category->id)
+                                                ->orderBy('name')
+                                                ->get();
+        
+        // Get unique brands for this category
+        $brands = Product::where('category_id', $category->id)
+                         ->where('is_active', true)
+                         ->distinct()
+                         ->pluck('brand')
+                         ->filter()
+                         ->sort();
+        
+        // Get price range for the category
+        $priceRange = [
+            'min' => Product::where('category_id', $category->id)
+                           ->where('is_active', true)
+                           ->min('price') ?? 0,
+            'max' => Product::where('category_id', $category->id)
+                           ->where('is_active', true)
+                           ->max('price') ?? 1000
+        ];
+        
+        return view('products.category', compact(
+            'category', 
+            'products', 
+            'subcategories', 
+            'brands', 
+            'priceRange',
+            'sortBy',
+            'sortDir'
+        ));
+    }
+
+    /**
+     * Display products by brand for a specific category.
+     * Used for mega menu links like "laptop-by-brand/dell".
+     *
+     * @param  string  $category
+     * @param  string  $brand
+     * @return \Illuminate\Http\Response
+     */
+    public function productsByBrand(string $category, string $brand, Request $request)
+    {
+        // Find the base category (e.g., 'laptop' from 'laptop-by-brand')
+        $baseCategory = explode('-by-brand', $category)[0];
+        $categoryObj = Category::where('slug', $baseCategory)->first();
+        
+        if (!$categoryObj) {
+            abort(404, 'Category not found');
+        }
+        
+        // Start building the query
+        $query = Product::where('category_id', $categoryObj->id)
+                        ->where('is_active', true)
+                        ->with(['category', 'subcategory', 'images']);
+        
+        // If not "all", filter by the specific brand
+        if ($brand !== 'all') {
+            // Find the brand using its slug
+            $brandObj = \App\Models\Brand::where('slug', $brand)->first();
+            
+            if ($brandObj) {
+                $query->where('brand', $brandObj->name);
+            } else {
+                // Fallback to using the slug as the brand name if no match is found
+                $query->where('brand', $brand);
+                \Log::warning("Brand with slug '{$brand}' not found in brands table. Using slug as name.");
+            }
+        }
+        
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        if (in_array($sortBy, ['name', 'price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+        }
+        
+        // Get the products with pagination
+        $products = $query->paginate(12)->withQueryString();
+        
+        // Get subcategories for the category
+        $subcategories = \App\Models\SubCategory::where('category_id', $categoryObj->id)
+                                               ->orderBy('name')
+                                               ->get();
+        
+        // Get unique brands for this category
+        $brands = Product::where('category_id', $categoryObj->id)
+                        ->where('is_active', true)
+                        ->distinct()
+                        ->pluck('brand')
+                        ->filter()
+                        ->sort();
+        
+        // Get price range for the category
+        $priceRange = [
+            'min' => Product::where('category_id', $categoryObj->id)
+                           ->where('is_active', true)
+                           ->min('price') ?? 0,
+            'max' => Product::where('category_id', $categoryObj->id)
+                           ->where('is_active', true)
+                           ->max('price') ?? 1000
+        ];
+        
+        return view('products.brand-filter', compact(
+            'category',
+            'brand',
+            'categoryObj',
+            'products', 
+            'subcategories', 
+            'brands', 
+            'priceRange',
+            'sortBy',
+            'sortDir'
+        ));
+    }
 } 

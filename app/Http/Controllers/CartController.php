@@ -16,26 +16,21 @@ class CartController extends Controller
     public function index()
     {
         $cart = session()->get('cart', []);
-        $cartItems = [];
-        $subtotal = 0;
+        $products = [];
+        $total = 0;
         
         // Get updated product information
-        foreach ($cart as $id => $details) {
-            $product = Product::with(['inventory', 'primaryImage', 'images'])
-                              ->find($id);
-                              
-            if ($product) {
-                $cartItems[$id] = [
-                    'product' => $product,
-                    'quantity' => $details['quantity'],
-                    'total' => $product->price * $details['quantity']
-                ];
-                
-                $subtotal += $cartItems[$id]['total'];
-            }
+        foreach ($cart as $id => $item) {
+            $product = Product::with('images')->findOrFail($id);
+            $products[$id] = [
+                'product' => $product,
+                'quantity' => $item['quantity'],
+                'subtotal' => $product->price * $item['quantity']
+            ];
+            $total += $products[$id]['subtotal'];
         }
         
-        return view('cart.index', compact('cartItems', 'subtotal'));
+        return view('cart.index', compact('products', 'total'));
     }
     
     /**
@@ -51,11 +46,11 @@ class CartController extends Controller
             'quantity' => 'required|integer|min:1',
         ]);
         
-        $id = $request->product_id;
+        $productId = $request->product_id;
         $quantity = $request->quantity;
         
         // Check product stock availability
-        $product = Product::with('inventory')->findOrFail($id);
+        $product = Product::with('inventory')->findOrFail($productId);
         
         if (!$product->in_stock || $product->stock < $quantity) {
             return back()->with('error', 'Sorry! The requested quantity is not available in stock.');
@@ -64,10 +59,10 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
         
         // If item already in cart, update quantity
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] += $quantity;
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity'] += $quantity;
         } else {
-            $cart[$id] = [
+            $cart[$productId] = [
                 'quantity' => $quantity
             ];
         }
@@ -85,34 +80,21 @@ class CartController extends Controller
     public function updateCart(Request $request)
     {
         $request->validate([
-            'product_id' => 'required|exists:products,id',
-            'quantity' => 'required|integer|min:0',
+            'quantities' => 'required|array',
+            'quantities.*' => 'required|integer|min:1'
         ]);
-        
-        $id = $request->product_id;
-        $quantity = $request->quantity;
-        
-        // Remove item if quantity is 0
-        if ($quantity == 0) {
-            return $this->removeFromCart($request);
-        }
-        
-        // Check product stock availability
-        $product = Product::with('inventory')->findOrFail($id);
-        
-        if (!$product->in_stock || $product->stock < $quantity) {
-            return back()->with('error', 'Sorry! The requested quantity is not available in stock.');
-        }
         
         $cart = session()->get('cart', []);
         
-        if (isset($cart[$id])) {
-            $cart[$id]['quantity'] = $quantity;
-            session()->put('cart', $cart);
-            return back()->with('success', 'Cart updated successfully!');
+        foreach ($request->quantities as $productId => $quantity) {
+            if (isset($cart[$productId])) {
+                $cart[$productId]['quantity'] = $quantity;
+            }
         }
         
-        return back()->with('error', 'Product not found in cart!');
+        session()->put('cart', $cart);
+        
+        return redirect()->back()->with('success', 'Cart updated successfully!');
     }
     
     /**
@@ -137,5 +119,119 @@ class CartController extends Controller
         }
         
         return back()->with('error', 'Product not found in cart!');
+    }
+    
+    /**
+     * Add an item to the cart via AJAX.
+     */
+    public function addToCartAjax(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+        
+        $productId = $request->product_id;
+        $quantity = $request->quantity;
+        
+        $cart = session()->get('cart', []);
+        
+        // If the product is already in the cart, update the quantity
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity'] += $quantity;
+        } else {
+            $cart[$productId] = [
+                'quantity' => $quantity
+            ];
+        }
+        
+        session()->put('cart', $cart);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Product added to cart successfully!',
+            'cartCount' => count($cart)
+        ]);
+    }
+    
+    /**
+     * Update cart quantities via AJAX.
+     */
+    public function updateCartAjax(Request $request)
+    {
+        $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1'
+        ]);
+        
+        $productId = $request->product_id;
+        $quantity = $request->quantity;
+        
+        $cart = session()->get('cart', []);
+        
+        if (isset($cart[$productId])) {
+            $cart[$productId]['quantity'] = $quantity;
+            session()->put('cart', $cart);
+            
+            // Get the updated product for the response
+            $product = Product::findOrFail($productId);
+            $subtotal = $product->price * $quantity;
+            
+            // Calculate the new cart total
+            $total = 0;
+            foreach ($cart as $id => $item) {
+                $product = Product::findOrFail($id);
+                $total += $product->price * $item['quantity'];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Cart updated successfully!',
+                'quantity' => $quantity,
+                'subtotal' => $subtotal,
+                'subtotalFormatted' => '$' . number_format($subtotal, 2),
+                'total' => $total,
+                'totalFormatted' => '$' . number_format($total, 2),
+                'cartCount' => count($cart)
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Product not found in cart'
+        ], 404);
+    }
+    
+    /**
+     * Remove an item from the cart via AJAX.
+     */
+    public function removeFromCartAjax($id)
+    {
+        $cart = session()->get('cart', []);
+        
+        if (isset($cart[$id])) {
+            unset($cart[$id]);
+            session()->put('cart', $cart);
+            
+            // Calculate the new cart total
+            $total = 0;
+            foreach ($cart as $itemId => $item) {
+                $product = Product::findOrFail($itemId);
+                $total += $product->price * $item['quantity'];
+            }
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Product removed from cart!',
+                'total' => $total,
+                'totalFormatted' => '$' . number_format($total, 2),
+                'cartCount' => count($cart)
+            ]);
+        }
+        
+        return response()->json([
+            'success' => false,
+            'message' => 'Product not found in cart'
+        ], 404);
     }
 } 

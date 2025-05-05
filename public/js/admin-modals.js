@@ -8,6 +8,26 @@
 $(document).ready(function() {
     console.log('jQuery admin modals initialization');
     
+    // Fix for modal backdrop not disappearing
+    $(document).on('hidden.bs.modal', '.modal', function(e) {
+        console.log('Modal hidden event fired');
+        // Remove any lingering backdrop
+        $('.modal-backdrop').remove();
+        // Fix body classes
+        $('body').removeClass('modal-open');
+        $('body').css('padding-right', '');
+        // Log to console for debugging
+        console.log('Modal cleanup executed');
+    });
+    
+    // Fix for nested modals causing backdrop issues
+    $(document).on('show.bs.modal', '.modal', function(e) {
+        // Make sure only one backdrop exists
+        if ($('.modal-backdrop').length > 1) {
+            $('.modal-backdrop:not(:last)').remove();
+        }
+    });
+    
     // Initialize any existing modals
     $('.modal').each(function() {
         var modalId = $(this).attr('id');
@@ -104,9 +124,9 @@ $(document).ready(function() {
         $.ajax({
             url: url,
             type: 'GET',
-            dataType: 'json',
             headers: {
-                'X-Requested-With': 'XMLHttpRequest'
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
             },
             success: function(response) {
                 console.log('jQuery: AJAX request successful');
@@ -131,6 +151,16 @@ $(document).ready(function() {
                     }
                     
                     initializeFormComponents($modalBody);
+                    
+                    // Execute any scripts in the content
+                    var scripts = $modalBody.find('script');
+                    if (scripts.length) {
+                        scripts.each(function() {
+                            var script = document.createElement('script');
+                            script.text = this.text;
+                            document.head.appendChild(script).parentNode.removeChild(script);
+                        });
+                    }
                     
                     // Make sure the form ID and submit button are properly connected
                     const loadedForm = $modalBody.find('form');
@@ -168,7 +198,17 @@ $(document).ready(function() {
             },
             error: function(xhr, status, error) {
                 console.error('jQuery: AJAX request error:', error);
+                
+                // Try to determine if the response was meant to be HTML
+                var contentType = xhr.getResponseHeader('Content-Type');
+                if (contentType && contentType.indexOf('text/html') !== -1) {
+                    // This is likely a redirect to login page or an error page
+                    $modalBody.html('<div class="alert alert-danger">Session may have expired. Try refreshing the page.</div>');
+                    console.error('Server returned HTML instead of JSON. You may need to log in again.');
+                } else {
                 $modalBody.html('<div class="alert alert-danger">Error loading form: ' + error + '</div>');
+                }
+                
                 setTimeout(function() {
                     $modalBody.html(originalContent);
                 }, 3000);
@@ -217,6 +257,26 @@ $(document).ready(function() {
 // Original vanilla JavaScript implementation as fallback
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Admin modals script loaded');
+    
+    // Fix for modal backdrop not disappearing
+    document.addEventListener('hidden.bs.modal', function(event) {
+        if (event.target.classList.contains('modal')) {
+            console.log('Modal hidden event fired (vanilla JS)');
+            // Remove any lingering backdrop
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            backdrops.forEach(backdrop => {
+                backdrop.parentNode.removeChild(backdrop);
+            });
+            
+            // Fix body classes
+            document.body.classList.remove('modal-open');
+            document.body.style.paddingRight = '';
+            console.log('Modal cleanup executed (vanilla JS)');
+        }
+    }, true);
+    
+    // Initialize event handlers
+    initializeEventHandlers();
     
     // Initialize Bootstrap modals
     try {
@@ -656,4 +716,442 @@ document.addEventListener('DOMContentLoaded', function() {
             console.error('Error initializing form components:', error);
         }
     }
+
+    // Function to initialize or reinitialize all event handlers
+    function initializeEventHandlers() {
+        console.log('Initializing all event handlers');
+        
+        // Initialize delete confirmation buttons
+        try {
+            const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
+            console.log('Found ' + deleteButtons.length + ' delete buttons');
+            
+            if (deleteButtons.length > 0) {
+                deleteButtons.forEach(function(button) {
+                    // Remove existing event handlers to prevent duplicates
+                    button.removeEventListener('click', handleDeleteConfirm);
+                    // Add event handler
+                    button.addEventListener('click', handleDeleteConfirm);
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up delete buttons:', error);
+        }
+        
+        // Initialize edit buttons
+        try {
+            const editButtons = document.querySelectorAll('[data-edit-url]');
+            console.log('Found ' + editButtons.length + ' edit buttons');
+            
+            if (editButtons.length > 0) {
+                editButtons.forEach(function(button) {
+                    // Remove existing event handlers to prevent duplicates
+                    button.removeEventListener('click', handleEditButton);
+                    // Add event handler
+                    button.addEventListener('click', handleEditButton);
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up edit buttons:', error);
+        }
+        
+        // Initialize modal open buttons
+        try {
+            const openModalButtons = document.querySelectorAll('[data-open-modal]');
+            console.log('Found ' + openModalButtons.length + ' open modal buttons');
+            
+            if (openModalButtons.length > 0) {
+                openModalButtons.forEach(function(button) {
+                    // Remove existing event handlers to prevent duplicates
+                    button.removeEventListener('click', handleOpenModal);
+                    // Add event handler
+                    button.addEventListener('click', handleOpenModal);
+                });
+            }
+        } catch (error) {
+            console.error('Error setting up open modal buttons:', error);
+        }
+    }
+    
+    // Handler for delete confirmation
+    function handleDeleteConfirm(e) {
+        e.preventDefault();
+        
+        const message = this.getAttribute('data-delete-confirm');
+        const form = this.closest('form');
+        
+        if (confirm(message || 'Are you sure you want to delete this item?')) {
+            console.log('Delete confirmed, submitting form');
+            if (form) {
+                form.submit();
+            } else {
+                console.error('Form not found for delete button');
+            }
+        } else {
+            console.log('Delete canceled');
+        }
+    }
+    
+    // Handler for edit buttons
+    function handleEditButton() {
+        const url = this.getAttribute('data-edit-url');
+        const modalId = this.getAttribute('data-open-modal');
+        
+        if (url && modalId) {
+            const modalElement = document.getElementById(modalId);
+            
+            if (modalElement) {
+                const modalBody = modalElement.querySelector('.modal-body');
+                const originalContent = modalBody.innerHTML;
+                
+                console.log('Loading content from:', url, 'into modal:', modalId);
+                
+                // Show loading indicator
+                modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading form data...</p></div>';
+                
+                // Show the modal
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.show();
+                
+                // Make the AJAX request using fetch
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('AJAX request successful');
+                    
+                    if (data && data.success && data.html) {
+                        // Insert the HTML
+                        modalBody.innerHTML = data.html;
+                        
+                        // Find the form and setup its properties
+                        const loadedForm = modalBody.querySelector('form');
+                        const submitBtn = modalElement.querySelector('.submit-modal-form');
+                        
+                        if (loadedForm && submitBtn) {
+                            const formId = submitBtn.getAttribute('data-form-id');
+                            
+                            if (formId) {
+                                console.log('Setting form ID to:', formId);
+                                loadedForm.id = formId;
+                                loadedForm.setAttribute('data-form-id', formId);
+                            }
+                            
+                            // Initialize form components
+                            setTimeout(() => {
+                                initializeFormComponents(modalBody);
+                                submitBtn.disabled = false;
+                                console.log('Form successfully loaded and connected to button');
+                            }, 300);
+                        }
+                    } else {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Invalid response format from server.</div>';
+                        setTimeout(function() {
+                            modalBody.innerHTML = originalContent;
+                        }, 3000);
+                    }
+                })
+                .catch(error => {
+                    console.error('AJAX request error:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error loading form: ' + error.message + '</div>';
+                    setTimeout(function() {
+                        modalBody.innerHTML = originalContent;
+                    }, 3000);
+                });
+            }
+        }
+    }
+    
+    // Handler for open modal buttons
+    function handleOpenModal() {
+        const modalId = this.getAttribute('data-open-modal');
+        
+        if (modalId) {
+            const modalElement = document.getElementById(modalId);
+            
+            if (modalElement) {
+                const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+                modal.show();
+                console.log('Opened modal:', modalId);
+            }
+        }
+    }
 });
+
+// Define global functions for event handling
+window.handleDeleteConfirm = function(e) {
+    e.preventDefault();
+    
+    const message = this.getAttribute('data-delete-confirm');
+    const form = this.closest('form');
+    
+    if (confirm(message || 'Are you sure you want to delete this item?')) {
+        console.log('Delete confirmed, submitting form');
+        if (form) {
+            form.submit();
+        } else {
+            console.error('Form not found for delete button');
+        }
+    } else {
+        console.log('Delete canceled');
+    }
+};
+
+window.handleEditButton = function() {
+    const url = this.getAttribute('data-edit-url');
+    const modalId = this.getAttribute('data-open-modal');
+    
+    if (url && modalId) {
+        const modalElement = document.getElementById(modalId);
+        
+        if (modalElement) {
+            const modalBody = modalElement.querySelector('.modal-body');
+            const originalContent = modalBody.innerHTML;
+            
+            console.log('Loading content from:', url, 'into modal:', modalId);
+            
+            // Show loading indicator
+            modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading form data...</p></div>';
+            
+            // Show the modal
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.show();
+            
+            // Make the AJAX request using fetch
+            fetch(url, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('AJAX request successful');
+                
+                if (data && data.success && data.html) {
+                    // Insert the HTML
+                    modalBody.innerHTML = data.html;
+                    
+                    // Find the form and setup its properties
+                    const loadedForm = modalBody.querySelector('form');
+                    const submitBtn = modalElement.querySelector('.submit-modal-form');
+                    
+                    if (loadedForm && submitBtn) {
+                        const formId = submitBtn.getAttribute('data-form-id');
+                        
+                        if (formId) {
+                            console.log('Setting form ID to:', formId);
+                            loadedForm.id = formId;
+                            loadedForm.setAttribute('data-form-id', formId);
+                        }
+                        
+                        // Initialize form components
+                        setTimeout(() => {
+                            window.initializeFormComponents(modalBody);
+                            submitBtn.disabled = false;
+                            console.log('Form successfully loaded and connected to button');
+                        }, 300);
+                    }
+                } else {
+                    modalBody.innerHTML = '<div class="alert alert-danger">Invalid response format from server.</div>';
+                    setTimeout(function() {
+                        modalBody.innerHTML = originalContent;
+                    }, 3000);
+                }
+            })
+            .catch(error => {
+                console.error('AJAX request error:', error);
+                modalBody.innerHTML = '<div class="alert alert-danger">Error loading form: ' + error.message + '</div>';
+                setTimeout(function() {
+                    modalBody.innerHTML = originalContent;
+                }, 3000);
+            });
+        }
+    }
+};
+
+window.handleOpenModal = function() {
+    const modalId = this.getAttribute('data-open-modal');
+    
+    if (modalId) {
+        const modalElement = document.getElementById(modalId);
+        
+        if (modalElement) {
+            const modal = bootstrap.Modal.getInstance(modalElement) || new bootstrap.Modal(modalElement);
+            modal.show();
+            console.log('Opened modal:', modalId);
+        }
+    }
+};
+
+// Function to initialize or reinitialize all event handlers
+window.initializeEventHandlers = function() {
+    console.log('Initializing all event handlers');
+    
+    // Initialize delete confirmation buttons
+    try {
+        const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
+        console.log('Found ' + deleteButtons.length + ' delete buttons');
+        
+        if (deleteButtons.length > 0) {
+            deleteButtons.forEach(function(button) {
+                // Remove existing event handlers to prevent duplicates
+                button.removeEventListener('click', window.handleDeleteConfirm);
+                // Add event handler
+                button.addEventListener('click', window.handleDeleteConfirm);
+            });
+        }
+    } catch (error) {
+        console.error('Error setting up delete buttons:', error);
+    }
+    
+    // Initialize edit buttons
+    try {
+        const editButtons = document.querySelectorAll('[data-edit-url]');
+        console.log('Found ' + editButtons.length + ' edit buttons');
+        
+        if (editButtons.length > 0) {
+            editButtons.forEach(function(button) {
+                // Remove existing event handlers to prevent duplicates
+                button.removeEventListener('click', window.handleEditButton);
+                // Add event handler
+                button.addEventListener('click', window.handleEditButton);
+            });
+        }
+    } catch (error) {
+        console.error('Error setting up edit buttons:', error);
+    }
+    
+    // Initialize modal open buttons
+    try {
+        const openModalButtons = document.querySelectorAll('[data-open-modal]');
+        console.log('Found ' + openModalButtons.length + ' open modal buttons');
+        
+        if (openModalButtons.length > 0) {
+            openModalButtons.forEach(function(button) {
+                // Remove existing event handlers to prevent duplicates
+                button.removeEventListener('click', window.handleOpenModal);
+                // Add event handler
+                button.addEventListener('click', window.handleOpenModal);
+            });
+        }
+    } catch (error) {
+        console.error('Error setting up open modal buttons:', error);
+    }
+};
+
+// Add a global function to reinitialize event handlers (for use after AJAX content loads)
+window.reinitializeEventHandlers = function() {
+    if (typeof window.initializeEventHandlers === 'function') {
+        window.initializeEventHandlers();
+    } else {
+        console.warn('initializeEventHandlers function not available');
+        // Fallback: reload the page
+        window.location.reload();
+    }
+};
+
+// Make form component initialization function global
+window.initializeFormComponents = function(container) {
+    try {
+        console.log('Initializing form components');
+        
+        // Re-enable the submit button if it was disabled
+        const modal = container.closest('.modal');
+        if (modal) {
+            const submitBtn = modal.querySelector('.submit-modal-form');
+            if (submitBtn && submitBtn.disabled) {
+                console.log('Re-enabling submit button');
+                submitBtn.disabled = false;
+            }
+        }
+        
+        // Initialize category dropdown for product forms
+        const categorySelect = container.querySelector('select[name="category_id"]');
+        const subcategorySelect = container.querySelector('select[name="subcategory_id"]');
+        
+        if (categorySelect && subcategorySelect) {
+            categorySelect.addEventListener('change', function() {
+                const categoryId = this.value;
+                
+                // Clear existing options except the first one
+                while (subcategorySelect.options.length > 1) {
+                    subcategorySelect.remove(1);
+                }
+                
+                if (categoryId) {
+                    // Show loading indicator
+                    const loadingOption = document.createElement('option');
+                    loadingOption.textContent = 'Loading...';
+                    loadingOption.disabled = true;
+                    subcategorySelect.appendChild(loadingOption);
+                    
+                    // Fetch subcategories
+                    fetch(`/admin/subcategories/${categoryId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Remove loading option
+                            subcategorySelect.remove(subcategorySelect.options.length - 1);
+                            
+                            if (data.success && data.subcategories) {
+                                data.subcategories.forEach(subcategory => {
+                                    const option = document.createElement('option');
+                                    option.value = subcategory.id;
+                                    option.textContent = subcategory.name;
+                                    subcategorySelect.appendChild(option);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error loading subcategories:', error);
+                            subcategorySelect.remove(subcategorySelect.options.length - 1);
+                        });
+                }
+            });
+            console.log('Category-Subcategory relationship initialized');
+        }
+        
+        // Example: initialize select2
+        if (typeof $ !== 'undefined' && $.fn && $.fn.select2) {
+            $(container).find('.select2').select2({
+                dropdownParent: $(container).closest('.modal')
+            });
+            console.log('Select2 components initialized');
+        }
+        
+        // Example: initialize datepicker
+        if (typeof $ !== 'undefined' && $.fn && $.fn.datepicker) {
+            $(container).find('.datepicker').datepicker();
+            console.log('Datepicker components initialized');
+        }
+        
+        // Example: initialize rich text editor
+        if (typeof tinymce !== 'undefined') {
+            $(container).find('.tinymce').each(function() {
+                tinymce.init({
+                    selector: '#' + this.id,
+                    height: 300,
+                    menubar: false,
+                    plugins: [
+                        'advlist autolink lists link image charmap print preview anchor',
+                        'searchreplace visualblocks code fullscreen',
+                        'insertdatetime media table paste code help wordcount'
+                    ],
+                    toolbar: 'undo redo | formatselect | bold italic backcolor | \
+                    alignleft aligncenter alignright alignjustify | \
+                    bullist numlist outdent indent | removeformat | help'
+                });
+            });
+            console.log('TinyMCE components initialized');
+        }
+        
+        // Reinitialize event handlers for newly loaded content
+        window.initializeEventHandlers();
+    } catch (error) {
+        console.error('Error initializing form components:', error);
+    }
+};

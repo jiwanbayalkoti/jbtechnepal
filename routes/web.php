@@ -16,7 +16,8 @@ use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\ApiImportController;
 use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\SearchController;
-use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\BrandController as AdminBrandController;
+use App\Http\Controllers\BrandController;
 use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
@@ -64,6 +65,10 @@ Route::get('/compare', [CompareController::class, 'compare'])->name('compare');
 Route::post('/ai-recommendations', [CompareController::class, 'getAiRecommendations'])->name('ai.recommendations');
 Route::get('/clear-compare', [CompareController::class, 'clearCompare'])->name('clear.compare');
 Route::get('/search', [SearchController::class, 'index'])->name('search');
+
+// Brand routes
+Route::get('/brands', [BrandController::class, 'index'])->name('brands.all');
+Route::get('/brand/{slug}', [BrandController::class, 'show'])->name('brand.show');
 
 // Cart & Checkout Routes
 Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addToCart'])->name('cart.add');
@@ -119,6 +124,7 @@ Route::get('/debug-customers', function() {
 
 // Page routes
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show');
+Route::get('/dynamic/{slug}', [PageController::class, 'dynamicPage'])->name('dynamic.page');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact/submit', [PageController::class, 'storeContactForm'])->name('contact.submit');
@@ -162,19 +168,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/settings/social', [SettingController::class, 'updateSocialSettings'])->name('settings.social.update');
     
     // Menu Management
-    Route::get('/menus', [MenuController::class, 'index'])->name('menus.index');
-    Route::get('/menus/create', [MenuController::class, 'create'])->name('menus.create');
-    Route::post('/menus', [MenuController::class, 'store'])->name('menus.store');
-    Route::get('/menus/{id}/edit', [MenuController::class, 'edit'])->name('menus.edit');
-    Route::put('/menus/{id}', [MenuController::class, 'update'])->name('menus.update');
-    Route::delete('/menus/{id}', [MenuController::class, 'destroy'])->name('menus.destroy');
+    Route::resource('menus', App\Http\Controllers\Admin\MenuController::class);
     
     // API Import Management
     Route::get('/imports', [ApiImportController::class, 'index'])->name('imports.index');
     Route::post('/imports/run', [ApiImportController::class, 'runImport'])->name('imports.run');
 
     // Brand routes
-    Route::resource('brands', BrandController::class);
+    Route::resource('brands', AdminBrandController::class);
     
     // Inventory Management
     Route::get('/inventory/{id}/adjust', [App\Http\Controllers\Admin\InventoryController::class, 'showAdjust'])->name('inventory.adjust');
@@ -217,6 +218,17 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
 
     // Pages Management
     Route::resource('pages', App\Http\Controllers\Admin\PageController::class);
+
+    // Resource routes
+    Route::resource('models', \App\Http\Controllers\Admin\ModelController::class);
+    
+    // API routes for cascading dropdowns
+    Route::get('api/categories-by-brand', [\App\Http\Controllers\Admin\ModelController::class, 'getCategoriesByBrand'])
+        ->name('api.categories-by-brand');
+    Route::get('api/subcategories-by-category', [\App\Http\Controllers\Admin\ModelController::class, 'getSubcategoriesByCategory'])
+        ->name('api.subcategories-by-category');
+    Route::get('models-by-subcategory/{subcategory_id}', [\App\Http\Controllers\Admin\ModelController::class, 'getModelsBySubcategory'])
+        ->name('models-by-subcategory');
 });
 
 // Admin User Management Routes
@@ -234,7 +246,74 @@ Route::middleware(['auth', 'role:admin,manager'])->group(function () {
 Route::get('/products', [ProductController::class, 'index'])->name('products.index');
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('categories.show');
+Route::get('/category/{slug}/all', [ProductController::class, 'categoryProducts'])->name('category.all');
+Route::get('/{category}-by-brand/{brand}', [ProductController::class, 'productsByBrand'])->name('products.by.brand');
 Route::get('/api/newest-products/{limit?}', [HomeController::class, 'getNewestProducts'])->name('api.newest-products');
 
 // Debug routes - remove in production
 Route::get('/debug-returns/{order}', [App\Http\Controllers\Admin\ReturnController::class, 'getOrderItems'])->name('debug.returns.get-order-items');
+
+// Test route for product creation - remove in production
+Route::get('/test-product-create', function() {
+    try {
+        $product = new \App\Models\Product();
+        $product->name = 'Test Product ' . time();
+        $product->slug = \Illuminate\Support\Str::slug('Test Product ' . time());
+        $product->category_id = \App\Models\Category::first()->id;
+        $product->model = 'Test-' . rand(1000, 9999);
+        $product->price = 99.99;
+        $product->description = 'This is a test product created via direct route.';
+        $product->save();
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Product created successfully',
+            'product' => $product->toArray()
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Error creating product: ' . $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// API Routes for AJAX requests
+Route::prefix('api')->name('api.')->group(function () {
+    // Cart API
+    Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addToCartAjax'])->name('cart.add');
+    Route::post('/cart/update', [App\Http\Controllers\CartController::class, 'updateCartAjax'])->name('cart.update');
+    Route::post('/cart/remove/{id}', [App\Http\Controllers\CartController::class, 'removeFromCartAjax'])->name('cart.remove');
+    
+    // Compare API
+    Route::post('/compare/add/{id}', [App\Http\Controllers\CompareController::class, 'addToCompareAjax'])->name('compare.add');
+    Route::post('/compare/remove/{id}', [App\Http\Controllers\CompareController::class, 'removeFromCompareAjax'])->name('compare.remove');
+    Route::post('/compare/clear', [App\Http\Controllers\CompareController::class, 'clearCompareAjax'])->name('compare.clear');
+
+    // Existing API routes
+    Route::get('/newest-products/{limit?}', [HomeController::class, 'getNewestProducts'])->name('newest-products');
+});
+
+// Test route for debugging
+Route::get('/test-product-creation', function () {
+    try {
+        // Create a test product
+        $product = new \App\Models\Product([
+            'name' => 'Test Product ' . uniqid(),
+            'category_id' => 1, // Make sure this category exists
+            'brand' => 'Test Brand',
+            'model' => 'Test Model',
+            'price' => 99.99,
+            'description' => 'Test description',
+            'slug' => 'test-product-' . uniqid()
+        ]);
+        
+        $product->save();
+        
+        return "Product saved successfully with ID: " . $product->id;
+    } catch (\Exception $e) {
+        return "Error: " . $e->getMessage() . " in " . $e->getFile() . " at line " . $e->getLine();
+    }
+});

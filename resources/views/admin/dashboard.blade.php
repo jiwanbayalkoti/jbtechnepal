@@ -307,9 +307,9 @@
             <div class="card-body">
                 <div id="categoryChart" class="chart-container"></div>
             </div>
+            </div>
         </div>
     </div>
-</div>
 
 <div class="row mt-4">
     <div class="col-md-6 mb-4">
@@ -319,9 +319,9 @@
             </div>
             <div class="card-body">
                 <div id="priceRangeChart" class="chart-container"></div>
-            </div>
         </div>
     </div>
+</div>
 
     <div class="col-md-6 mb-4">
         <div class="card">
@@ -473,7 +473,14 @@
         
         <div class="col-md-6">
             <label for="model" class="form-label">Model</label>
-            <input type="text" class="form-control @error('model') is-invalid @enderror" id="model" name="model" value="{{ old('model') }}">
+            <select class="form-select @error('model') is-invalid @enderror" id="model" name="model">
+                <option value="">Select Model</option>
+                @foreach(\App\Models\Model::orderBy('name')->get() as $modelOption)
+                    <option value="{{ $modelOption->name }}" {{ old('model') == $modelOption->name ? 'selected' : '' }}>
+                        {{ $modelOption->name }}
+                    </option>
+                @endforeach
+            </select>
             @error('model')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -804,6 +811,81 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     $(document).ready(function() {
+        // Handle subcategory changes for model loading
+        $(document).on('change', 'select[name="category_id"]', function() {
+            const categoryId = $(this).val();
+            const form = $(this).closest('form');
+            const subcategorySelect = form.find('select[name="subcategory_id"]');
+            const modelSelect = form.find('select[name="model"]');
+            
+            // Clear subcategory and model dropdowns
+            if (subcategorySelect.length) {
+                subcategorySelect.empty().append('<option value="">Select Subcategory</option>');
+            }
+            
+            if (modelSelect.length) {
+                modelSelect.empty().append('<option value="">Select Model</option>');
+            }
+            
+            if (categoryId && subcategorySelect.length) {
+                // Load subcategories for the selected category
+                $.ajax({
+                    url: `/admin/subcategories/${categoryId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.subcategories.length > 0) {
+                            // Add subcategories to dropdown
+                            $.each(response.subcategories, function(index, subcategory) {
+                                subcategorySelect.append(`<option value="${subcategory.id}">${subcategory.name}</option>`);
+                            });
+                        } else {
+                            subcategorySelect.append('<option value="" disabled>No subcategories available</option>');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading subcategories:', xhr.responseText);
+                        subcategorySelect.append('<option value="" disabled>Error loading subcategories</option>');
+                    }
+                });
+            }
+        });
+        
+        // Handle model loading when subcategory changes
+        $(document).on('change', 'select[name="subcategory_id"]', function() {
+            const subcategoryId = $(this).val();
+            const form = $(this).closest('form');
+            const modelSelect = form.find('select[name="model"]');
+            
+            // Clear model dropdown
+            if (modelSelect.length) {
+                modelSelect.empty().append('<option value="">Select Model</option>');
+                
+                if (subcategoryId) {
+                    // Load models for the selected subcategory
+                    $.ajax({
+                        url: `/admin/models-by-subcategory/${subcategoryId}`,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function(response) {
+                            if (response.success && response.models.length > 0) {
+                                // Add models to dropdown
+                                $.each(response.models, function(index, model) {
+                                    modelSelect.append(`<option value="${model.name}">${model.name}</option>`);
+                                });
+                            } else {
+                                modelSelect.append('<option value="" disabled>No models available for this subcategory</option>');
+                            }
+                        },
+                        error: function(xhr) {
+                            console.error('Error loading models:', xhr.responseText);
+                            modelSelect.append('<option value="" disabled>Error loading models</option>');
+                        }
+                    });
+                }
+            }
+        });
+    
         // Customer Growth Chart
         var customerGrowthCtx = document.getElementById('customerGrowthChart').getContext('2d');
         var customerGrowthChart = new Chart(customerGrowthCtx, {
@@ -874,8 +956,6 @@
                 cutout: '70%'
             }
         });
-
-        // Existing chart code...
     });
 </script>
 @endsection

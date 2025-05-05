@@ -131,7 +131,8 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <label for="image" class="form-label">Upload Image</label>
-                        <input class="form-control @error('image') is-invalid @enderror" type="file" id="image" name="image">
+                        <input class="form-control @error('image') is-invalid @enderror" type="file" id="image" name="images[]" multiple>
+                        <small class="form-text text-muted">You can select multiple images. First image will be the primary image.</small>
                         @error('image')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -148,6 +149,33 @@
                             <label class="form-check-label text-danger" for="delete_image">
                                 Delete current image
                             </label>
+                        </div>
+                    </div>
+                    @endif
+                    
+                    <!-- Display all product images -->
+                    @if($product->images && $product->images->count() > 0)
+                    <div class="mb-3">
+                        <label class="form-label">Product Images</label>
+                        <div class="row">
+                            @foreach($product->images as $image)
+                            <div class="col-md-6 mb-2">
+                                <div class="card h-100">
+                                    <img src="{{ asset('storage/' . $image->path) }}" class="card-img-top" alt="Product image" style="height: 150px; object-fit: cover;">
+                                    <div class="card-body p-2">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="delete_image_{{ $image->id }}" name="delete_images[]" value="{{ $image->id }}">
+                                            <label class="form-check-label text-danger" for="delete_image_{{ $image->id }}">
+                                                Delete this image
+                                            </label>
+                                        </div>
+                                        @if($image->is_primary)
+                                        <div class="badge bg-primary mt-1">Primary Image</div>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                            @endforeach
                         </div>
                     </div>
                     @endif

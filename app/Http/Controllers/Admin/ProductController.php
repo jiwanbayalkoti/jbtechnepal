@@ -64,13 +64,8 @@ class ProductController extends Controller
         // Get all categories for the filter dropdown
         $categories = Category::orderBy('name')->get();
         
-        // Get unique brands from the products table for the filter dropdown
-        $brands = Product::select('brand')
-            ->whereNotNull('brand')
-            ->where('brand', '!=', '')
-            ->distinct()
-            ->orderBy('brand')
-            ->pluck('brand');
+        // Get all brands from the brands table for the filter dropdown
+        $brands = Brand::orderBy('name')->pluck('name');
 
         return view('admin.products.index', compact('products', 'categories', 'brands', 'subcategories'));
     }
@@ -85,7 +80,10 @@ class ProductController extends Controller
         // Get all categories for the dropdown
         $categories = Category::orderBy('name')->get();
         
-        return view('admin.products.create', compact('categories'));
+        // Get all brands for the dropdown, ensuring we have valid brand data
+        $brands = Brand::orderBy('name')->get();
+        
+        return view('admin.products.create', compact('categories', 'brands'));
     }
 
     /**
@@ -99,8 +97,8 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:subcategories,id',
-            'brand' => 'required|string|max:255',
+            'subcategory_id' => 'nullable|exists:sub_categories,id',
+            'brand' => 'nullable|string|max:255',
             'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'required|string',
@@ -221,8 +219,58 @@ class ProductController extends Controller
             
             \Log::error('Error creating product: ' . $e->getMessage(), [
                 'exception' => $e,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
                 'request_data' => $request->all()
             ]);
+            
+            // Try direct approach if the complex method fails
+            try {
+                DB::beginTransaction();
+                
+                // Create a simple product with minimal data
+                $product = new Product();
+                $product->name = $validated['name'];
+                $product->slug = $slug;
+                $product->category_id = $validated['category_id'];
+                $product->subcategory_id = $validated['subcategory_id'];
+                $product->brand = $validated['brand'];
+                $product->model = $validated['model'];
+                $product->price = $validated['price'];
+                $product->description = $validated['description'];
+                
+                \Log::info('Attempting direct save with data:', [
+                    'product_data' => $product->toArray()
+                ]);
+                
+                $product->save();
+                
+                \Log::info('Product saved directly with ID: ' . $product->id);
+                
+                DB::commit();
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => 'Product created directly',
+                        'product_id' => $product->id
+                    ]);
+                }
+                
+                return redirect()->route('admin.products.index')
+                    ->with('success', 'Product created directly with ID: ' . $product->id);
+            } catch (\Exception $innerEx) {
+                DB::rollBack();
+                
+                \Log::error('Error with direct product creation: ' . $innerEx->getMessage(), [
+                    'exception' => $innerEx,
+                    'file' => $innerEx->getFile(),
+                    'line' => $innerEx->getLine()
+                ]);
+                
+                // Fall through to outer exception handling
+            }
             
             if ($request->ajax()) {
                 return response()->json([
@@ -255,12 +303,13 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:subcategories,id',
-            'brand' => 'required|string|max:255',
+            'subcategory_id' => 'nullable|exists:sub_categories,id',
+            'brand' => 'nullable|string|max:255',
             'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
             'description' => 'required|string',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'delete_images' => 'nullable|array',
             'delete_images.*' => 'exists:product_images,id',
             'specifications' => 'nullable|array',
@@ -268,6 +317,14 @@ class ProductController extends Controller
 
         try {
             DB::beginTransaction();
+
+            // Add debug logging for troubleshooting
+            \Log::info('Product update - Request data:', [
+                'has_files' => $request->hasFile('images') || $request->hasFile('image'),
+                'images_files' => $request->hasFile('images') ? count($request->file('images')) : 0,
+                'image_file' => $request->hasFile('image') ? 'yes' : 'no',
+                'files' => $request->files->all()
+            ]);
 
             // Handle image deletions
             if ($request->has('delete_images')) {
@@ -280,13 +337,44 @@ class ProductController extends Controller
                 }
             }
 
-            // Handle new image uploads
+            // Handle new image uploads (multiple)
             if ($request->hasFile('images')) {
                 foreach ($request->file('images') as $image) {
-                    $path = $image->store('products', 'public');
-                    $product->images()->create([
+                    try {
+                        $path = $image->store('products', 'public');
+                        \Log::info('Stored image at path', ['path' => $path]);
+                        
+                        $productImage = $product->images()->create([
+                            'path' => $path,
+                            'is_primary' => $product->images()->count() === 0 // Make first image primary if no images exist
+                        ]);
+                        
+                        \Log::info('Created image record', ['image_id' => $productImage->id]);
+                    } catch (\Exception $e) {
+                        \Log::error('Failed to save image during update', [
+                            'error' => $e->getMessage(),
+                            'file' => $image->getClientOriginalName()
+                        ]);
+                    }
+                }
+            }
+            
+            // Handle single image upload (for backward compatibility)
+            if ($request->hasFile('image')) {
+                try {
+                    $path = $request->file('image')->store('products', 'public');
+                    \Log::info('Stored single image at path', ['path' => $path]);
+                    
+                    $productImage = $product->images()->create([
                         'path' => $path,
-                        'is_primary' => $product->images()->count() === 0 // Make first image primary if no images exist
+                        'is_primary' => $product->images()->count() === 0
+                    ]);
+                    
+                    \Log::info('Created single image record', ['image_id' => $productImage->id]);
+                } catch (\Exception $e) {
+                    \Log::error('Failed to save single image', [
+                        'error' => $e->getMessage(),
+                        'file' => $request->file('image')->getClientOriginalName()
                     ]);
                 }
             }
@@ -457,6 +545,16 @@ class ProductController extends Controller
             ->orderBy('name')
             ->get();
         
+        // Get brands for dropdown and ensure we have valid URLs
+        $brands = Brand::orderBy('name')->get();
+        
+        // Verify the product's brand has a matching entry in the brands table
+        // If not found, log a warning for admin to address
+        $matchingBrand = $brands->firstWhere('name', $product->brand);
+        if (!$matchingBrand && !empty($product->brand)) {
+            \Log::warning("Product {$product->id} has brand '{$product->brand}' that doesn't match any entry in the brands table.");
+        }
+        
         // Get specification types for the product's category
         $specificationTypes = \App\Models\SpecificationType::where('category_id', $product->category_id)
             ->orderBy('display_order')
@@ -476,7 +574,8 @@ class ProductController extends Controller
                     'categories', 
                     'subcategories', 
                     'specificationTypes',
-                    'specValues'
+                    'specValues',
+                    'brands'
                 ))->render(),
                 'product' => $product
             ]);
@@ -487,7 +586,8 @@ class ProductController extends Controller
             'categories', 
             'subcategories', 
             'specificationTypes',
-            'specValues'
+            'specValues',
+            'brands'
         ));
     }
 

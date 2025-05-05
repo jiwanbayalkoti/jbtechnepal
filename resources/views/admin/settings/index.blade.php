@@ -541,14 +541,14 @@
                                                         <input type="checkbox" class="form-check-input" id="{{ $setting->key }}" name="{{ $setting->key }}" value="1" {{ $setting->value ? 'checked' : '' }}>
                                                         <label class="form-check-label" for="{{ $setting->key }}"></label>
                                                     </div>
-                                                @endif
-                                                
-                                                @if($setting->description)
-                                                    <div class="form-text text-muted">{{ $setting->description }}</div>
-                                                @endif
+                                        @endif
+                                        
+                                        @if($setting->description)
+                                            <div class="form-text text-muted">{{ $setting->description }}</div>
+                                        @endif
                                             </div>
-                                        </div>
-                                    @endforeach
+                                    </div>
+                                @endforeach
                                 </div>
                             </div>
                         </div>

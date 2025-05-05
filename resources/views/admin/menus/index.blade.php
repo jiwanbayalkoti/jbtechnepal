@@ -43,16 +43,22 @@
                 </thead>
                 <tbody>
                     @forelse($mainMenu as $item)
-                        <tr class="@if($item->parent_id) bg-light @endif">
+                        <tr class="parent-menu" data-menu-id="{{ $item->id }}">
                             <td>{{ $item->id }}</td>
                             <td>
-                                @if($item->parent_id)
-                                    <span class="ms-3">↳</span>
-                                @endif
-                                {{ $item->name }}
-                                @if($item->children->count() > 0)
-                                    <span class="badge bg-secondary">{{ $item->children->count() }} children</span>
-                                @endif
+                                <div class="d-flex align-items-center">
+                                    @if($item->children->count() > 0)
+                                        <button class="btn btn-sm btn-outline-secondary me-2 toggle-children" data-menu-id="{{ $item->id }}">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    @else
+                                        <span class="ms-4"></span>
+                                    @endif
+                                    <span>{{ $item->name }}</span>
+                                    @if($item->children->count() > 0)
+                                        <span class="badge bg-secondary ms-2">{{ $item->children->count() }} children</span>
+                                    @endif
+                                </div>
                             </td>
                             <td>
                                 @if($item->url)
@@ -90,9 +96,64 @@
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </form>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            data-open-modal="createMenuModal" 
+                                            onclick="document.getElementById('parent_id').value = '{{ $item->id }}'; document.getElementById('location').value = '{{ $item->location }}';">
+                                        <i class="fas fa-plus"></i> Add Child
+                                    </button>
                                 </div>
                             </td>
                         </tr>
+                        
+                        @foreach($item->children as $child)
+                            <tr class="child-menu child-of-{{ $item->id }} bg-light" style="display: none;">
+                                <td>{{ $child->id }}</td>
+                                <td>
+                                    <div class="ps-4 ms-4 border-start border-2 border-secondary">
+                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        {{ $child->name }}
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($child->url)
+                                        <span class="badge bg-info">URL: {{ $child->url }}</span>
+                                    @else
+                                        <span class="badge bg-primary">Route: {{ $child->route_name }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($child->icon)
+                                        <i class="{{ $child->icon }}"></i> {{ $child->icon }}
+                                    @else
+                                        <span class="text-muted">No icon</span>
+                                    @endif
+                                </td>
+                                <td>{{ $child->order }}</td>
+                                <td>
+                                    @if($child->active)
+                                        <span class="badge bg-success">Active</span>
+                                    @else
+                                        <span class="badge bg-danger">Inactive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                data-edit-url="{{ route('admin.menus.edit', $child->id) }}"
+                                                data-open-modal="editMenuModal">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <form action="{{ route('admin.menus.destroy', $child->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     @empty
                         <tr>
                             <td colspan="7" class="text-center">No main menu items found.</td>
@@ -127,16 +188,22 @@
                 </thead>
                 <tbody>
                     @forelse($footerMenu as $item)
-                        <tr class="@if($item->parent_id) bg-light @endif">
+                        <tr class="parent-menu" data-menu-id="{{ $item->id }}">
                             <td>{{ $item->id }}</td>
                             <td>
-                                @if($item->parent_id)
-                                    <span class="ms-3">↳</span>
-                                @endif
-                                {{ $item->name }}
-                                @if($item->children->count() > 0)
-                                    <span class="badge bg-secondary">{{ $item->children->count() }} children</span>
-                                @endif
+                                <div class="d-flex align-items-center">
+                                    @if($item->children->count() > 0)
+                                        <button class="btn btn-sm btn-outline-secondary me-2 toggle-children" data-menu-id="{{ $item->id }}">
+                                            <i class="fas fa-chevron-down"></i>
+                                        </button>
+                                    @else
+                                        <span class="ms-4"></span>
+                                    @endif
+                                    <span>{{ $item->name }}</span>
+                                    @if($item->children->count() > 0)
+                                        <span class="badge bg-secondary ms-2">{{ $item->children->count() }} children</span>
+                                    @endif
+                                </div>
                             </td>
                             <td>
                                 @if($item->url)
@@ -167,9 +234,57 @@
                                             <i class="fas fa-trash"></i> Delete
                                         </button>
                                     </form>
+                                    <button type="button" class="btn btn-sm btn-success" 
+                                            data-open-modal="createMenuModal" 
+                                            onclick="document.getElementById('parent_id').value = '{{ $item->id }}'; document.getElementById('location').value = '{{ $item->location }}';">
+                                        <i class="fas fa-plus"></i> Add Child
+                                    </button>
                                 </div>
                             </td>
                         </tr>
+                        
+                        @foreach($item->children as $child)
+                            <tr class="child-menu child-of-{{ $item->id }} bg-light" style="display: none;">
+                                <td>{{ $child->id }}</td>
+                                <td>
+                                    <div class="ps-4 ms-4 border-start border-2 border-secondary">
+                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        {{ $child->name }}
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($child->url)
+                                        <span class="badge bg-info">URL: {{ $child->url }}</span>
+                                    @else
+                                        <span class="badge bg-primary">Route: {{ $child->route_name }}</span>
+                                    @endif
+                                </td>
+                                <td>{{ $child->order }}</td>
+                                <td>
+                                    @if($child->active)
+                                        <span class="badge bg-success">Active</span>
+                                    @else
+                                        <span class="badge bg-danger">Inactive</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <button type="button" class="btn btn-sm btn-primary" 
+                                                data-edit-url="{{ route('admin.menus.edit', $child->id) }}"
+                                                data-open-modal="editMenuModal">
+                                            <i class="fas fa-edit"></i> Edit
+                                        </button>
+                                        <form action="{{ route('admin.menus.destroy', $child->id) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
+                                                <i class="fas fa-trash"></i> Delete
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
                     @empty
                         <tr>
                             <td colspan="6" class="text-center">No footer menu items found.</td>
@@ -189,6 +304,8 @@
     formAction="{{ route('admin.menus.store') }}" 
     formMethod="POST"
     submitButtonText="Save Menu Item">
+
+    <input type="hidden" id="parent_id" name="parent_id" value="{{ old('parent_id') }}">
 
     <div class="mb-3">
         <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
@@ -272,51 +389,164 @@
         <input type="checkbox" class="form-check-input" id="active" name="active" value="1" {{ old('active', '1') ? 'checked' : '' }}>
         <label class="form-check-label" for="active">Active</label>
     </div>
+    
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Related Category (Optional)</label>
+        <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id">
+            <option value="">None</option>
+            @foreach(\App\Models\Category::orderBy('name')->get() as $category)
+                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                    {{ $category->name }}
+                </option>
+            @endforeach
+        </select>
+        <small class="form-text text-muted">For mega menu "View All" links - associates this menu with a specific category</small>
+        @error('category_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
 </x-admin-form-modal>
 
 <!-- Edit Menu Modal -->
-<x-admin-form-modal 
-    id="editMenuModal" 
-    title="Edit Menu Item" 
-    formId="editMenuForm" 
-    formMethod="POST"
-    submitButtonText="Update Menu Item">
-    <div class="text-center py-5">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+<div class="modal fade" id="editMenuModal" tabindex="-1" aria-labelledby="editMenuModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editMenuModalLabel">Edit Menu Item</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editMenuForm" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="modal-body">
+                    <!-- Form content will be loaded here via AJAX -->
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-2">Loading form...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
         </div>
-        <p class="mt-2">Loading menu item data...</p>
     </div>
-</x-admin-form-modal>
+</div>
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // When Edit button is clicked, update the form action
-        const editButtons = document.querySelectorAll('[data-edit-url]');
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const url = this.getAttribute('data-edit-url');
-                if (url) {
-                    // This will be processed by the admin-modals.js script
-                    // Form will be loaded via AJAX
-                    const formAction = url.replace('/edit', '');
-                    const editForm = document.getElementById('editMenuForm');
-                    editForm.action = formAction;
-                    
-                    // Add method override for PUT
-                    let methodInput = editForm.querySelector('input[name="_method"]');
-                    if (!methodInput) {
-                        methodInput = document.createElement('input');
-                        methodInput.type = 'hidden';
-                        methodInput.name = '_method';
-                        editForm.appendChild(methodInput);
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize delete confirmation buttons
+    const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
+    deleteButtons.forEach(function(button) {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const message = this.getAttribute('data-delete-confirm') || 'Are you sure you want to delete this item?';
+            const form = this.closest('form');
+            
+            if (confirm(message)) {
+                form.submit();
+            }
+        });
+    });
+    
+    // Initialize edit buttons
+    const editButtons = document.querySelectorAll('[data-edit-url]');
+    editButtons.forEach(function(button) {
+        button.addEventListener('click', function() {
+            const url = this.getAttribute('data-edit-url');
+            const modalId = this.getAttribute('data-open-modal');
+            const modalElement = document.getElementById(modalId);
+            
+            if (modalElement && url) {
+                const modalBody = modalElement.querySelector('.modal-body');
+                const editForm = document.getElementById('editMenuForm');
+                
+                // Set the form action
+                editForm.action = url.replace('/edit', '');
+                
+                // Show loading indicator
+                modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading form data...</p></div>';
+                
+                // Show the modal
+                const bootstrapModal = new bootstrap.Modal(modalElement);
+                bootstrapModal.show();
+                
+                // Make the AJAX request
+                fetch(url, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
                     }
-                    methodInput.value = 'PUT';
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data && data.success && data.html) {
+                        // Insert the HTML content into the modal body
+                        modalBody.innerHTML = data.html;
+                        
+                        // Get the menu item ID from the URL
+                        const menuId = url.split('/').pop();
+                        console.log('Menu ID:', menuId);
+                        
+                        // For debugging
+                        console.log('Form action set to:', editForm.action);
+                    } else {
+                        modalBody.innerHTML = '<div class="alert alert-danger">Error loading form data. Please try again.</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading form:', error);
+                    modalBody.innerHTML = '<div class="alert alert-danger">Error loading form: ' + error.message + '</div>';
+                });
+            }
+        });
+    });
+
+    // Handle toggle children buttons
+    const toggleButtons = document.querySelectorAll('.toggle-children');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const menuId = this.getAttribute('data-menu-id');
+            const childRows = document.querySelectorAll(`.child-of-${menuId}`);
+            const icon = this.querySelector('i');
+            
+            // Toggle visibility of child rows
+            childRows.forEach(row => {
+                if (row.style.display === 'none' || row.style.display === '') {
+                    row.style.display = 'table-row';
+                    icon.classList.remove('fa-chevron-down');
+                    icon.classList.add('fa-chevron-up');
+                } else {
+                    row.style.display = 'none';
+                    icon.classList.remove('fa-chevron-up');
+                    icon.classList.add('fa-chevron-down');
                 }
             });
         });
     });
+    
+    // Add highlighting for parent rows that have active children
+    const childMenus = document.querySelectorAll('.child-menu');
+    childMenus.forEach(child => {
+        if (child.classList.contains('active')) {
+            const parentId = child.className.match(/child-of-(\d+)/)[1];
+            const parentRow = document.querySelector(`tr[data-menu-id="${parentId}"]`);
+            if (parentRow && !parentRow.classList.contains('active')) {
+                parentRow.classList.add('parent-of-active');
+                // Auto-expand parents with active children
+                const toggleButton = parentRow.querySelector('.toggle-children');
+                if (toggleButton) {
+                    toggleButton.click();
+                }
+            }
+        }
+    });
+});
 </script>
-@endsection 
+@endpush 

@@ -193,12 +193,12 @@
                     </a>
                     <!-- Categories dropdown with submenu -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategories.*') ? 'active' : '' }}">
-                        <a href="#categoriesSubmenu" data-bs-toggle="collapse" 
+                        <a href="#categoriesSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategories.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-tags me-2"></i>Categories</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategories.*') ? 'show' : '' }}" id="categoriesSubmenu">
+                        <div class="collapse" id="categoriesSubmenu">
                             <a href="{{ route('admin.categories.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                                 <i class="fas fa-folder me-2"></i>Manage Categories
                             </a>
@@ -210,12 +210,12 @@
                     
                     <!-- Products dropdown with submenu -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.brands.*') ? 'active' : '' }}">
-                        <a href="#productsSubmenu" data-bs-toggle="collapse" 
+                        <a href="#productsSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.brands.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-shopping-cart me-2"></i>Products</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.products.*') || request()->routeIs('admin.imports.*') || request()->routeIs('admin.brands.*') ? 'show' : '' }}" id="productsSubmenu">
+                        <div class="collapse" id="productsSubmenu">
                             <a href="{{ route('admin.products.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.products.*') ? 'active' : '' }}">
                                 <i class="fas fa-laptop me-2"></i>Manage Products
                             </a>
@@ -228,14 +228,19 @@
                         </div>
                     </div>
                     
+                    <!-- Models Management -->
+                    <a href="{{ route('admin.models.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('admin.models.*') ? 'active' : '' }}">
+                        <i class="fas fa-cubes me-2"></i>Models
+                    </a>
+                    
                     <!-- Inventory Management -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.inventory.*') ? 'active' : '' }}">
-                        <a href="#inventorySubmenu" data-bs-toggle="collapse" 
+                        <a href="#inventorySubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.inventory.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-boxes me-2"></i>Inventory</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.inventory.*') ? 'show' : '' }}" id="inventorySubmenu">
+                        <div class="collapse" id="inventorySubmenu">
                             <a href="{{ route('admin.inventory.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.inventory.index') ? 'active' : '' }}">
                                 <i class="fas fa-list me-2"></i>Manage Inventory
                             </a>
@@ -258,12 +263,12 @@
 
                     <!-- Order & Return Management -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.orders.*') || request()->routeIs('admin.returns.*') ? 'active' : '' }}">
-                        <a href="#orderSubmenu" data-bs-toggle="collapse" 
+                        <a href="#orderSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                         class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.orders.*') || request()->routeIs('admin.returns.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-shopping-bag me-2"></i>Order Management</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.orders.*') || request()->routeIs('admin.returns.*') ? 'show' : '' }}" id="orderSubmenu">
+                        <div class="collapse" id="orderSubmenu">
                             <a href="{{ route('admin.orders.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.orders.*') && !request()->routeIs('admin.orders.create') ? 'active' : '' }}">
                                 <i class="fas fa-list-alt me-2"></i>All Orders
                                 @php
@@ -303,12 +308,12 @@
                     
                     <!-- Advertisements Management -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.advertisements.*') ? 'active' : '' }}">
-                        <a href="#advertisementSubmenu" data-bs-toggle="collapse" 
+                        <a href="#advertisementSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.advertisements.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-ad me-2"></i>Advertisements</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.advertisements.*') ? 'show' : '' }}" id="advertisementSubmenu">
+                        <div class="collapse" id="advertisementSubmenu">
                             <a href="{{ route('admin.advertisements.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.advertisements.index') ? 'active' : '' }}">
                                 <i class="fas fa-list me-2"></i>All Advertisements
                             </a>
@@ -327,12 +332,12 @@
                     <!-- User Management - Only visible to admins -->
                     @if(Auth::user()->isAdmin())
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                        <a href="#usersSubmenu" data-bs-toggle="collapse" 
+                        <a href="#usersSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.users.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-user-shield me-2"></i>User Management</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.users.*') ? 'show' : '' }}" id="usersSubmenu">
+                        <div class="collapse" id="usersSubmenu">
                             <a href="{{ route('admin.users.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.users.index') ? 'active' : '' }}">
                                 <i class="fas fa-users me-2"></i>All Users
                             </a>
@@ -345,12 +350,12 @@
                     
                     <!-- Settings dropdown with submenu -->
                     <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.menus.*') || request()->routeIs('admin.pages.*') ? 'active' : '' }}">
-                        <a href="#settingsSubmenu" data-bs-toggle="collapse" 
+                        <a href="#settingsSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
                            class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.menus.*') || request()->routeIs('admin.pages.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-cogs me-2"></i>Settings</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
-                        <div class="collapse {{ request()->routeIs('admin.settings.*') || request()->routeIs('admin.menus.*') || request()->routeIs('admin.pages.*') ? 'show' : '' }}" id="settingsSubmenu">
+                        <div class="collapse" id="settingsSubmenu">
                             <a href="{{ route('admin.settings.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
                                 <i class="fas fa-sliders-h me-2"></i>General Settings
                             </a>
@@ -410,12 +415,30 @@
     <script>
         // Submenu toggle handling
         document.addEventListener('DOMContentLoaded', function() {
-            // Initialize submenu state based on active state
-            const activeSubmenus = document.querySelectorAll('.list-group-item.p-0.active .collapse');
-            activeSubmenus.forEach(submenu => {
+            // Close all submenus initially, regardless of active state
+            const allSubmenus = document.querySelectorAll('.list-group-item.p-0 .collapse');
+            allSubmenus.forEach(submenu => {
+                // Create a Bootstrap collapse instance without showing it
                 const bsCollapse = new bootstrap.Collapse(submenu, {
-                    toggle: true
+                    toggle: false
                 });
+                // Ensure it's hidden
+                submenu.classList.remove('show');
+            });
+            
+            // Mark parent menu as active if a child is active
+            const activeChildMenus = document.querySelectorAll('.list-group-item.p-0 .collapse .list-group-item.active');
+            activeChildMenus.forEach(activeChild => {
+                // Find parent menu item and add active class
+                const parentMenu = activeChild.closest('.list-group-item.p-0');
+                if (parentMenu) {
+                    parentMenu.classList.add('active');
+                    // Find the parent menu link and add text-white class
+                    const parentLink = parentMenu.querySelector('a[data-bs-toggle="collapse"]');
+                    if (parentLink) {
+                        parentLink.classList.add('text-white');
+                    }
+                }
             });
             
             // Toggle chevron icon orientation when submenu is toggled
@@ -425,11 +448,8 @@
                 const target = document.querySelector(targetId);
                 
                 if (target) {
-                    // Icon is down by default, rotate it if submenu is expanded
+                    // Icon is down by default
                     const icon = submenuToggle.querySelector('.fa-chevron-down');
-                    if (icon && target.classList.contains('show')) {
-                        icon.style.transform = 'rotate(180deg)';
-                    }
                     
                     // Listen for Bootstrap's collapse events
                     target.addEventListener('show.bs.collapse', function () {
@@ -439,11 +459,58 @@
                     target.addEventListener('hide.bs.collapse', function () {
                         if (icon) icon.style.transform = 'rotate(0deg)';
                     });
+                    
+                    // Add click handler
+                    submenuToggle.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        
+                        // Hide all other submenus first
+                        allSubmenus.forEach(submenu => {
+                            if (submenu !== target && submenu.classList.contains('show')) {
+                                bootstrap.Collapse.getInstance(submenu).hide();
+                            }
+                        });
+                        
+                        // Toggle this submenu
+                        const targetCollapse = bootstrap.Collapse.getInstance(target);
+                        if (target.classList.contains('show')) {
+                            targetCollapse.hide();
+                        } else {
+                            targetCollapse.show();
+                        }
+                    });
                 }
             });
         });
     </script>
     
     @yield('scripts')
+    @stack('scripts')
+    
+    <!-- Modal backdrop cleanup script -->
+    <script>
+        // Clean up any stray modal backdrops on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Remove any lingering backdrop elements
+            const backdrops = document.querySelectorAll('.modal-backdrop');
+            if (backdrops.length > 0) {
+                console.log('Found and removing', backdrops.length, 'stray modal backdrops');
+                backdrops.forEach(function(backdrop) {
+                    backdrop.parentNode.removeChild(backdrop);
+                });
+                
+                // Reset body
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+            }
+            
+            // Safety check for other modal-related issues
+            if (document.body.classList.contains('modal-open')) {
+                console.log('Body still has modal-open class, removing it');
+                document.body.classList.remove('modal-open');
+                document.body.style.paddingRight = '';
+            }
+        });
+    </script>
 </body>
 </html> 

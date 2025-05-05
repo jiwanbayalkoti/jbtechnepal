@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Page;
+use App\Models\MenuItem;
 use Illuminate\Http\Request;
 
 class PageController extends Controller
@@ -20,6 +21,23 @@ class PageController extends Controller
                     ->firstOrFail();
         
         return view('pages.show', compact('page'));
+    }
+
+    /**
+     * Display a dynamic page from menu item.
+     *
+     * @param  string  $slug
+     * @return \Illuminate\Http\Response
+     */
+    public function dynamicPage($slug)
+    {
+        // Find the menu item with the given slug that is marked as a dynamic page
+        $menuItem = MenuItem::where('slug', $slug)
+                          ->where('is_dynamic_page', true)
+                          ->where('active', true)
+                          ->firstOrFail();
+        
+        return view('pages.dynamic', ['page' => $menuItem]);
     }
 
     /**

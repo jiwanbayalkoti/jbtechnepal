@@ -44,7 +44,14 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="brand" class="form-label">Brand</label>
-            <input type="text" class="form-control @error('brand') is-invalid @enderror" id="brand" name="brand" value="{{ old('brand', $product->brand) }}">
+            <select class="form-select @error('brand') is-invalid @enderror" id="brand" name="brand">
+                <option value="">Select Brand</option>
+                @foreach($brands as $brand)
+                    <option value="{{ $brand->name }}" {{ old('brand', $product->brand) == $brand->name ? 'selected' : '' }}>
+                        {{ $brand->name }}
+                    </option>
+                @endforeach
+            </select>
             @error('brand')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -52,7 +59,14 @@
         
         <div class="col-md-6">
             <label for="model" class="form-label">Model</label>
-            <input type="text" class="form-control @error('model') is-invalid @enderror" id="model" name="model" value="{{ old('model', $product->model) }}">
+            <select class="form-select @error('model') is-invalid @enderror" id="model" name="model">
+                <option value="">Select Model</option>
+                @foreach(\App\Models\Model::orderBy('name')->get() as $modelOption)
+                    <option value="{{ $modelOption->name }}" {{ old('model', $product->model) == $modelOption->name ? 'selected' : '' }}>
+                        {{ $modelOption->name }}
+                    </option>
+                @endforeach
+            </select>
             @error('model')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -144,6 +158,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 subcategorySelect.remove(1);
             }
             
+            // Also clear model dropdown when category changes
+            const modelSelect = formContent.querySelector('select[name="model"]');
+            if (modelSelect) {
+                while (modelSelect.options.length > 1) {
+                    modelSelect.remove(1);
+                }
+            }
+            
             if (categoryId) {
                 // Fetch subcategories for the selected category
                 fetch(`{{ url('admin/subcategories') }}/${categoryId}`)
@@ -162,6 +184,39 @@ document.addEventListener('DOMContentLoaded', function() {
                     .catch(error => {
                         console.error('Error fetching subcategories:', error);
                     });
+            }
+        });
+        
+        // Load models based on subcategory change
+        subcategorySelect.addEventListener('change', function() {
+            const subcategoryId = this.value;
+            const modelSelect = formContent.querySelector('select[name="model"]');
+            
+            if (modelSelect) {
+                // Clear existing model options except the first one
+                while (modelSelect.options.length > 1) {
+                    modelSelect.remove(1);
+                }
+                
+                if (subcategoryId) {
+                    // Fetch models for the selected subcategory
+                    fetch(`{{ url('admin/models-by-subcategory') }}/${subcategoryId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success && data.models) {
+                                // Add new options
+                                data.models.forEach(model => {
+                                    const option = document.createElement('option');
+                                    option.value = model.name;
+                                    option.textContent = model.name;
+                                    modelSelect.appendChild(option);
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching models:', error);
+                        });
+                }
             }
         });
         

@@ -74,7 +74,14 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="brand" class="form-label">Brand</label>
-                                <input type="text" class="form-control @error('brand') is-invalid @enderror" id="brand" name="brand" value="{{ old('brand') }}">
+                                <select class="form-select @error('brand') is-invalid @enderror" id="brand" name="brand">
+                                    <option value="">Select Brand</option>
+                                    @foreach($brands as $brand)
+                                        <option value="{{ $brand->name }}" {{ old('brand') == $brand->name ? 'selected' : '' }}>
+                                            {{ $brand->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('brand')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -82,8 +89,15 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label for="model" class="form-label">Model</label>
-                                <input type="text" class="form-control @error('model') is-invalid @enderror" id="model" name="model" value="{{ old('model') }}">
+                                <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
+                                <select class="form-select @error('model') is-invalid @enderror" id="model" name="model" required>
+                                    <option value="">Select Model</option>
+                                    @foreach(\App\Models\Model::orderBy('name')->get() as $modelOption)
+                                        <option value="{{ $modelOption->name }}" {{ old('model') == $modelOption->name ? 'selected' : '' }}>
+                                            {{ $modelOption->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('model')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -92,8 +106,8 @@
                     </div>
                     
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4">{{ old('description') }}</textarea>
+                        <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
+                        <textarea class="form-control @error('description') is-invalid @enderror" id="description" name="description" rows="4" required>{{ old('description') }}</textarea>
                         @error('description')
                             <div class="invalid-feedback">{{ $message }}</div>
                         @enderror
@@ -130,12 +144,49 @@
 @section('scripts')
 <script>
     $(document).ready(function() {
+        // Form submission handling
+        $('#createProductForm').on('submit', function(e) {
+            console.log('Form submitting...');
+            
+            // Check for validation errors
+            let hasErrors = false;
+            const requiredFields = ['name', 'category_id', 'model', 'price', 'description'];
+            
+            requiredFields.forEach(field => {
+                const $field = $(`#${field}`);
+                if (!$field.val()) {
+                    console.error(`Field ${field} is empty!`);
+                    hasErrors = true;
+                    
+                    // Highlight the field
+                    $field.addClass('is-invalid');
+                } else {
+                    console.log(`Field ${field} value: ${$field.val()}`);
+                }
+            });
+            
+            if (hasErrors) {
+                console.error('Form has validation errors!');
+                alert('Please fill in all required fields marked with *');
+                e.preventDefault();
+                return false;
+            }
+            
+            // Log form data
+            console.log('Form is valid, submitting...');
+            
+            return true; // Allow form submission to continue
+        });
+    
         $('#category_id').change(function() {
             const categoryId = $(this).val();
             const subcategorySelect = $('#subcategory_id');
             
             // Clear subcategory dropdown
             subcategorySelect.empty().append('<option value="">Select Subcategory</option>');
+            
+            // Clear model dropdown when category changes
+            $('#model').empty().append('<option value="">Select Model</option>');
             
             if (categoryId) {
                 // Load subcategories for this category
@@ -144,6 +195,7 @@
                     type: 'GET',
                     dataType: 'json',
                     success: function(response) {
+                        console.log(response);
                         if (response.success && response.subcategories.length > 0) {
                             // Add subcategories to dropdown
                             $.each(response.subcategories, function(index, subcategory) {
@@ -188,6 +240,39 @@
                 });
             } else {
                 $('#specifications-container').html('<div class="alert alert-info mb-3">First select a category to load specification types.</div>');
+            }
+        });
+        
+        // Load models when subcategory is selected
+        $('#subcategory_id').change(function() {
+            const subcategoryId = $(this).val();
+            const modelSelect = $('#model');
+            
+            // Clear model dropdown
+            modelSelect.empty().append('<option value="">Select Model</option>');
+            
+            if (subcategoryId) {
+                // Load models for this subcategory
+                $.ajax({
+                    url: `/admin/models-by-subcategory/${subcategoryId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        console.log(response);
+                        if (response.success && response.models.length > 0) {
+                            // Add models to dropdown
+                            $.each(response.models, function(index, model) {
+                                modelSelect.append(`<option value="${model.name}">${model.name}</option>`);
+                            });
+                        } else {
+                            modelSelect.append('<option value="" disabled>No models available for this subcategory</option>');
+                        }
+                    },
+                    error: function(xhr) {
+                        console.error('Error loading models:', xhr.responseText);
+                        modelSelect.append('<option value="" disabled>Error loading models</option>');
+                    }
+                });
             }
         });
     });

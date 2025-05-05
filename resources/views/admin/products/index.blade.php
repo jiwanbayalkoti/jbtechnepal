@@ -291,7 +291,14 @@
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="brand" class="form-label">Brand <span class="text-danger">*</span></label>
-            <input type="text" class="form-control @error('brand') is-invalid @enderror" id="brand" name="brand" value="{{ old('brand') }}" required>
+            <select class="form-select @error('brand') is-invalid @enderror" id="brand" name="brand" required>
+                <option value="">Select Brand</option>
+                @foreach($brands as $brand)
+                    <option value="{{ $brand }}" {{ old('brand') == $brand ? 'selected' : '' }}>
+                        {{ $brand }}
+                    </option>
+                @endforeach
+            </select>
             @error('brand')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -299,7 +306,14 @@
         
         <div class="col-md-6">
             <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
-            <input type="text" class="form-control @error('model') is-invalid @enderror" id="model" name="model" value="{{ old('model') }}" required>
+            <select class="form-select @error('model') is-invalid @enderror" id="model" name="model" required>
+                <option value="">Select Model</option>
+                @foreach(\App\Models\Model::orderBy('name')->get() as $modelOption)
+                    <option value="{{ $modelOption->name }}" {{ old('model') == $modelOption->name ? 'selected' : '' }}>
+                        {{ $modelOption->name }}
+                    </option>
+                @endforeach
+            </select>
             @error('model')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -460,6 +474,17 @@
                 subcategorySelect.remove(1);
             }
             
+            // Clear model dropdown when category changes
+            const createModalForm = document.getElementById('createProductForm');
+            if (createModalForm) {
+                const modelSelect = createModalForm.querySelector('select[name="model"]');
+                if (modelSelect) {
+                    while (modelSelect.options.length > 1) {
+                        modelSelect.remove(1);
+                    }
+                }
+            }
+            
             if (categoryId) {
                 console.log(categoryId);
                 // Show loading indicator in the subcategory dropdown
@@ -509,6 +534,72 @@
                     });
             }
         }
+
+        // Add event listeners for subcategory changes (for loading models)
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.matches('select[name="subcategory_id"]')) {
+                const subcategoryId = e.target.value;
+                // Find the closest form to this subcategory select
+                const form = e.target.closest('form');
+                if (!form) return;
+                
+                const modelSelect = form.querySelector('select[name="model"]');
+                if (!modelSelect) return;
+                
+                // Clear existing model options except the first one
+                while (modelSelect.options.length > 1) {
+                    modelSelect.remove(1);
+                }
+                
+                if (subcategoryId) {
+                    // Add loading option
+                    const loadingOption = document.createElement('option');
+                    loadingOption.textContent = 'Loading models...';
+                    loadingOption.disabled = true;
+                    modelSelect.appendChild(loadingOption);
+                    
+                    // Fetch models for the selected subcategory
+                    fetch(`{{ url('admin/models-by-subcategory') }}/${subcategoryId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Remove loading option
+                            modelSelect.remove(modelSelect.options.length - 1);
+                            
+                            if (data.success && data.models) {
+                                // Add new options
+                                data.models.forEach(model => {
+                                    const option = document.createElement('option');
+                                    option.value = model.name;
+                                    option.textContent = model.name;
+                                    modelSelect.appendChild(option);
+                                });
+                                
+                                if (data.models.length === 0) {
+                                    const noOption = document.createElement('option');
+                                    noOption.textContent = 'No models available for this subcategory';
+                                    noOption.disabled = true;
+                                    modelSelect.appendChild(noOption);
+                                }
+                            } else {
+                                const errorOption = document.createElement('option');
+                                errorOption.textContent = 'Error: Invalid data received';
+                                errorOption.disabled = true;
+                                modelSelect.appendChild(errorOption);
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching models:', error);
+                            // Remove loading option on error
+                            modelSelect.remove(modelSelect.options.length - 1);
+                            
+                            const errorOption = document.createElement('option');
+                            errorOption.textContent = 'Error loading models';
+                            errorOption.disabled = true;
+                            modelSelect.appendChild(errorOption);
+                        });
+                }
+            }
+        });
 
         // When Edit button is clicked, update the form action
         const editButtons = document.querySelectorAll('[data-edit-url]');

@@ -35,141 +35,178 @@ class CompareController extends Controller
     public function product($slug)
     {
         $product = Product::where('slug', $slug)
-            ->with(['specifications.specificationType', 'category'])
+            ->with(['category', 'subcategory', 'images', 'specifications.specificationType'])
             ->firstOrFail();
             
         $relatedProducts = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
-            ->limit(4)
+            ->with(['images'])
+            ->take(4)
             ->get();
             
-        return view('product', compact('product', 'relatedProducts'));
+        // Get products from the same brand
+        $brandProducts = Product::where('brand', $product->brand)
+            ->where('id', '!=', $product->id)
+            ->with(['images'])
+            ->take(4)
+            ->get();
+            
+        return view('products.show', compact('product', 'relatedProducts', 'brandProducts'));
     }
     
     /**
-     * Add product to comparison list
+     * Show the comparison page.
+     */
+    public function compare()
+    {
+        $compareList = session('compare_list', []);
+        $products = [];
+        $specTypes = collect(); // Initialize as empty collection instead of null
+        
+        if (!empty($compareList)) {
+            $products = Product::whereIn('id', $compareList)
+                ->with(['category', 'subcategory', 'images', 'specifications.specificationType'])
+                ->get();
+                
+            // Get all specification types used by these products
+            $specTypeIds = [];
+            foreach ($products as $product) {
+                // Ensure specifications is not null
+                if ($product->specifications) {
+                    foreach ($product->specifications as $spec) {
+                        if ($spec->specification_type_id) {
+                            $specTypeIds[] = $spec->specification_type_id;
+                        }
+                    }
+                }
+            }
+            
+            // Get unique specification types
+            if (!empty($specTypeIds)) {
+                $specTypes = SpecificationType::whereIn('id', array_unique($specTypeIds))
+                    ->orderBy('name')
+                    ->get();
+            }
+        }
+        
+        return view('compare.index', compact('products', 'specTypes'));
+    }
+    
+    /**
+     * Add product to compare list.
      */
     public function addToCompare(Request $request)
     {
         $productId = $request->product_id;
+        $compareList = session()->get('compare_list', []);
         
-        if (!$productId) {
-            return response()->json(['success' => false, 'message' => 'Product ID is required']);
-        }
-        
-        $product = Product::find($productId);
-        
-        if (!$product) {
-            return response()->json(['success' => false, 'message' => 'Product not found']);
-        }
-        
-        $compareList = $request->session()->get('compare_list', []);
-        
-        // Check if product already exists in comparison list
-        if (in_array($productId, $compareList)) {
-            return response()->json(['success' => false, 'message' => 'Product already in comparison list']);
-        }
-        
-        // Check if comparing products from different categories
-        if (!empty($compareList)) {
-            $existingProduct = Product::find($compareList[0]);
-            if ($existingProduct && $existingProduct->category_id != $product->category_id) {
-                return response()->json([
-                    'success' => false, 
-                    'message' => 'You can only compare products from the same category'
-                ]);
+        // Check if product already exists in the compare list
+        if (!in_array($productId, $compareList)) {
+            // Limit to 4 products maximum
+            if (count($compareList) >= 4) {
+                return redirect()->back()->with('error', 'You can compare a maximum of 4 products at a time.');
             }
+            
+            // Add product to compare list
+            $compareList[] = $productId;
+            session()->put('compare_list', $compareList);
+            
+            return redirect()->back()->with('success', 'Product added to comparison list.');
         }
         
-        // Add product to comparison list
-        $compareList[] = $productId;
-        $request->session()->put('compare_list', $compareList);
-        
-        return response()->json([
-            'success' => true, 
-            'message' => 'Product added to comparison list',
-            'count' => count($compareList)
-        ]);
+        return redirect()->back()->with('info', 'Product is already in your comparison list.');
     }
     
     /**
-     * Remove product from comparison list
+     * Remove product from compare list.
      */
     public function removeFromCompare(Request $request)
     {
         $productId = $request->product_id;
+        $compareList = session()->get('compare_list', []);
         
-        if (!$productId) {
-            return response()->json(['success' => false, 'message' => 'Product ID is required']);
+        // Remove product from compare list
+        $compareList = array_diff($compareList, [$productId]);
+        session()->put('compare_list', $compareList);
+        
+        return redirect()->back()->with('success', 'Product removed from comparison list.');
+    }
+    
+    /**
+     * Clear all items from compare list.
+     */
+    public function clearCompare()
+    {
+        session()->forget('compare_list');
+        
+        return redirect()->back()->with('success', 'Comparison list cleared.');
+    }
+    
+    /**
+     * Add product to compare list via AJAX.
+     */
+    public function addToCompareAjax($id)
+    {
+        $compareList = session()->get('compare_list', []);
+        
+        // Check if product already exists in the compare list
+        if (!in_array($id, $compareList)) {
+            // Limit to 4 products maximum
+            if (count($compareList) >= 4) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'You can compare a maximum of 4 products at a time.'
+                ], 400);
+            }
+            
+            // Add product to compare list
+            $compareList[] = $id;
+            session()->put('compare_list', $compareList);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Product added to comparison list.',
+                'count' => count($compareList)
+            ]);
         }
         
-        $compareList = $request->session()->get('compare_list', []);
-        
-        // Remove product from comparison list
-        $compareList = array_diff($compareList, [$productId]);
-        $request->session()->put('compare_list', array_values($compareList));
-        
         return response()->json([
-            'success' => true, 
-            'message' => 'Product removed from comparison list',
+            'success' => false,
+            'message' => 'Product is already in your comparison list.',
             'count' => count($compareList)
         ]);
     }
     
     /**
-     * Show comparison page
+     * Remove product from compare list via AJAX.
      */
-    public function compare(Request $request)
+    public function removeFromCompareAjax($id)
     {
-        $compareList = $request->session()->get('compare_list', []);
+        $compareList = session()->get('compare_list', []);
         
-        if (empty($compareList)) {
-            return redirect()->route('home')->with('error', 'No products to compare');
-        }
+        // Remove product from compare list
+        $compareList = array_diff($compareList, [$id]);
+        session()->put('compare_list', $compareList);
         
-        $products = Product::whereIn('id', $compareList)
-            ->with(['specifications.specificationType', 'category'])
-            ->get();
-            
-        if ($products->isEmpty()) {
-            return redirect()->route('home')->with('error', 'No products to compare');
-        }
-        
-        // Get all specification types for this category
-        $category = $products->first()->category;
-        $specTypes = SpecificationType::where('category_id', $category->id)
-            ->where('is_comparable', true)
-            ->orderBy('display_order')
-            ->get();
-            
-        // Create a specification matrix for easy comparison
-        $specMatrix = [];
-        foreach ($specTypes as $type) {
-            $specMatrix[$type->id] = [
-                'name' => $type->name,
-                'unit' => $type->unit,
-                'values' => []
-            ];
-            
-            foreach ($products as $product) {
-                $spec = $product->specifications->first(function($spec) use ($type) {
-                    return $spec->specification_type_id == $type->id;
-                });
-                
-                $specMatrix[$type->id]['values'][$product->id] = $spec ? $spec->value : 'N/A';
-            }
-        }
-        
-        return view('compare', compact('products', 'specMatrix'));
+        return response()->json([
+            'success' => true,
+            'message' => 'Product removed from comparison list.',
+            'count' => count($compareList)
+        ]);
     }
     
     /**
-     * Clear comparison list
+     * Clear all items from compare list via AJAX.
      */
-    public function clearCompare(Request $request)
+    public function clearCompareAjax()
     {
-        $request->session()->forget('compare_list');
-        return redirect()->route('home')->with('success', 'Comparison list cleared');
+        session()->forget('compare_list');
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Comparison list cleared.',
+            'count' => 0
+        ]);
     }
 
     /**
