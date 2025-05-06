@@ -261,6 +261,21 @@
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
+
+    <div class="mb-3">
+            <label for="brand" class="form-label">Brand <span class="text-danger">*</span></label>
+            <select class="form-select @error('brand') is-invalid @enderror" id="brand" name="brand" required>
+                <option value="">Select Brand</option>
+                @foreach($brands as $brand)
+                    <option value="{{ $brand }}" {{ old('brand') == $brand ? 'selected' : '' }}>
+                        {{ $brand }}
+                    </option>
+                @endforeach
+            </select>
+            @error('brand')
+                <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+        </div>
     
     <div class="mb-3">
         <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
@@ -288,23 +303,7 @@
         @enderror
     </div>
     
-    <div class="row mb-3">
-        <div class="col-md-6">
-            <label for="brand" class="form-label">Brand <span class="text-danger">*</span></label>
-            <select class="form-select @error('brand') is-invalid @enderror" id="brand" name="brand" required>
-                <option value="">Select Brand</option>
-                @foreach($brands as $brand)
-                    <option value="{{ $brand }}" {{ old('brand') == $brand ? 'selected' : '' }}>
-                        {{ $brand }}
-                    </option>
-                @endforeach
-            </select>
-            @error('brand')
-                <div class="invalid-feedback">{{ $message }}</div>
-            @enderror
-        </div>
-        
-        <div class="col-md-6">
+    <div class="mb-3">
             <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
             <select class="form-select @error('model') is-invalid @enderror" id="model" name="model" required>
                 <option value="">Select Model</option>
@@ -318,7 +317,6 @@
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
-    </div>
     
     <div class="mb-3">
         <label for="price" class="form-label">Price <span class="text-danger">*</span></label>

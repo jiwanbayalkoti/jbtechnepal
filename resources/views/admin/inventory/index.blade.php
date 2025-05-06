@@ -100,16 +100,16 @@
                                     @endif
                                 </td>
                                 <td>
-                                    <a href="{{ route('admin.products.edit', ['product' => $item->product_id]) }}" class="text-decoration-none fw-bold">
-                                        {{ $item->product->name }}
+                                    <a href="{{ $item->product_id ? route('admin.products.edit', ['product' => $item->product_id]) : '#' }}" class="text-decoration-none fw-bold">
+                                        {{ $item->product ? $item->product->name : 'N/A' }}
                                     </a>
-                                    @if($item->product->brand)
+                                    @if($item->product && $item->product->brand)
                                         <div class="small text-muted">Brand: {{ $item->product->brand }}</div>
                                     @endif
                                 </td>
                                 <td>{{ $item->sku ?? 'N/A' }}</td>
                                 <td>
-                                    @if($item->product->category)
+                                    @if($item->product && $item->product->category)
                                         {{ $item->product->category->name }}
                                     @else
                                         <span class="text-muted">Uncategorized</span>
@@ -142,7 +142,9 @@
                                             <i class="fas fa-exchange-alt"></i>
                                         </a>
                                         <button type="button" class="btn btn-sm btn-danger" 
-                                            onclick="confirmDelete('{{ $item->id }}', '{{ $item->product->name }}')">
+                                            data-bs-toggle="modal" data-bs-target="#deleteModal"
+                                            data-id="{{ $item->id }}" 
+                                            data-name="{{ $item->product ? $item->product->name : 'Item' }}">
                                             <i class="fas fa-trash"></i>
                                         </button>
                                     </div>
@@ -180,6 +182,33 @@
                 </div>
                 <div>
                     {{ $inventoryItems->appends(request()->query())->links() }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="deleteModalLabel">Confirm Deletion</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="me-3 text-danger">
+                            <i class="fas fa-exclamation-triangle fa-3x"></i>
+                        </div>
+                        <div>
+                            <p class="mb-0">Are you sure you want to delete the inventory record for <strong id="itemName"></strong>?</p>
+                            <p class="text-danger mb-0"><small>This action cannot be undone.</small></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmDelete">Delete</button>
                 </div>
             </div>
         </div>
@@ -256,13 +285,41 @@
 
 @push('scripts')
 <script>
-    function confirmDelete(id, name) {
-        if (confirm(`Are you sure you want to delete the inventory record for "${name}"? This action cannot be undone.`)) {
-            document.getElementById('delete-form-' + id).submit();
-        }
-    }
-    
     document.addEventListener('DOMContentLoaded', function() {
+        // Delete modal functionality
+        const deleteModal = document.getElementById('deleteModal');
+        if (deleteModal) {
+            let deleteItemId = null;
+            
+            deleteModal.addEventListener('show.bs.modal', function (event) {
+                // Button that triggered the modal
+                const button = event.relatedTarget;
+                
+                // Extract info from data attributes
+                deleteItemId = button.getAttribute('data-id');
+                const itemName = button.getAttribute('data-name');
+                
+                // Update the modal's content
+                const nameElement = deleteModal.querySelector('#itemName');
+                if (nameElement) {
+                    nameElement.textContent = itemName;
+                }
+            });
+            
+            // Handle confirm delete button
+            const confirmDeleteBtn = document.getElementById('confirmDelete');
+            if (confirmDeleteBtn) {
+                confirmDeleteBtn.addEventListener('click', function() {
+                    if (deleteItemId) {
+                        const form = document.getElementById('delete-form-' + deleteItemId);
+                        if (form) {
+                            form.submit();
+                        }
+                    }
+                });
+            }
+        }
+        
         // Apply select2 to dropdowns if available
         if (typeof $.fn.select2 !== 'undefined') {
             $('select[name="status"]').select2({

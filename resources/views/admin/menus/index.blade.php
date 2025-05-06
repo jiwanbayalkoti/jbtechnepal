@@ -109,9 +109,18 @@
                             <tr class="child-menu child-of-{{ $item->id }} bg-light" style="display: none;">
                                 <td>{{ $child->id }}</td>
                                 <td>
-                                    <div class="ps-4 ms-4 border-start border-2 border-secondary">
-                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                    <div class="d-flex align-items-center ps-4 ms-4 border-start border-2 border-secondary">
+                                        @if($child->children && $child->children->count() > 0)
+                                            <button class="btn btn-sm btn-outline-secondary me-2 toggle-children" data-menu-id="{{ $child->id }}">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                        @else
+                                            <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        @endif
                                         {{ $child->name }}
+                                        @if($child->children && $child->children->count() > 0)
+                                            <span class="badge bg-secondary ms-2">{{ $child->children->count() }} children</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -150,9 +159,67 @@
                                                 <i class="fas fa-trash"></i> Delete
                                             </button>
                                         </form>
+                                        <button type="button" class="btn btn-sm btn-success" 
+                                                data-open-modal="createMenuModal" 
+                                                onclick="document.getElementById('parent_id').value = '{{ $child->id }}'; document.getElementById('location').value = '{{ $child->location }}';">
+                                            <i class="fas fa-plus"></i> Add Child
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
+                            
+                            <!-- Render grandchildren if any -->
+                            @if($child->children && $child->children->count() > 0)
+                                @foreach($child->children as $grandchild)
+                                    <tr class="child-menu child-of-{{ $child->id }} grandchild-menu bg-light-subtle" style="display: none;">
+                                        <td>{{ $grandchild->id }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center ps-5 ms-5 border-start border-2 border-info">
+                                                <i class="fas fa-long-arrow-alt-right text-info me-2"></i>
+                                                {{ $grandchild->name }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($grandchild->url)
+                                                <span class="badge bg-info">URL: {{ $grandchild->url }}</span>
+                                            @else
+                                                <span class="badge bg-primary">Route: {{ $grandchild->route_name }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($grandchild->icon)
+                                                <i class="{{ $grandchild->icon }}"></i> {{ $grandchild->icon }}
+                                            @else
+                                                <span class="text-muted">No icon</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $grandchild->order }}</td>
+                                        <td>
+                                            @if($grandchild->active)
+                                                <span class="badge bg-success">Active</span>
+                                            @else
+                                                <span class="badge bg-danger">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-primary" 
+                                                        data-edit-url="{{ route('admin.menus.edit', $grandchild->id) }}"
+                                                        data-open-modal="editMenuModal">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <form action="{{ route('admin.menus.destroy', $grandchild->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         @endforeach
                     @empty
                         <tr>
@@ -247,9 +314,18 @@
                             <tr class="child-menu child-of-{{ $item->id }} bg-light" style="display: none;">
                                 <td>{{ $child->id }}</td>
                                 <td>
-                                    <div class="ps-4 ms-4 border-start border-2 border-secondary">
-                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                    <div class="d-flex align-items-center ps-4 ms-4 border-start border-2 border-secondary">
+                                        @if($child->children && $child->children->count() > 0)
+                                            <button class="btn btn-sm btn-outline-secondary me-2 toggle-children" data-menu-id="{{ $child->id }}">
+                                                <i class="fas fa-chevron-down"></i>
+                                            </button>
+                                        @else
+                                            <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        @endif
                                         {{ $child->name }}
+                                        @if($child->children && $child->children->count() > 0)
+                                            <span class="badge bg-secondary ms-2">{{ $child->children->count() }} children</span>
+                                        @endif
                                     </div>
                                 </td>
                                 <td>
@@ -257,6 +333,13 @@
                                         <span class="badge bg-info">URL: {{ $child->url }}</span>
                                     @else
                                         <span class="badge bg-primary">Route: {{ $child->route_name }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    @if($child->icon)
+                                        <i class="{{ $child->icon }}"></i> {{ $child->icon }}
+                                    @else
+                                        <span class="text-muted">No icon</span>
                                     @endif
                                 </td>
                                 <td>{{ $child->order }}</td>
@@ -281,9 +364,67 @@
                                                 <i class="fas fa-trash"></i> Delete
                                             </button>
                                         </form>
+                                        <button type="button" class="btn btn-sm btn-success" 
+                                                data-open-modal="createMenuModal" 
+                                                onclick="document.getElementById('parent_id').value = '{{ $child->id }}'; document.getElementById('location').value = '{{ $child->location }}';">
+                                            <i class="fas fa-plus"></i> Add Child
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
+                            
+                            <!-- Render grandchildren if any -->
+                            @if($child->children && $child->children->count() > 0)
+                                @foreach($child->children as $grandchild)
+                                    <tr class="child-menu child-of-{{ $child->id }} grandchild-menu bg-light-subtle" style="display: none;">
+                                        <td>{{ $grandchild->id }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center ps-5 ms-5 border-start border-2 border-info">
+                                                <i class="fas fa-long-arrow-alt-right text-info me-2"></i>
+                                                {{ $grandchild->name }}
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($grandchild->url)
+                                                <span class="badge bg-info">URL: {{ $grandchild->url }}</span>
+                                            @else
+                                                <span class="badge bg-primary">Route: {{ $grandchild->route_name }}</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($grandchild->icon)
+                                                <i class="{{ $grandchild->icon }}"></i> {{ $grandchild->icon }}
+                                            @else
+                                                <span class="text-muted">No icon</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $grandchild->order }}</td>
+                                        <td>
+                                            @if($grandchild->active)
+                                                <span class="badge bg-success">Active</span>
+                                            @else
+                                                <span class="badge bg-danger">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <button type="button" class="btn btn-sm btn-primary" 
+                                                        data-edit-url="{{ route('admin.menus.edit', $grandchild->id) }}"
+                                                        data-open-modal="editMenuModal">
+                                                    <i class="fas fa-edit"></i> Edit
+                                                </button>
+                                                <form action="{{ route('admin.menus.destroy', $grandchild->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
+                                                        <i class="fas fa-trash"></i> Delete
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
+                            @endif
                         @endforeach
                     @empty
                         <tr>
@@ -415,23 +556,19 @@
                 <h5 class="modal-title" id="editMenuModalLabel">Edit Menu Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form id="editMenuForm" method="POST">
-                @csrf
-                @method('PUT')
-                <div class="modal-body">
-                    <!-- Form content will be loaded here via AJAX -->
-                    <div class="text-center py-4">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                        <p class="mt-2">Loading form...</p>
+            <div class="modal-body">
+                <!-- Form content will be loaded here via AJAX -->
+                <div class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
+                    <p class="mt-2">Loading form...</p>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">Save Changes</button>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="saveEditButton" class="btn btn-primary">Save Changes</button>
+            </div>
         </div>
     </div>
 </div>
@@ -439,114 +576,247 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Initialize delete confirmation buttons
-    const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
-    deleteButtons.forEach(function(button) {
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-            const message = this.getAttribute('data-delete-confirm') || 'Are you sure you want to delete this item?';
-            const form = this.closest('form');
-            
-            if (confirm(message)) {
-                form.submit();
-            }
-        });
-    });
-    
-    // Initialize edit buttons
-    const editButtons = document.querySelectorAll('[data-edit-url]');
-    editButtons.forEach(function(button) {
-        button.addEventListener('click', function() {
-            const url = this.getAttribute('data-edit-url');
-            const modalId = this.getAttribute('data-open-modal');
-            const modalElement = document.getElementById(modalId);
-            
-            if (modalElement && url) {
-                const modalBody = modalElement.querySelector('.modal-body');
-                const editForm = document.getElementById('editMenuForm');
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle menu children toggling
+        const toggleButtons = document.querySelectorAll('.toggle-children');
+        
+        toggleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const menuId = this.getAttribute('data-menu-id');
+                const childRows = document.querySelectorAll('.child-of-' + menuId);
+                const icon = this.querySelector('i');
                 
-                // Set the form action
-                editForm.action = url.replace('/edit', '');
+                let isVisible = false;
                 
-                // Show loading indicator
-                modalBody.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading form data...</p></div>';
-                
-                // Show the modal
-                const bootstrapModal = new bootstrap.Modal(modalElement);
-                bootstrapModal.show();
-                
-                // Make the AJAX request
-                fetch(url, {
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data && data.success && data.html) {
-                        // Insert the HTML content into the modal body
-                        modalBody.innerHTML = data.html;
-                        
-                        // Get the menu item ID from the URL
-                        const menuId = url.split('/').pop();
-                        console.log('Menu ID:', menuId);
-                        
-                        // For debugging
-                        console.log('Form action set to:', editForm.action);
+                childRows.forEach(row => {
+                    if (row.style.display === 'none' || row.style.display === '') {
+                        row.style.display = 'table-row';
+                        isVisible = true;
                     } else {
-                        modalBody.innerHTML = '<div class="alert alert-danger">Error loading form data. Please try again.</div>';
+                        row.style.display = 'none';
+                        isVisible = false;
+                        
+                        // Also hide any grandchildren
+                        if (row.classList.contains('child-menu') && !row.classList.contains('grandchild-menu')) {
+                            const childId = row.querySelector('td:first-child').textContent.trim();
+                            const grandchildRows = document.querySelectorAll('.child-of-' + childId);
+                            
+                            grandchildRows.forEach(grandchildRow => {
+                                grandchildRow.style.display = 'none';
+                            });
+                            
+                            // Reset the child row's toggle button icon
+                            const childToggleBtn = row.querySelector('.toggle-children i');
+                            if (childToggleBtn) {
+                                childToggleBtn.className = 'fas fa-chevron-down';
+                            }
+                        }
                     }
-                })
-                .catch(error => {
-                    console.error('Error loading form:', error);
-                    modalBody.innerHTML = '<div class="alert alert-danger">Error loading form: ' + error.message + '</div>';
                 });
-            }
-        });
-    });
-
-    // Handle toggle children buttons
-    const toggleButtons = document.querySelectorAll('.toggle-children');
-    
-    toggleButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            const menuId = this.getAttribute('data-menu-id');
-            const childRows = document.querySelectorAll(`.child-of-${menuId}`);
-            const icon = this.querySelector('i');
-            
-            // Toggle visibility of child rows
-            childRows.forEach(row => {
-                if (row.style.display === 'none' || row.style.display === '') {
-                    row.style.display = 'table-row';
-                    icon.classList.remove('fa-chevron-down');
-                    icon.classList.add('fa-chevron-up');
+                
+                // Update the icon
+                if (isVisible) {
+                    icon.className = 'fas fa-chevron-up';
                 } else {
-                    row.style.display = 'none';
-                    icon.classList.remove('fa-chevron-up');
-                    icon.classList.add('fa-chevron-down');
+                    icon.className = 'fas fa-chevron-down';
                 }
             });
         });
-    });
-    
-    // Add highlighting for parent rows that have active children
-    const childMenus = document.querySelectorAll('.child-menu');
-    childMenus.forEach(child => {
-        if (child.classList.contains('active')) {
-            const parentId = child.className.match(/child-of-(\d+)/)[1];
-            const parentRow = document.querySelector(`tr[data-menu-id="${parentId}"]`);
-            if (parentRow && !parentRow.classList.contains('active')) {
-                parentRow.classList.add('parent-of-active');
-                // Auto-expand parents with active children
-                const toggleButton = parentRow.querySelector('.toggle-children');
-                if (toggleButton) {
-                    toggleButton.click();
+        
+        // Handle delete confirmations
+        const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
+        
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const confirmMessage = this.getAttribute('data-delete-confirm');
+                
+                if (confirm(confirmMessage)) {
+                    this.closest('form').submit();
                 }
+            });
+        });
+        
+        // Handle modal opening
+        const modalTriggers = document.querySelectorAll('[data-open-modal]');
+        let currentMenuId = null;
+        
+        modalTriggers.forEach(trigger => {
+            trigger.addEventListener('click', function() {
+                const modalId = this.getAttribute('data-open-modal');
+                const modal = document.getElementById(modalId);
+                
+                if (modal) {
+                    const editUrl = this.getAttribute('data-edit-url');
+                    
+                    if (editUrl && modalId === 'editMenuModal') {
+                        // Extract the menu ID from the URL
+                        const matches = editUrl.match(/\/(\d+)\/edit$/);
+                        if (matches && matches[1]) {
+                            currentMenuId = matches[1];
+                        }
+                        
+                        // Load edit form via AJAX
+                        fetch(editUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    const formContainer = modal.querySelector('.modal-body');
+                                    formContainer.innerHTML = data.html;
+                                    
+                                    // Initialize form scripts
+                                    const scripts = formContainer.querySelectorAll('script');
+                                    scripts.forEach(script => {
+                                        eval(script.innerText);
+                                    });
+                                    
+                                    // Show the modal
+                                    const bsModal = new bootstrap.Modal(modal);
+                                    bsModal.show();
+                                } else {
+                                    alert('Error loading form: ' + data.message);
+                                }
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
+                                alert('Error loading form. Please try again.');
+                            });
+                    } else {
+                        // Just show the modal
+                        const bsModal = new bootstrap.Modal(modal);
+                        bsModal.show();
+                    }
+                }
+            });
+        });
+        
+        // Handle save edit button click
+        document.getElementById('saveEditButton').addEventListener('click', function() {
+            console.log("Save button clicked");
+            
+            if (!currentMenuId) {
+                console.error("Error: No menu ID found", currentMenuId);
+                alert('Error: No menu ID found');
+                return;
             }
-        }
+            
+            console.log("Current menu ID:", currentMenuId);
+            
+            // Debug info
+            if (!document.getElementById('debug-info')) {
+                const debugDiv = document.createElement('div');
+                debugDiv.id = 'debug-info';
+                debugDiv.style.padding = '10px';
+                debugDiv.style.backgroundColor = '#f8f9fa';
+                debugDiv.style.border = '1px solid #dee2e6';
+                debugDiv.style.marginBottom = '10px';
+                debugDiv.innerHTML = `
+                    <h5>Debug Information</h5>
+                    <p>Menu ID: ${currentMenuId}</p>
+                    <p>Form URL: {{ url('/admin/menus') }}/${currentMenuId}</p>
+                `;
+                document.querySelector('#editMenuModal .modal-body').prepend(debugDiv);
+            }
+            
+            // Get the form from the modal body
+            const formElement = document.querySelector('#formContent');
+            if (!formElement) {
+                console.error("Error: Form content not found");
+                alert('Error: Form content not found');
+                return;
+            }
+            
+            // Create a FormData object from all form inputs in the modal
+            const formData = new FormData();
+            const inputs = document.querySelectorAll('#editMenuModal input, #editMenuModal select, #editMenuModal textarea');
+            
+            console.log("Found inputs:", inputs.length);
+            
+            inputs.forEach(input => {
+                // Skip hidden inputs that might cause issues
+                if (input.type === 'hidden' && (input.name === '_method' || input.name === '_token')) {
+                    console.log("Skipping existing method or token field:", input.name);
+                    return;
+                }
+                
+                // Handle checkboxes
+                if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData.append(input.name, input.value);
+                        console.log("Adding checkbox:", input.name, input.value);
+                    } else {
+                        // Send unchecked checkboxes as 0
+                        if (input.name) {
+                            formData.append(input.name, '0');
+                            console.log("Adding unchecked checkbox:", input.name, '0');
+                        }
+                    }
+                } else if (input.name) {
+                    formData.append(input.name, input.value);
+                    console.log("Adding field:", input.name, input.value);
+                }
+            });
+            
+            // Add method-spoofing field for PUT
+            formData.append('_method', 'PUT');
+            // Add CSRF token
+            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            formData.append('_token', csrfToken);
+            
+            console.log("CSRF token:", csrfToken);
+            console.log("Submitting to URL:", `{{ url('/admin/menus') }}/${currentMenuId}`);
+            
+            // Create a temporary form and submit it instead of using fetch
+            const tempForm = document.createElement('form');
+            tempForm.method = 'POST';
+            tempForm.action = `{{ url('/admin/menus') }}/${currentMenuId}`;
+            tempForm.style.display = 'none';
+            
+            // Add method-spoofing field
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'PUT';
+            tempForm.appendChild(methodInput);
+            
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = csrfToken;
+            tempForm.appendChild(csrfInput);
+            
+            // Add all other form data
+            inputs.forEach(input => {
+                if (input.type === 'checkbox') {
+                    if (input.checked) {
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = input.name;
+                        hiddenInput.value = input.value;
+                        tempForm.appendChild(hiddenInput);
+                    } else {
+                        // Send unchecked checkboxes as 0
+                        if (input.name) {
+                            const hiddenInput = document.createElement('input');
+                            hiddenInput.type = 'hidden';
+                            hiddenInput.name = input.name;
+                            hiddenInput.value = '0';
+                            tempForm.appendChild(hiddenInput);
+                        }
+                    }
+                } else if (input.name && input.name !== '_method' && input.name !== '_token') {
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = input.name;
+                    hiddenInput.value = input.value;
+                    tempForm.appendChild(hiddenInput);
+                }
+            });
+            
+            // Append the form to the body and submit it
+            document.body.appendChild(tempForm);
+            tempForm.submit();
+        });
     });
-});
 </script>
 @endpush 

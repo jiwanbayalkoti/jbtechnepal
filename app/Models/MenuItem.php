@@ -83,6 +83,10 @@ class MenuItem extends Model
             ->orderBy('order')
             ->with(['children' => function($query) {
                 $query->active()->orderBy('order');
+                // Load the grandchildren (third level)
+                $query->with(['children' => function($q) {
+                    $q->active()->orderBy('order');
+                }]);
             }])
             ->get();
     }

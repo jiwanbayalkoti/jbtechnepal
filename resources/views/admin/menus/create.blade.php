@@ -82,11 +82,12 @@
                     <select class="form-select @error('parent_id') is-invalid @enderror" id="parent_id" name="parent_id">
                         <option value="">None (Top Level)</option>
                         @foreach($menuItems as $menuItem)
-                            <option value="{{ $menuItem->id }}" data-url="{{ $menuItem->url }}" {{ old('parent_id') == $menuItem->id ? 'selected' : '' }}>
-                                {{ $menuItem->name }} ({{ $menuItem->location }})
+                            <option value="{{ $menuItem['id'] }}" data-url="{{ $menuItem['url'] ?? '' }}" {{ old('parent_id') == $menuItem['id'] ? 'selected' : '' }}>
+                                {{ $menuItem['display_name'] }}
                             </option>
                         @endforeach
                     </select>
+                    <small class="form-text text-muted">Select a parent menu (can be a top-level or sub-menu)</small>
                     @error('parent_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
@@ -109,7 +110,7 @@
                 @enderror
             </div>
             
-            <div class="mb-3" id="brand_section" style="display: none;">
+            <div class="mb-3" id="brand_section">
                 <label for="brand_for_url" class="form-label">Brand for URL</label>
                 <select class="form-select" id="brand_for_url" name="brand_for_url">
                     <option value="all">All Brands</option>
@@ -120,6 +121,12 @@
                     @endforeach
                 </select>
                 <small class="form-text text-muted">Select a brand to use in the URL format: category-by-brand/brand</small>
+            </div>
+            
+            <div class="mb-3 form-check" id="auto_generate_section">
+                <input type="checkbox" class="form-check-input" id="auto_generate_models" name="auto_generate_models" value="1" {{ old('auto_generate_models') ? 'checked' : '' }}>
+                <label class="form-check-label" for="auto_generate_models">Auto-generate model submenus</label>
+                <small class="form-text text-muted d-block">Automatically create child menu items for all models associated with this brand and category</small>
             </div>
             
             <div class="mb-3 form-check">
@@ -170,21 +177,22 @@
 <script>
     // Execute immediately to ensure it runs right away
     (function() {
-        // Initialize form elements
-        const isDynamicCheckbox = document.getElementById('is_dynamic_page');
-        const dynamicFields = document.getElementById('dynamic-page-fields');
-        const urlSection = document.getElementById('url').parentNode.parentNode.parentNode;
+        // Get DOM elements
+        const form = document.querySelector('form');
         const nameInput = document.getElementById('name');
-        const slugInput = document.getElementById('slug');
         const urlInput = document.getElementById('url');
         const urlDisplayInput = document.getElementById('url_display');
         const routeNameInput = document.getElementById('route_name');
         const routeNameDisplayInput = document.getElementById('route_name_display');
+        const parentSelect = document.getElementById('parent_id');
+        const isDynamicCheckbox = document.getElementById('is_dynamic_page');
+        const dynamicFields = document.getElementById('dynamic-page-fields');
+        const urlSection = document.getElementById('url').parentElement.parentElement;
+        const slugInput = document.getElementById('slug');
         const categorySelect = document.getElementById('category_id');
         const brandSection = document.getElementById('brand_section');
         const brandSelect = document.getElementById('brand_for_url');
-        const parentSelect = document.getElementById('parent_id');
-        const form = document.querySelector('form');
+        const autoGenerateSection = document.getElementById('auto_generate_section');
         
         // Store parent menu data
         const parentMenus = {};
@@ -193,25 +201,32 @@
         if (parentSelect) {
             Array.from(parentSelect.options).forEach(option => {
                 if (option.value) {
-                    const parentName = option.textContent.trim().split(' (')[0]; // Extract name without location
-                    const url = option.getAttribute('data-url') || '';
+                    // Extract name without the indentation and location
+                    let fullText = option.textContent.trim();
+                    let matches = fullText.match(/(?:— )*(.+?) \(([^)]+)\)$/);
                     
-                    // Try to extract category and brand from parent URL
-                    const match = url.match(/\/([^\/]+)-by-brand\/([^\/]+)/);
-                    
-                    if (match) {
-                        parentMenus[option.value] = {
-                            categorySlug: match[1],
-                            brand: match[2],
-                            url: url,
-                            name: parentName
-                        };
-                    } else {
-                        // Store the parent's name even if it doesn't have a category-by-brand URL
-                        parentMenus[option.value] = {
-                            name: parentName,
-                            url: url
-                        };
+                    if (matches) {
+                        const parentName = matches[1]; // The actual name without indentation
+                        const parentLocation = matches[2]; // The location portion
+                        const url = option.getAttribute('data-url') || '';
+                        
+                        // Try to extract category and brand from parent URL
+                        const match = url.match(/\/([^\/]+)-by-brand\/([^\/]+)/);
+                        
+                        if (match) {
+                            parentMenus[option.value] = {
+                                categorySlug: match[1],
+                                brand: match[2],
+                                url: url,
+                                name: parentName
+                            };
+                        } else {
+                            // Store the parent's name even if it doesn't have a category-by-brand URL
+                            parentMenus[option.value] = {
+                                name: parentName,
+                                url: url
+                            };
+                        }
                     }
                 }
             });
@@ -222,12 +237,21 @@
                 dynamicFields.style.display = 'block';
                 urlSection.style.display = 'none';
                 brandSection.style.display = 'none';
+                autoGenerateSection.style.display = 'none';
             } else {
                 dynamicFields.style.display = 'none';
                 urlSection.style.display = 'flex';
                 
                 // Always show brand section when not a dynamic page
                 brandSection.style.display = 'block';
+                
+                // Show auto-generate option only for brand-specific menus
+                const isBrandMenu = (brandSelect && brandSelect.value !== 'all') || 
+                                   (parentSelect && parentSelect.value && parentMenus[parentSelect.value] && 
+                                    parentMenus[parentSelect.value].brand && 
+                                    parentMenus[parentSelect.value].brand !== 'all');
+                
+                autoGenerateSection.style.display = isBrandMenu ? 'block' : 'none';
             }
         }
         
@@ -298,6 +322,9 @@
                 if (slugInput && slugInput.value === '') {
                     slugInput.value = slug;
                 }
+                
+                // Hide auto-generate section for dynamic pages
+                autoGenerateSection.style.display = 'none';
             } 
             // For regular menu items
             else {
@@ -327,6 +354,9 @@
                     // Format route name
                     routeNameInput.value = 'products.by.brand';
                     routeNameDisplayInput.value = 'products.by.brand';
+                    
+                    // Show auto-generate option for brand-specific menus
+                    autoGenerateSection.style.display = brandValue !== 'all' ? 'block' : 'none';
                 }
                 // Check if category is selected (only if no parent)
                 else if (categorySelect && categorySelect.value) {
@@ -345,6 +375,9 @@
                     // Format route name
                     routeNameInput.value = 'products.by.brand';
                     routeNameDisplayInput.value = 'products.by.brand';
+                    
+                    // Show auto-generate option for brand-specific menus
+                    autoGenerateSection.style.display = brandValue !== 'all' ? 'block' : 'none';
                 } else {
                     // Default behavior if no parent or category selected
                     const newUrl = '/' + slug;
@@ -354,6 +387,9 @@
                     // Set route name input values
                     routeNameInput.value = slug;
                     routeNameDisplayInput.value = slug;
+                    
+                    // Hide auto-generate for non-category, non-brand menus
+                    autoGenerateSection.style.display = 'none';
                 }
             }
         }

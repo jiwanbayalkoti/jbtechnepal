@@ -75,11 +75,12 @@
             <select class="form-select @error('parent_id') is-invalid @enderror" id="parent_id" name="parent_id">
                 <option value="">None (Top Level)</option>
                 @foreach($menuItems as $item)
-                    <option value="{{ $item->id }}" data-url="{{ $item->url }}" {{ old('parent_id', $menu->parent_id) == $item->id ? 'selected' : '' }}>
-                        {{ $item->name }}
+                    <option value="{{ $item['id'] }}" data-url="{{ $item['url'] ?? '' }}" {{ old('parent_id', $menu->parent_id) == $item['id'] ? 'selected' : '' }}>
+                        {{ $item['display_name'] }}
                     </option>
                 @endforeach
             </select>
+            <small class="form-text text-muted">Select a parent menu (can be a top-level or sub-menu)</small>
             @error('parent_id')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -102,7 +103,7 @@
         @enderror
     </div>
 
-    <div class="mb-3" id="brand_section" style="display: none;">
+    <div class="mb-3" id="brand_section">
         <label for="brand_for_url" class="form-label">Brand for URL</label>
         <select class="form-select" id="brand_for_url" name="brand_for_url">
             <option value="all">All Brands</option>
@@ -120,6 +121,17 @@
             @endforeach
         </select>
         <small class="form-text text-muted">Select a brand to use in the URL format: category-by-brand/brand</small>
+    </div>
+    
+    <div class="mb-3 form-check" id="auto_generate_section">
+        <input type="checkbox" class="form-check-input" id="auto_generate_models" name="auto_generate_models" value="1" 
+        <?php
+        // Check if the URL has a specific brand that isn't 'all'
+        $hasBrand = preg_match('/\/([^\/]+)-by-brand\/([^\/]+)/', $menu->url, $matches) && $matches[2] !== 'all';
+        echo ($hasBrand) ? 'checked' : '';
+        ?>>
+        <label class="form-check-label" for="auto_generate_models">Auto-generate model submenus</label>
+        <small class="form-text text-muted d-block">Automatically create child menu items for all models associated with this brand and category</small>
     </div>
     
     <div class="mb-3 form-check">
@@ -170,7 +182,7 @@
     const routeNameInput = document.getElementById('route_name');
     const routeNameDisplayInput = document.getElementById('route_name_display');
     const categorySelect = document.getElementById('category_id');
-    const brandSection = document.getElementById('brand_section');
+    // const brandSection = document.getElementById('brand_section');
     const brandSelect = document.getElementById('brand_for_url');
     const parentSelect = document.getElementById('parent_id');
     
@@ -181,25 +193,32 @@
     if (parentSelect) {
         Array.from(parentSelect.options).forEach(option => {
             if (option.value) {
-                const parentName = option.textContent.trim();
-                const url = option.getAttribute('data-url') || '';
+                // Extract name without the indentation and location
+                let fullText = option.textContent.trim();
+                let matches = fullText.match(/(?:— )*(.+?) \(([^)]+)\)$/);
                 
-                // Try to extract category and brand from parent URL
-                const match = url.match(/\/([^\/]+)-by-brand\/([^\/]+)/);
-                
-                if (match) {
-                    parentMenus[option.value] = {
-                        categorySlug: match[1],
-                        brand: match[2],
-                        url: url,
-                        name: parentName
-                    };
-                } else {
-                    // Store the parent's name even if it doesn't have a category-by-brand URL
-                    parentMenus[option.value] = {
-                        name: parentName,
-                        url: url
-                    };
+                if (matches) {
+                    const parentName = matches[1]; // The actual name without indentation
+                    const parentLocation = matches[2]; // The location portion
+                    const url = option.getAttribute('data-url') || '';
+                    
+                    // Try to extract category and brand from parent URL
+                    const match = url.match(/\/([^\/]+)-by-brand\/([^\/]+)/);
+                    
+                    if (match) {
+                        parentMenus[option.value] = {
+                            categorySlug: match[1],
+                            brand: match[2],
+                            url: url,
+                            name: parentName
+                        };
+                    } else {
+                        // Store the parent's name even if it doesn't have a category-by-brand URL
+                        parentMenus[option.value] = {
+                            name: parentName,
+                            url: url
+                        };
+                    }
                 }
             }
         });
@@ -209,13 +228,23 @@
         if (isDynamicCheckbox && isDynamicCheckbox.checked) {
             dynamicFields.style.display = 'block';
             urlSection.style.display = 'none';
-            brandSection.style.display = 'none';
+            // brandSection.style.display = 'block';
+            document.getElementById('brand_section').style.display = 'none';
+            document.getElementById('auto_generate_section').style.display = 'none';
         } else {
             dynamicFields.style.display = 'none';
             urlSection.style.display = 'flex';
             
             // Always show brand section when not a dynamic page
-            brandSection.style.display = 'block';
+            document.getElementById('brand_section').style.display = 'block';
+            
+            // Initialize auto-generate visibility immediately
+            const isBrandMenu = (brandSelect && brandSelect.value !== 'all') || 
+                                (parentSelect && parentSelect.value && parentMenus[parentSelect.value] && 
+                                parentMenus[parentSelect.value].brand && 
+                                parentMenus[parentSelect.value].brand !== 'all');
+            
+            document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
         }
     }
     
@@ -232,6 +261,17 @@
         parentSelect.addEventListener('change', function() {
             toggleDynamicFields();
             updateUrls();
+            
+            // Update auto-generate section visibility
+            if (!isDynamicCheckbox.checked) {
+                const parentId = parentSelect.value;
+                const isBrandMenu = (brandSelect && brandSelect.value !== 'all') || 
+                                 (parentId && parentMenus[parentId] && 
+                                  parentMenus[parentId].brand && 
+                                  parentMenus[parentId].brand !== 'all');
+                
+                document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
+            }
         });
     }
     
@@ -244,7 +284,19 @@
     
     // Brand select change handler
     if (brandSelect) {
-        brandSelect.addEventListener('change', updateUrls);
+        brandSelect.addEventListener('change', function() {
+            updateUrls();
+            
+            // Update auto-generate section visibility
+            if (!isDynamicCheckbox.checked) {
+                const isBrandMenu = brandSelect.value !== 'all' || 
+                                  (parentSelect && parentSelect.value && parentMenus[parentSelect.value] && 
+                                   parentMenus[parentSelect.value].brand && 
+                                   parentMenus[parentSelect.value].brand !== 'all');
+                
+                document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
+            }
+        });
     }
     
     function generateURLSafeString(name) {

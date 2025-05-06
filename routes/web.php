@@ -248,6 +248,7 @@ Route::get('/products/{slug}', [ProductController::class, 'show'])->name('produc
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/category/{slug}/all', [ProductController::class, 'categoryProducts'])->name('category.all');
 Route::get('/{category}-by-brand/{brand}', [ProductController::class, 'productsByBrand'])->name('products.by.brand');
+Route::get('/{category}-by-brand/{brand}/{model}', [ProductController::class, 'productsByBrandAndModel'])->name('products.by.brand.model');
 Route::get('/api/newest-products/{limit?}', [HomeController::class, 'getNewestProducts'])->name('api.newest-products');
 
 // Debug routes - remove in production

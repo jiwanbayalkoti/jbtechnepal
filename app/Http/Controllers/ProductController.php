@@ -512,4 +512,93 @@ class ProductController extends Controller
             'sortDir'
         ));
     }
+
+    /**
+     * Display products by brand and model for a specific category.
+     * Used for mega menu links like "laptop-by-brand/dell/xps".
+     *
+     * @param  string  $category
+     * @param  string  $brand
+     * @param  string  $model
+     * @return \Illuminate\Http\Response
+     */
+    public function productsByBrandAndModel(string $category, string $brand, string $model, Request $request)
+    {
+        // Find the base category (e.g., 'laptop' from 'laptop-by-brand')
+        $baseCategory = explode('-by-brand', $category)[0];
+        $categoryObj = Category::where('slug', $baseCategory)->first();
+        
+        if (!$categoryObj) {
+            abort(404, 'Category not found');
+        }
+        
+        // Start building the query
+        $query = Product::where('category_id', $categoryObj->id)
+                        ->where('is_active', true)
+                        ->with(['category', 'subcategory', 'images']);
+        
+        // Find the brand using its slug
+        $brandObj = \App\Models\Brand::where('slug', $brand)->first();
+        
+        if ($brandObj) {
+            $query->where('brand', $brandObj->name);
+        } else {
+            // Fallback to using the slug as the brand name if no match is found
+            $query->where('brand', $brand);
+            \Log::warning("Brand with slug '{$brand}' not found in brands table. Using slug as name.");
+        }
+        
+        // Filter by model/series (using LIKE for more flexible matching)
+        $query->where(function($q) use ($model) {
+            $q->where('model', 'LIKE', '%' . $model . '%')
+              ->orWhere('name', 'LIKE', '%' . $model . '%')
+              ->orWhereHas('specifications', function($sq) use ($model) {
+                  $sq->where('value', 'LIKE', '%' . $model . '%');
+              });
+        });
+        
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        if (in_array($sortBy, ['name', 'price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+        }
+        
+        // Get the products with pagination
+        $products = $query->paginate(12)->withQueryString();
+        
+        // Get subcategories for the category
+        $subcategories = \App\Models\SubCategory::where('category_id', $categoryObj->id)
+                                               ->orderBy('name')
+                                               ->get();
+        
+        // Get unique models for this brand and category (for sidebar filtering)
+        $models = Product::where('category_id', $categoryObj->id)
+                        ->where('brand', $brandObj ? $brandObj->name : $brand)
+                        ->where('is_active', true)
+                        ->distinct()
+                        ->pluck('model')
+                        ->filter()
+                        ->sort();
+        
+        // Get price range for the filtered products
+        $priceRange = [
+            'min' => $query->min('price') ?? 0,
+            'max' => $query->max('price') ?? 1000
+        ];
+        
+        return view('products.brand-model-filter', compact(
+            'category',
+            'brand',
+            'model',
+            'categoryObj',
+            'products', 
+            'subcategories', 
+            'models',
+            'priceRange',
+            'sortBy',
+            'sortDir'
+        ));
+    }
 } 

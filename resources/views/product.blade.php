@@ -303,6 +303,9 @@
 .product-image-container {
     position: relative;
     overflow: visible;
+    cursor: crosshair;
+    display: inline-block;
+    max-width: 100%;
 }
 
 .zoom-result-popup {
@@ -317,9 +320,9 @@
     border-radius: 5px;
     z-index: 1000;
     display: none;
-    pointer-events: none; /* Prevents the popup from interfering with mouse events */
+    pointer-events: none;
     top: 0;
-    right: -370px; /* Position to the right of the image */
+    right: -370px;
 }
 
 .zoom-hint {
@@ -710,17 +713,31 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Get cursor position relative to the image
             const bounds = mainImage.getBoundingClientRect();
-            const x = (e.clientX - bounds.left) / bounds.width;
-            const y = (e.clientY - bounds.top) / bounds.height;
+            const x = e.pageX - bounds.left - window.pageXOffset;
+            const y = e.pageY - bounds.top - window.pageYOffset;
             
-            // Calculate background position for zoom result
-            const bgX = Math.min(Math.max(x * 100, 0), 100);
-            const bgY = Math.min(Math.max(y * 100, 0), 100);
+            // Calculate position percentages
+            const xPercent = Math.min(Math.max(x / bounds.width * 100, 0), 100);
+            const yPercent = Math.min(Math.max(y / bounds.height * 100, 0), 100);
             
-            // Display the zoomed result (no need to reposition, only update background)
+            // Set background position
             zoomResult.style.backgroundImage = `url('${mainImage.src}')`;
             zoomResult.style.backgroundSize = `${zoom * 100}%`;
-            zoomResult.style.backgroundPosition = `${bgX}% ${bgY}%`;
+            zoomResult.style.backgroundPosition = `${xPercent}% ${yPercent}%`;
+            
+            // Ensure the zoom popup is visible and positioned correctly
+            // Check if there's enough space on the right
+            const viewportWidth = window.innerWidth;
+            const rightSpace = viewportWidth - (bounds.right + window.pageXOffset);
+            
+            // If there's not enough space on the right, show on the left
+            if (rightSpace < 370) {
+                zoomResult.style.right = 'auto';
+                zoomResult.style.left = '-370px';
+            } else {
+                zoomResult.style.left = 'auto';
+                zoomResult.style.right = '-370px';
+            }
         });
         
         // Hide zoom when mouse leaves the image

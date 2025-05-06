@@ -452,6 +452,182 @@
         }
         
         /* End Quick View Styles */
+        
+        /* Mega menu styles */
+        .dropdown-mega .mega-menu {
+            width: 100%;
+            border-radius: 0;
+            margin-top: 0;
+            border-top: 1px solid rgba(0,0,0,.1);
+        }
+        
+        .mega-menu-header {
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+            border-bottom: 2px solid #f8f9fa;
+            padding-bottom: 5px;
+        }
+        
+        .mega-menu-column {
+            margin-bottom: 15px;
+        }
+        
+        .mega-menu .dropdown-item {
+            padding: 8px 15px;
+            font-size: 14px;
+            border-radius: 4px;
+        }
+        
+        .mega-menu .dropdown-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .see-all {
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        /* Brand grid styles */
+        .brand-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .brand-item {
+            text-align: center;
+            color: #333;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        
+        .brand-item:hover {
+            transform: translateY(-3px);
+            color: #007bff;
+        }
+        
+        .brand-logo {
+            width: 60px;
+            height: 60px;
+            margin-bottom: 5px;
+            object-fit: contain;
+        }
+        
+        .brand-name {
+            font-size: 12px;
+            display: block;
+        }
+        
+        /* Search box styles */
+        .search-box-wrapper {
+            position: relative;
+        }
+        
+        /* Dropdown submenu support */
+        .dropdown-submenu {
+            position: relative;
+        }
+        
+        .dropdown-submenu .submenu-indicator {
+            font-size: 10px;
+        }
+        
+        .dropdown-submenu .submenu {
+            top: 0;
+            left: 100%;
+            margin-top: -1px;
+            display: none;
+            min-width: 200px;
+            border-radius: 4px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            opacity: 0;
+            visibility: hidden;
+        }
+        
+        .dropdown-submenu:hover .submenu {
+            display: block;
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .dropdown-submenu > a:hover {
+            background-color: rgba(var(--bs-primary-rgb), 0.1);
+        }
+        
+        .dropdown-submenu .dropdown-item {
+            padding: 10px 15px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .dropdown-submenu .dropdown-item i {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+        
+        /* Mobile support for submenu */
+        @media (max-width: 991.98px) {
+            .dropdown-submenu .submenu {
+                left: 0;
+                position: relative;
+                box-shadow: none;
+                margin-left: 15px;
+                border-left: 2px solid #ddd;
+                opacity: 1;
+                visibility: visible;
+            }
+        }
+        
+        /* Custom Child Menu Animations */
+        .dropdown-submenu .submenu {
+            transform: translateX(20px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform, opacity;
+        }
+        
+        .dropdown-submenu:hover .submenu {
+            transform: translateX(0);
+        }
+        
+        .dropdown-mega .dropdown-menu {
+            transform: translateY(15px);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+            will-change: transform, opacity;
+        }
+        
+        .dropdown-mega:hover .dropdown-menu {
+            transform: translateY(0);
+        }
+        
+        /* Child menu item hover effect */
+        .mega-menu .dropdown-item {
+            position: relative;
+            transition: all 0.25s ease;
+        }
+        
+        .mega-menu .dropdown-item:not(.submenu .dropdown-item):after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background-color: var(--bs-primary);
+            transition: all 0.25s ease;
+        }
+        
+        .mega-menu .dropdown-item:not(.submenu .dropdown-item):hover:after {
+            width: 60%;
+            left: 20%;
+        }
     </style>
 </head>
 <body>
@@ -558,13 +734,36 @@
                                                         @foreach($menuItem->children->chunk(4) as $chunk)
                                                             <div class="col-md-4 mega-menu-column">
                                                                 @foreach($chunk as $child)
-                                                                    <a class="dropdown-item" 
-                                                                       href="{{ $child->is_dynamic_page ? route('dynamic.page', $child->slug) : ($child->url ?? ($child->route_name ? route($child->route_name) : '#')) }}">
-                                                                        @if($child->icon)
-                                                                            <i class="{{ $child->icon }}"></i>
+                                                                    <div class="dropdown-submenu">
+                                                                        <a class="dropdown-item d-flex justify-content-between align-items-center" 
+                                                                           href="{{ $child->is_dynamic_page ? route('dynamic.page', $child->slug) : ($child->url ?? ($child->route_name ? route($child->route_name) : '#')) }}">
+                                                                            <span>
+                                                                                @if($child->icon)
+                                                                                    <i class="{{ $child->icon }} me-2"></i>
+                                                                                @endif
+                                                                                {{ $child->name }}
+                                                                            </span>
+                                                                            @if($child->children && $child->children->count() > 0)
+                                                                            <i class="fas fa-chevron-right submenu-indicator ms-2"></i>
+                                                                            @endif
+                                                                        </a>
+                                                                        
+                                                                        @if($child->children && $child->children->count() > 0)
+                                                                        <div class="submenu dropdown-menu">
+                                                                            @foreach($child->children as $grandchild)
+                                                                            <a class="dropdown-item" 
+                                                                                href="{{ $grandchild->is_dynamic_page ? route('dynamic.page', $grandchild->slug) : ($grandchild->url ?? ($grandchild->route_name ? route($grandchild->route_name) : '#')) }}">
+                                                                                @if($grandchild->icon)
+                                                                                    <i class="{{ $grandchild->icon }} me-2"></i>
+                                                                                @else
+                                                                                    <i class="fas fa-angle-right me-2 text-secondary"></i>
+                                                                                @endif
+                                                                                <span>{{ $grandchild->name }}</span>
+                                                                            </a>
+                                                                            @endforeach
+                                                                        </div>
                                                                         @endif
-                                                                        {{ $child->name }}
-                                                                    </a>
+                                                                    </div>
                                                                 @endforeach
                                                             </div>
                                                         @endforeach
@@ -1203,5 +1402,66 @@
             </div>
         </div>
     </div>
+    
+    <script>
+        // Mobile navigation submenu toggle
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle promotional banner close
+            const bannerCloseBtn = document.querySelector('.close-banner');
+            if (bannerCloseBtn) {
+                bannerCloseBtn.addEventListener('click', function() {
+                    const banner = this.closest('.promotional-banner');
+                    banner.style.display = 'none';
+                });
+            }
+            
+            // Mobile submenu toggle functionality
+            const isMobile = window.innerWidth < 992;
+            if (isMobile) {
+                const submenuParents = document.querySelectorAll('.dropdown-submenu > a');
+                
+                submenuParents.forEach(function(item) {
+                    item.addEventListener('click', function(e) {
+                        // Only if there's a submenu
+                        if (this.nextElementSibling && this.nextElementSibling.classList.contains('submenu')) {
+                            e.preventDefault();
+                            
+                            // Toggle the submenu
+                            const submenu = this.nextElementSibling;
+                            const isVisible = submenu.style.display === 'block';
+                            
+                            // Close any other open submenus
+                            document.querySelectorAll('.dropdown-submenu > .submenu').forEach(function(menu) {
+                                if (menu !== submenu) {
+                                    menu.style.display = 'none';
+                                    // Reset the chevron icon
+                                    const chevron = menu.previousElementSibling.querySelector('.submenu-indicator');
+                                    if (chevron) {
+                                        chevron.classList.remove('fa-chevron-down');
+                                        chevron.classList.add('fa-chevron-right');
+                                    }
+                                }
+                            });
+                            
+                            // Toggle this submenu
+                            submenu.style.display = isVisible ? 'none' : 'block';
+                            
+                            // Rotate chevron icon
+                            const chevron = this.querySelector('.submenu-indicator');
+                            if (chevron) {
+                                if (isVisible) {
+                                    chevron.classList.remove('fa-chevron-down');
+                                    chevron.classList.add('fa-chevron-right');
+                                } else {
+                                    chevron.classList.remove('fa-chevron-right');
+                                    chevron.classList.add('fa-chevron-down');
+                                }
+                            }
+                        }
+                    });
+                });
+            }
+        });
+    </script>
 </body>
 </html> 

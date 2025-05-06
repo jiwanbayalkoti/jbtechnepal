@@ -81,11 +81,12 @@
                     <select class="form-select @error('parent_id') is-invalid @enderror" id="parent_id" name="parent_id">
                         <option value="">None (Top Level)</option>
                         @foreach($menuItems as $item)
-                            <option value="{{ $item->id }}" {{ old('parent_id', $menu->parent_id) == $item->id ? 'selected' : '' }}>
-                                {{ $item->name }}
+                            <option value="{{ $item['id'] }}" {{ old('parent_id', $menu->parent_id) == $item['id'] ? 'selected' : '' }}>
+                                {{ $item['display_name'] }}
                             </option>
                         @endforeach
                     </select>
+                    <small class="form-text text-muted">Select a parent menu (can be a top-level or sub-menu)</small>
                     @error('parent_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
