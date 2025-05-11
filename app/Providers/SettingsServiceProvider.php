@@ -44,16 +44,7 @@ class SettingsServiceProvider extends ServiceProvider
         }
         
         if (Schema::hasTable('menu_items')) {
-            // Share menu items with all views
-            $mainMenu = Cache::remember('main_menu', 300, function () {
-                return MenuItem::getMenuItems('main');
-            });
-            
-            $footerMenu = Cache::remember('footer_menu', 300, function () {
-                return MenuItem::getMenuItems('footer');
-            });
-            
-            // Check if we have any cached menu item changes
+            // Check if we have any cached menu item changes first
             if (Cache::has('menu_updated')) {
                 Cache::forget('main_menu');
                 Cache::forget('footer_menu');
@@ -62,6 +53,30 @@ class SettingsServiceProvider extends ServiceProvider
                 // Reload the fresh data
                 $mainMenu = MenuItem::getMenuItems('main');
                 $footerMenu = MenuItem::getMenuItems('footer');
+                
+                // Cache the refreshed menus
+                Cache::put('main_menu', $mainMenu, now()->addMinutes(30));
+                Cache::put('footer_menu', $footerMenu, now()->addMinutes(30));
+            } else {
+                // Get from cache or rebuild if needed
+                $mainMenu = Cache::remember('main_menu', 30, function () {
+                    return MenuItem::getMenuItems('main');
+                });
+                
+                $footerMenu = Cache::remember('footer_menu', 30, function () {
+                    return MenuItem::getMenuItems('footer');
+                });
+            }
+            
+            // Add brands to the menu system (for dropdowns)
+            try {
+                $allBrands = Cache::remember('all_brands', 60, function () {
+                    return \App\Models\Brand::orderBy('name')->get();
+                });
+                View::share('allBrands', $allBrands);
+            } catch (\Exception $e) {
+                \Log::error('Error loading brands for menu: ' . $e->getMessage());
+                View::share('allBrands', collect([]));
             }
             
             View::share('mainMenu', $mainMenu);
@@ -69,6 +84,14 @@ class SettingsServiceProvider extends ServiceProvider
         } else {
             View::share('mainMenu', collect([]));
             View::share('footerMenu', collect([]));
+            View::share('allBrands', collect([]));
         }
+        
+        // Get site logo and title for display in layout
+        $siteLogo = $settings['site_logo'] ?? null;
+        $siteTitle = $settings['site_title'] ?? 'Product Comparison';
+        
+        View::share('siteLogo', $siteLogo);
+        View::share('siteTitle', $siteTitle);
     }
 }

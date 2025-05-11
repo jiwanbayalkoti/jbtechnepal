@@ -142,7 +142,7 @@
                         <div class="card-body p-5 text-center">
                             <h3 class="mb-4">Ready to start comparing products?</h3>
                             <p class="lead mb-4">Join thousands of users who make informed decisions with our platform.</p>
-                            <a href="{{ route('products.index') }}" class="btn btn-light btn-lg px-4">
+                            <a href="{{ route('category.all', 'all') }}" class="btn btn-light btn-lg px-4">
                                 <i class="fas fa-search me-2"></i> Explore Products
                             </a>
                         </div>

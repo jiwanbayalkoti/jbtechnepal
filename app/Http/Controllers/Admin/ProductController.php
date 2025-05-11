@@ -10,29 +10,16 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\SubCategory;
 
 class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['category', 'subcategory', 'images']);
+        $query = Product::with(['category', 'images']);
 
         // Apply category filter
         if ($request->filled('category')) {
             $query->where('category_id', $request->category);
-            
-            // Load subcategories for the selected category
-            $subcategories = SubCategory::where('category_id', $request->category)
-                ->orderBy('name')
-                ->get();
-        } else {
-            $subcategories = collect();
-        }
-
-        // Apply subcategory filter
-        if ($request->filled('subcategory')) {
-            $query->where('subcategory_id', $request->subcategory);
         }
 
         // Apply brand filter - brand is a field, not a relationship
@@ -67,7 +54,7 @@ class ProductController extends Controller
         // Get all brands from the brands table for the filter dropdown
         $brands = Brand::orderBy('name')->pluck('name');
 
-        return view('admin.products.index', compact('products', 'categories', 'brands', 'subcategories'));
+        return view('admin.products.index', compact('products', 'categories', 'brands'));
     }
 
     /**
@@ -97,7 +84,6 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:sub_categories,id',
             'brand' => 'nullable|string|max:255',
             'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
@@ -122,7 +108,6 @@ class ProductController extends Controller
             $product = new Product([
                 'name' => $validated['name'],
                 'category_id' => $validated['category_id'],
-                'subcategory_id' => $validated['subcategory_id'],
                 'brand' => $validated['brand'],
                 'model' => $validated['model'],
                 'price' => $validated['price'],
@@ -234,7 +219,6 @@ class ProductController extends Controller
                 $product->name = $validated['name'];
                 $product->slug = $slug;
                 $product->category_id = $validated['category_id'];
-                $product->subcategory_id = $validated['subcategory_id'];
                 $product->brand = $validated['brand'];
                 $product->model = $validated['model'];
                 $product->price = $validated['price'];
@@ -293,7 +277,7 @@ class ProductController extends Controller
     public function show(Product $product)
     {
         // Load related data
-        $product->load(['category', 'subcategory', 'images', 'specifications.specificationType']);
+        $product->load(['category', 'images', 'specifications.specificationType']);
         
         return view('admin.products.show', compact('product'));
     }
@@ -303,28 +287,44 @@ class ProductController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'nullable|exists:sub_categories,id',
             'brand' => 'nullable|string|max:255',
             'model' => 'required|string|max:255',
             'price' => 'required|numeric|min:0',
+            'discount_price' => 'nullable|numeric|min:0',
             'description' => 'required|string',
             'images.*' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'delete_images' => 'nullable|array',
-            'delete_images.*' => 'exists:product_images,id',
+            'is_active' => 'sometimes|boolean',
             'specifications' => 'nullable|array',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Add debug logging for troubleshooting
-            \Log::info('Product update - Request data:', [
-                'has_files' => $request->hasFile('images') || $request->hasFile('image'),
-                'images_files' => $request->hasFile('images') ? count($request->file('images')) : 0,
-                'image_file' => $request->hasFile('image') ? 'yes' : 'no',
-                'files' => $request->files->all()
-            ]);
+            // Check if the name has changed, if so update the slug
+            if ($product->name !== $validated['name']) {
+                $slug = Str::slug($validated['name']);
+                $originalSlug = $slug;
+                $count = 1;
+
+                // Check if slug exists and make it unique by appending a number
+                while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
+                    $slug = $originalSlug . '-' . $count++;
+                }
+                $product->slug = $slug;
+            }
+
+            // Update product fields
+            $product->name = $validated['name'];
+            $product->category_id = $validated['category_id'];
+            $product->brand = $validated['brand'];
+            $product->model = $validated['model'];
+            $product->price = $validated['price'];
+            $product->discount_price = $request->filled('discount_price') ? $validated['discount_price'] : null;
+            $product->description = $validated['description'];
+            $product->is_active = $request->has('is_active') ? 1 : 0;
+
+            // Save the updated product
+            $product->save();
 
             // Handle image deletions
             if ($request->has('delete_images')) {
@@ -378,34 +378,6 @@ class ProductController extends Controller
                     ]);
                 }
             }
-            
-            // Create update data array with default subcategory_id to null if not provided
-            $updateData = [
-                'name' => $validated['name'],
-                'category_id' => $validated['category_id'],
-                'subcategory_id' => $validated['subcategory_id'] ?? null,
-                'brand' => $validated['brand'],
-                'model' => $validated['model'],
-                'price' => $validated['price'],
-                'description' => $validated['description'],
-            ];
-
-            // Only update slug if name has changed
-            if ($product->name !== $validated['name']) {
-                $slug = Str::slug($validated['name']);
-                $originalSlug = $slug;
-                $count = 1;
-                
-                // Check if slug exists and make it unique by appending a number
-                // Exclude current product from the check
-                while (Product::where('slug', $slug)->where('id', '!=', $product->id)->exists()) {
-                    $slug = $originalSlug . '-' . $count++;
-                }
-                
-                $updateData['slug'] = $slug;
-            }
-
-            $product->update($updateData);
             
             // Handle specifications
             if ($request->has('specifications')) {
@@ -535,15 +507,10 @@ class ProductController extends Controller
     public function edit(Product $product)
     {
         // Load relationships and data needed for form
-        $product->load(['category', 'subcategory', 'images', 'specifications.specificationType']);
+        $product->load(['category', 'images', 'specifications.specificationType']);
         
         // Get categories for dropdown
         $categories = Category::orderBy('name')->get();
-        
-        // Get subcategories for the product's category
-        $subcategories = SubCategory::where('category_id', $product->category_id)
-            ->orderBy('name')
-            ->get();
         
         // Get brands for dropdown and ensure we have valid URLs
         $brands = Brand::orderBy('name')->get();
@@ -572,7 +539,6 @@ class ProductController extends Controller
                 'html' => view('admin.products.edit-form', compact(
                     'product', 
                     'categories', 
-                    'subcategories', 
                     'specificationTypes',
                     'specValues',
                     'brands'
@@ -584,35 +550,9 @@ class ProductController extends Controller
         return view('admin.products.edit', compact(
             'product', 
             'categories', 
-            'subcategories', 
             'specificationTypes',
             'specValues',
             'brands'
         ));
-    }
-
-    /**
-     * Get subcategories for a specific category.
-     * Used for AJAX requests when changing category in product forms.
-     *
-     * @param  int  $categoryId
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function getSubcategories($categoryId)
-    {
-        if (!$categoryId) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Category ID is required'
-            ], 400);
-        }
-        
-        $subcategories = SubCategory::where('category_id', $categoryId)
-            ->orderBy('name')
-            ->get();
-        return response()->json([
-            'success' => true,
-            'subcategories' => $subcategories
-        ]);
     }
 } 

@@ -524,38 +524,56 @@ class ProductController extends Controller
      */
     public function productsByBrandAndModel(string $category, string $brand, string $model, Request $request)
     {
-        // Find the base category (e.g., 'laptop' from 'laptop-by-brand')
-        $baseCategory = explode('-by-brand', $category)[0];
-        $categoryObj = Category::where('slug', $baseCategory)->first();
+        \Log::info('ProductsByBrandAndModel called', [
+            'category' => $category,
+            'brand' => $brand,
+            'model' => $model,
+            'request' => $request->all()
+        ]);
         
+        // Find the category
+        $categoryObj = Category::where('slug', $category)->first();
         if (!$categoryObj) {
+            \Log::warning("Category not found with slug: {$category}");
             abort(404, 'Category not found');
         }
+
+        \Log::info('Category found', ['category' => $categoryObj->toArray()]);
+
+        // Get the base category name
+        $baseCategory = $categoryObj->name;
         
         // Start building the query
         $query = Product::where('category_id', $categoryObj->id)
                         ->where('is_active', true)
                         ->with(['category', 'subcategory', 'images']);
         
+        \Log::info('Initial query count', ['count' => $query->count()]);
+        
         // Find the brand using its slug
         $brandObj = \App\Models\Brand::where('slug', $brand)->first();
         
         if ($brandObj) {
             $query->where('brand', $brandObj->name);
+            \Log::info("Filtering by brand name: {$brandObj->name}", ['count' => $query->count()]);
         } else {
             // Fallback to using the slug as the brand name if no match is found
-            $query->where('brand', $brand);
-            \Log::warning("Brand with slug '{$brand}' not found in brands table. Using slug as name.");
+            $brandName = str_replace('-', ' ', $brand);
+            $query->where('brand', 'LIKE', '%' . $brandName . '%');
+            \Log::info("Using fallback brand name: {$brandName}", ['count' => $query->count()]);
         }
         
         // Filter by model/series (using LIKE for more flexible matching)
-        $query->where(function($q) use ($model) {
-            $q->where('model', 'LIKE', '%' . $model . '%')
-              ->orWhere('name', 'LIKE', '%' . $model . '%')
-              ->orWhereHas('specifications', function($sq) use ($model) {
-                  $sq->where('value', 'LIKE', '%' . $model . '%');
+        $modelName = str_replace('-', ' ', $model);
+        $query->where(function($q) use ($modelName) {
+            $q->where('model', 'LIKE', '%' . $modelName . '%')
+              ->orWhere('name', 'LIKE', '%' . $modelName . '%')
+              ->orWhereHas('specifications', function($sq) use ($modelName) {
+                  $sq->where('value', 'LIKE', '%' . $modelName . '%');
               });
         });
+        
+        \Log::info('After model filter', ['count' => $query->count()]);
         
         // Apply sorting
         $sortBy = $request->input('sort_by', 'created_at');
@@ -567,6 +585,12 @@ class ProductController extends Controller
         
         // Get the products with pagination
         $products = $query->paginate(12)->withQueryString();
+        
+        \Log::info('Final product count', [
+            'total' => $products->total(),
+            'current_page' => $products->currentPage(),
+            'per_page' => $products->perPage()
+        ]);
         
         // Get subcategories for the category
         $subcategories = \App\Models\SubCategory::where('category_id', $categoryObj->id)
@@ -582,23 +606,131 @@ class ProductController extends Controller
                         ->filter()
                         ->sort();
         
+        \Log::info('Available models', ['models' => $models->toArray()]);
+        
         // Get price range for the filtered products
         $priceRange = [
             'min' => $query->min('price') ?? 0,
             'max' => $query->max('price') ?? 1000
         ];
+
+        $pageTitle = ucfirst($baseCategory) . ' ' . ucwords(str_replace('-', ' ', $brand)) . ' ' . ucwords(str_replace('-', ' ', $model));
+        $metaDescription = "Browse our selection of " . ucfirst($baseCategory) . " " . ucwords(str_replace('-', ' ', $brand)) . " " . ucwords(str_replace('-', ' ', $model)) . " products.";
         
         return view('products.brand-model-filter', compact(
-            'category',
+            'categoryObj',
             'brand',
             'model',
-            'categoryObj',
             'products', 
             'subcategories', 
             'models',
             'priceRange',
             'sortBy',
-            'sortDir'
+            'sortDir',
+            'pageTitle',
+            'metaDescription'
+        ));
+    }
+
+    /**
+     * Display products by brand and model without category filtering.
+     * Used for direct brand/model links like "brand/apple/macbook-air".
+     *
+     * @param  string  $brand
+     * @param  string  $model
+     * @return \Illuminate\Http\Response
+     */
+    public function productsByBrandModel(string $brand, string $model, Request $request)
+    {
+        \Log::info('ProductsByBrandModel called', [
+            'brand' => $brand,
+            'model' => $model,
+            'request' => $request->all()
+        ]);
+        
+        // Start building the query
+        $query = Product::where('is_active', true)
+                        ->with(['category', 'subcategory', 'images']);
+        
+        // Find the brand using its slug
+        $brandObj = \App\Models\Brand::where('slug', $brand)->first();
+        
+        if ($brandObj) {
+            $query->where('brand', $brandObj->name);
+            \Log::info("Filtering by brand name: {$brandObj->name}");
+        } else {
+            // Fallback to using the slug as the brand name if no match is found
+            $query->where('brand', 'LIKE', '%' . str_replace('-', ' ', $brand) . '%');
+            \Log::warning("Brand with slug '{$brand}' not found in brands table. Using slug as name.");
+        }
+        
+        // Filter by model/series (using LIKE for more flexible matching)
+        $query->where(function($q) use ($model) {
+            $q->where('model', 'LIKE', '%' . str_replace('-', ' ', $model) . '%')
+              ->orWhere('name', 'LIKE', '%' . str_replace('-', ' ', $model) . '%')
+              ->orWhereHas('specifications', function($sq) use ($model) {
+                  $sq->where('value', 'LIKE', '%' . str_replace('-', ' ', $model) . '%');
+              });
+        });
+        
+        // Apply category filter if provided
+        if ($request->filled('category')) {
+            $query->where('category_id', $request->category);
+        }
+        
+        // Apply price range filter
+        if ($request->filled('price_min')) {
+            $query->where('price', '>=', $request->price_min);
+        }
+        if ($request->filled('price_max')) {
+            $query->where('price', '<=', $request->price_max);
+        }
+        
+        // Apply sorting
+        $sortBy = $request->input('sort_by', 'created_at');
+        $sortDir = $request->input('sort_dir', 'desc');
+        
+        if (in_array($sortBy, ['name', 'price', 'created_at'])) {
+            $query->orderBy($sortBy, $sortDir === 'asc' ? 'asc' : 'desc');
+        }
+        
+        // Get the products with pagination
+        $products = $query->paginate(12)->withQueryString();
+        
+        \Log::info("Found {$products->total()} products matching criteria");
+        
+        // Get all categories for sidebar filtering
+        $categories = Category::where('is_active', true)
+                            ->orderBy('name')
+                            ->get();
+        
+        // Get price range for the filtered products
+        $baseQuery = Product::where('is_active', true);
+        if ($brandObj) {
+            $baseQuery->where('brand', $brandObj->name);
+        } else {
+            $baseQuery->where('brand', 'LIKE', '%' . str_replace('-', ' ', $brand) . '%');
+        }
+        
+        $priceRange = [
+            'min' => $baseQuery->min('price') ?? 0,
+            'max' => $baseQuery->max('price') ?? 1000
+        ];
+        
+        $pageTitle = ucwords(str_replace('-', ' ', $brand)) . ' ' . ucwords(str_replace('-', ' ', $model));
+        $metaDescription = "Browse our selection of " . ucwords(str_replace('-', ' ', $brand)) . " " . ucwords(str_replace('-', ' ', $model)) . " products.";
+        
+        return view('products.brand-model', compact(
+            'brand',
+            'model',
+            'brandObj',
+            'products', 
+            'categories',
+            'priceRange',
+            'sortBy',
+            'sortDir',
+            'pageTitle',
+            'metaDescription'
         ));
     }
 } 

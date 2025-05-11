@@ -26,21 +26,6 @@
         @enderror
     </div>
     
-    <div class="mb-3">
-        <label for="subcategory_id" class="form-label">Subcategory</label>
-        <select class="form-select @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id">
-            <option value="">Select Subcategory</option>
-            @foreach($subcategories as $subcategory)
-                <option value="{{ $subcategory->id }}" {{ old('subcategory_id', $product->subcategory_id) == $subcategory->id ? 'selected' : '' }}>
-                    {{ $subcategory->name }}
-                </option>
-            @endforeach
-        </select>
-        @error('subcategory_id')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-    
     <div class="row mb-3">
         <div class="col-md-6">
             <label for="brand" class="form-label">Brand</label>
@@ -147,16 +132,10 @@ document.addEventListener('DOMContentLoaded', function() {
     if (!formContent) return;
     
     const categorySelect = formContent.querySelector('select[name="category_id"]');
-    const subcategorySelect = formContent.querySelector('select[name="subcategory_id"]');
     
-    if (categorySelect && subcategorySelect) {
+    if (categorySelect) {
         categorySelect.addEventListener('change', function() {
             const categoryId = this.value;
-            
-            // Clear existing options except the first one
-            while (subcategorySelect.options.length > 1) {
-                subcategorySelect.remove(1);
-            }
             
             // Also clear model dropdown when category changes
             const modelSelect = formContent.querySelector('select[name="model"]');
@@ -167,56 +146,23 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (categoryId) {
-                // Fetch subcategories for the selected category
-                fetch(`{{ url('admin/subcategories') }}/${categoryId}`)
+                // Load models for this category
+                fetch(`{{ url('admin/api/models-by-category') }}/${categoryId}`)
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success && data.subcategories) {
+                        if (data.success && data.models) {
                             // Add new options
-                            data.subcategories.forEach(subcategory => {
+                            data.models.forEach(model => {
                                 const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                subcategorySelect.appendChild(option);
+                                option.value = model.name;
+                                option.textContent = model.name;
+                                modelSelect.appendChild(option);
                             });
                         }
                     })
                     .catch(error => {
-                        console.error('Error fetching subcategories:', error);
+                        console.error('Error fetching models:', error);
                     });
-            }
-        });
-        
-        // Load models based on subcategory change
-        subcategorySelect.addEventListener('change', function() {
-            const subcategoryId = this.value;
-            const modelSelect = formContent.querySelector('select[name="model"]');
-            
-            if (modelSelect) {
-                // Clear existing model options except the first one
-                while (modelSelect.options.length > 1) {
-                    modelSelect.remove(1);
-                }
-                
-                if (subcategoryId) {
-                    // Fetch models for the selected subcategory
-                    fetch(`{{ url('admin/models-by-subcategory') }}/${subcategoryId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success && data.models) {
-                                // Add new options
-                                data.models.forEach(model => {
-                                    const option = document.createElement('option');
-                                    option.value = model.name;
-                                    option.textContent = model.name;
-                                    modelSelect.appendChild(option);
-                                });
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching models:', error);
-                        });
-                }
             }
         });
         

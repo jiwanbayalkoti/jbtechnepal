@@ -34,17 +34,6 @@
                         @enderror
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="subcategory_id" class="form-label">Subcategory</label>
-                        <select class="form-select @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id">
-                            <option value="">Select Subcategory</option>
-                            <!-- Subcategories will be loaded dynamically -->
-                        </select>
-                        @error('subcategory_id')
-                            <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-                    
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
@@ -180,99 +169,63 @@
     
         $('#category_id').change(function() {
             const categoryId = $(this).val();
-            const subcategorySelect = $('#subcategory_id');
-            
-            // Clear subcategory dropdown
-            subcategorySelect.empty().append('<option value="">Select Subcategory</option>');
             
             // Clear model dropdown when category changes
             $('#model').empty().append('<option value="">Select Model</option>');
             
             if (categoryId) {
-                // Load subcategories for this category
-                $.ajax({
-                    url: `/admin/subcategories/${categoryId}`,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log(response);
-                        if (response.success && response.subcategories.length > 0) {
-                            // Add subcategories to dropdown
-                            $.each(response.subcategories, function(index, subcategory) {
-                                subcategorySelect.append(`<option value="${subcategory.id}">${subcategory.name}</option>`);
-                            });
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error loading subcategories:', xhr.responseText);
-                    }
-                });
-                
                 // Load specification types for this category
                 $.ajax({
                     url: `/admin/specification-types/${categoryId}`,
                     type: 'GET',
-                    success: function(data) {
-                        let html = '';
-                        
-                        if (data.length === 0) {
-                            html = `<div class="alert alert-warning">
-                                No specification types defined for this category.
-                                <a href="{{ route('admin.specifications.create', '') }}/${categoryId}" target="_blank">
-                                    Add specification types
-                                </a>
-                            </div>`;
-                        } else {
-                            html += '<div class="mb-3"><p class="text-muted">Enter values for the specifications below:</p></div>';
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.specificationTypes.length > 0) {
+                            // Build specification form fields
+                            let html = '';
                             
-                            data.forEach(function(spec) {
+                            response.specificationTypes.forEach(function(specType) {
                                 html += `
-                                <div class="mb-3">
-                                    <label class="form-label">${spec.name}${spec.unit ? ' (' + spec.unit + ')' : ''}</label>
-                                    <input type="text" class="form-control" name="specifications[${spec.id}]" placeholder="Enter value">
-                                </div>
+                                    <div class="mb-3">
+                                        <label for="spec_${specType.id}" class="form-label">${specType.name}</label>
+                                        <input type="text" class="form-control" id="spec_${specType.id}" name="specifications[${specType.id}]">
+                                        <small class="text-muted">${specType.description || ''}</small>
+                                    </div>
                                 `;
                             });
+                            
+                            $('#specifications-container').html(html);
+                        } else {
+                            $('#specifications-container').html('<div class="alert alert-warning">No specification types found for this category.</div>');
                         }
-                        
-                        $('#specifications-container').html(html);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error(error);
+                        $('#specifications-container').html('<div class="alert alert-danger">Error loading specification types.</div>');
+                    }
+                });
+                
+                // Load models for this category
+                $.ajax({
+                    url: `/admin/api/models-by-category/${categoryId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(response) {
+                        if (response.success && response.models.length > 0) {
+                            const modelSelect = $('#model');
+                            modelSelect.empty().append('<option value="">Select Model</option>');
+                            
+                            response.models.forEach(function(model) {
+                                modelSelect.append(`<option value="${model.name}">${model.name}</option>`);
+                            });
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error loading models:', error);
                     }
                 });
             } else {
                 $('#specifications-container').html('<div class="alert alert-info mb-3">First select a category to load specification types.</div>');
-            }
-        });
-        
-        // Load models when subcategory is selected
-        $('#subcategory_id').change(function() {
-            const subcategoryId = $(this).val();
-            const modelSelect = $('#model');
-            
-            // Clear model dropdown
-            modelSelect.empty().append('<option value="">Select Model</option>');
-            
-            if (subcategoryId) {
-                // Load models for this subcategory
-                $.ajax({
-                    url: `/admin/models-by-subcategory/${subcategoryId}`,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(response) {
-                        console.log(response);
-                        if (response.success && response.models.length > 0) {
-                            // Add models to dropdown
-                            $.each(response.models, function(index, model) {
-                                modelSelect.append(`<option value="${model.name}">${model.name}</option>`);
-                            });
-                        } else {
-                            modelSelect.append('<option value="" disabled>No models available for this subcategory</option>');
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error loading models:', xhr.responseText);
-                        modelSelect.append('<option value="" disabled>Error loading models</option>');
-                    }
-                });
             }
         });
     });

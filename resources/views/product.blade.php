@@ -5,7 +5,7 @@
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h1>{{ $product->name }}</h1>
-    <a href="{{ route('categories.show', $product->category->slug) }}" class="btn btn-outline-secondary">
+    <a href="{{ route('category.all', $product->category->slug) }}" class="btn btn-outline-secondary">
         <i class="fas fa-arrow-left me-1"></i>Back to {{ $product->category->name }}
     </a>
 </div>

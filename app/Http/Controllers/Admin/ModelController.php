@@ -18,7 +18,7 @@ class ModelController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Model::with(['brand', 'category', 'subcategory']);
+        $query = Model::with(['brand', 'category']);
         
         // Apply filters if provided
         if ($request->filled('brand_id')) {
@@ -27,10 +27,6 @@ class ModelController extends Controller
         
         if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
-        }
-        
-        if ($request->filled('subcategory_id')) {
-            $query->where('subcategory_id', $request->subcategory_id);
         }
         
         if ($request->filled('is_active')) {
@@ -47,9 +43,8 @@ class ModelController extends Controller
         // Get filter options for the form
         $brands = Brand::orderBy('name')->get();
         $categories = Category::orderBy('name')->get();
-        $subcategories = SubCategory::orderBy('name')->get();
         
-        return view('admin.models.index', compact('models', 'brands', 'categories', 'subcategories'));
+        return view('admin.models.index', compact('models', 'brands', 'categories'));
     }
 
     /**
@@ -58,10 +53,9 @@ class ModelController extends Controller
     public function create()
     {
         $brands = Brand::orderBy('name')->get();
-        $categories = Category::orderBy('name')->get(); // All categories, no filtering by brand
-        $subcategories = collect(); // Empty collection initially
+        $categories = collect(); // Empty collection initially
         
-        return view('admin.models.create', compact('brands', 'categories', 'subcategories'));
+        return view('admin.models.create', compact('brands', 'categories'));
     }
 
     /**
@@ -74,7 +68,6 @@ class ModelController extends Controller
             'description' => 'nullable|string',
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:sub_categories,id',
             'is_active' => 'boolean',
             'features' => 'nullable|array',
             'features.*' => 'string|max:255',
@@ -98,7 +91,7 @@ class ModelController extends Controller
                 'description' => $validated['description'] ?? null,
                 'brand_id' => $validated['brand_id'],
                 'category_id' => $validated['category_id'],
-                'subcategory_id' => $validated['subcategory_id'],
+                'subcategory_id' => null, // Set subcategory_id to null
                 'is_active' => $validated['is_active'],
                 'features' => $features,
                 'specifications' => $specifications,
@@ -126,8 +119,7 @@ class ModelController extends Controller
     public function edit(Model $model)
     {
         $brands = Brand::orderBy('name')->get();
-        $categories = Category::orderBy('name')->get(); // All categories, no filtering by brand
-        $subcategories = SubCategory::where('category_id', $model->category_id)->orderBy('name')->get();
+        $categories = Category::where('brand_id', $model->brand_id)->orderBy('name')->get();
         
         // Check if this is an AJAX request (for modal form)
         if (request()->ajax()) {
@@ -135,12 +127,11 @@ class ModelController extends Controller
                 'success' => true,
                 'model' => $model,
                 'brands' => $brands,
-                'categories' => $categories,
-                'subcategories' => $subcategories
+                'categories' => $categories
             ]);
         }
         
-        return view('admin.models.edit', compact('model', 'brands', 'categories', 'subcategories'));
+        return view('admin.models.edit', compact('model', 'brands', 'categories'));
     }
 
     /**
@@ -153,7 +144,6 @@ class ModelController extends Controller
             'description' => 'nullable|string',
             'brand_id' => 'required|exists:brands,id',
             'category_id' => 'required|exists:categories,id',
-            'subcategory_id' => 'required|exists:sub_categories,id',
             'is_active' => 'boolean',
             'features' => 'nullable|array',
             'features.*' => 'string|max:255',
@@ -177,7 +167,7 @@ class ModelController extends Controller
                 'description' => $validated['description'] ?? null,
                 'brand_id' => $validated['brand_id'],
                 'category_id' => $validated['category_id'],
-                'subcategory_id' => $validated['subcategory_id'],
+                'subcategory_id' => null, // Set subcategory_id to null
                 'is_active' => $validated['is_active'],
                 'features' => $features,
                 'specifications' => $specifications,
@@ -212,8 +202,33 @@ class ModelController extends Controller
     public function getCategoriesByBrand(Request $request)
     {
         try {
-            // Return all categories, no longer filtered by brand
-            $categories = Category::orderBy('name')->get();
+            $brand_id = null;
+            
+            // Check if we have brand ID directly
+            if ($request->has('brand_id')) {
+                $brand_id = $request->input('brand_id');
+            } 
+            // Otherwise, check if we have a brand name
+            elseif ($request->has('brand')) {
+                $brandName = $request->input('brand');
+                $brand = Brand::where('name', $brandName)->first();
+                if ($brand) {
+                    $brand_id = $brand->id;
+                }
+            }
+            
+            if (!$brand_id) {
+                // If no brand was found, return all categories
+                $categories = Category::orderBy('name')->get();
+            } else {
+                // Filter categories by brand_id if we found a matching brand
+                $categories = Category::where('brand_id', $brand_id)->orderBy('name')->get();
+                
+                // If no categories assigned to this brand, return all categories as fallback
+                if ($categories->isEmpty()) {
+                    $categories = Category::orderBy('name')->get();
+                }
+            }
             
             return response()->json([
                 'success' => true,
@@ -229,44 +244,22 @@ class ModelController extends Controller
     }
     
     /**
-     * Get subcategories based on category
+     * Get models based on category
      */
-    public function getSubcategoriesByCategory(Request $request)
+    public function getModelsByCategory($category_id)
     {
         try {
-            $category_id = $request->input('category_id');
-            $subcategories = SubCategory::where('category_id', $category_id)->orderBy('name')->get();
-            
-            return response()->json([
-                'success' => true,
-                'subcategories' => $subcategories
-            ]);
-        } catch (\Exception $e) {
-            \Log::error('Error fetching subcategories by category: ' . $e->getMessage());
-            return response()->json([
-                'success' => false,
-                'message' => 'Error fetching subcategories: ' . $e->getMessage()
-            ], 500);
-        }
-    }
-    
-    /**
-     * Get models based on subcategory
-     */
-    public function getModelsBySubcategory($subcategory_id)
-    {
-        try {
-            $models = Model::where('subcategory_id', $subcategory_id)
-                         ->where('is_active', true)
-                         ->orderBy('name')
-                         ->get();
-            
+            $models = Model::where('category_id', $category_id)
+                        ->where('is_active', true)
+                        ->orderBy('name')
+                        ->get();
+                        
             return response()->json([
                 'success' => true,
                 'models' => $models
             ]);
         } catch (\Exception $e) {
-            \Log::error('Error fetching models by subcategory: ' . $e->getMessage());
+            \Log::error('Error fetching models by category: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error fetching models: ' . $e->getMessage()

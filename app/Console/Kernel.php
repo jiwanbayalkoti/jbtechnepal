@@ -19,6 +19,16 @@ class Kernel extends ConsoleKernel
     }
 
     /**
+     * Get the commands that should be removed from the default Artisan command list.
+     *
+     * @return array
+     */
+    protected function getExcludedCommands(): array
+    {
+        return [];
+    }
+
+    /**
      * Register the commands for the application.
      */
     protected function commands(): void

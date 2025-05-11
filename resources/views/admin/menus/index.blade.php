@@ -85,11 +85,11 @@
                             <td>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-primary" 
-                                            data-edit-url="{{ route('admin.menus.edit', $item->id) }}"
+                                            data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $item->id]) }}"
                                             data-open-modal="editMenuModal">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <form action="{{ route('admin.menus.destroy', $item->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.menus.destroy', ['menuItem' => $item->id]) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -115,7 +115,7 @@
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                         @else
-                                            <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
                                         @endif
                                         {{ $child->name }}
                                         @if($child->children && $child->children->count() > 0)
@@ -148,11 +148,11 @@
                                 <td>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-sm btn-primary" 
-                                                data-edit-url="{{ route('admin.menus.edit', $child->id) }}"
+                                                data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $child->id]) }}"
                                                 data-open-modal="editMenuModal">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
-                                        <form action="{{ route('admin.menus.destroy', $child->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.menus.destroy', ['menuItem' => $child->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -204,11 +204,11 @@
                                         <td>
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-sm btn-primary" 
-                                                        data-edit-url="{{ route('admin.menus.edit', $grandchild->id) }}"
+                                                        data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $grandchild->id]) }}"
                                                         data-open-modal="editMenuModal">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </button>
-                                                <form action="{{ route('admin.menus.destroy', $grandchild->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('admin.menus.destroy', ['menuItem' => $grandchild->id]) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -290,11 +290,11 @@
                             <td>
                                 <div class="btn-group">
                                     <button type="button" class="btn btn-sm btn-primary" 
-                                            data-edit-url="{{ route('admin.menus.edit', $item->id) }}"
+                                            data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $item->id]) }}"
                                             data-open-modal="editMenuModal">
                                         <i class="fas fa-edit"></i> Edit
                                     </button>
-                                    <form action="{{ route('admin.menus.destroy', $item->id) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.menus.destroy', ['menuItem' => $item->id]) }}" method="POST" class="d-inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -320,7 +320,7 @@
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                         @else
-                                            <i class="fas fa-level-down-alt text-secondary me-2"></i>
+                                        <i class="fas fa-level-down-alt text-secondary me-2"></i>
                                         @endif
                                         {{ $child->name }}
                                         @if($child->children && $child->children->count() > 0)
@@ -353,11 +353,11 @@
                                 <td>
                                     <div class="btn-group">
                                         <button type="button" class="btn btn-sm btn-primary" 
-                                                data-edit-url="{{ route('admin.menus.edit', $child->id) }}"
+                                                data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $child->id]) }}"
                                                 data-open-modal="editMenuModal">
                                             <i class="fas fa-edit"></i> Edit
                                         </button>
-                                        <form action="{{ route('admin.menus.destroy', $child->id) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('admin.menus.destroy', ['menuItem' => $child->id]) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('DELETE')
                                             <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -409,11 +409,11 @@
                                         <td>
                                             <div class="btn-group">
                                                 <button type="button" class="btn btn-sm btn-primary" 
-                                                        data-edit-url="{{ route('admin.menus.edit', $grandchild->id) }}"
+                                                        data-edit-url="{{ route('admin.menus.edit', ['menuItem' => $grandchild->id]) }}"
                                                         data-open-modal="editMenuModal">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </button>
-                                                <form action="{{ route('admin.menus.destroy', $grandchild->id) }}" method="POST" class="d-inline">
+                                                <form action="{{ route('admin.menus.destroy', ['menuItem' => $grandchild->id]) }}" method="POST" class="d-inline">
                                                     @csrf
                                                     @method('DELETE')
                                                     <button type="button" class="btn btn-sm btn-danger" data-delete-confirm="Are you sure you want to delete this menu item?">
@@ -526,9 +526,19 @@
         </div>
     </div>
     
-    <div class="mb-3 form-check">
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="form-check">
         <input type="checkbox" class="form-check-input" id="active" name="active" value="1" {{ old('active', '1') ? 'checked' : '' }}>
         <label class="form-check-label" for="active">Active</label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="is_mega_menu" name="is_mega_menu" value="1" {{ old('is_mega_menu') ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_mega_menu">Mega Menu</label>
+            </div>
+        </div>
     </div>
     
     <div class="mb-3">
@@ -550,25 +560,25 @@
 
 <!-- Edit Menu Modal -->
 <div class="modal fade" id="editMenuModal" tabindex="-1" aria-labelledby="editMenuModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="editMenuModalLabel">Edit Menu Item</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <!-- Form content will be loaded here via AJAX -->
-                <div class="text-center py-4">
-                    <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
+                <div class="modal-body">
+                <!-- Content will be loaded dynamically -->
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
                     </div>
-                    <p class="mt-2">Loading form...</p>
+                    <p class="mt-2">Loading menu data...</p>
+                    </div>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" id="saveEditButton" class="btn btn-primary">Save Changes</button>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary" form="editMenuForm">Update Menu Item</button>
+                </div>
         </div>
     </div>
 </div>
@@ -576,29 +586,30 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle menu children toggling
-        const toggleButtons = document.querySelectorAll('.toggle-children');
-        
-        toggleButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const menuId = this.getAttribute('data-menu-id');
-                const childRows = document.querySelectorAll('.child-of-' + menuId);
-                const icon = this.querySelector('i');
-                
-                let isVisible = false;
-                
-                childRows.forEach(row => {
-                    if (row.style.display === 'none' || row.style.display === '') {
-                        row.style.display = 'table-row';
-                        isVisible = true;
-                    } else {
-                        row.style.display = 'none';
-                        isVisible = false;
-                        
-                        // Also hide any grandchildren
-                        if (row.classList.contains('child-menu') && !row.classList.contains('grandchild-menu')) {
-                            const childId = row.querySelector('td:first-child').textContent.trim();
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle menu children toggling
+    const toggleButtons = document.querySelectorAll('.toggle-children');
+    
+    toggleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const menuId = this.getAttribute('data-menu-id');
+            const childRows = document.querySelectorAll('.child-of-' + menuId);
+            const icon = this.querySelector('i');
+            
+            let isVisible = false;
+            
+            childRows.forEach(row => {
+                if (row.style.display === 'none' || row.style.display === '') {
+                    row.style.display = 'table-row';
+                    isVisible = true;
+                } else {
+                    row.style.display = 'none';
+                    isVisible = false;
+                    
+                    // Also hide any grandchildren
+                    if (row.classList.contains('child-menu') && !row.classList.contains('grandchild-menu')) {
+                        const childId = row.querySelector('td:first-child')?.textContent?.trim();
+                        if (childId) {
                             const grandchildRows = document.querySelectorAll('.child-of-' + childId);
                             
                             grandchildRows.forEach(grandchildRow => {
@@ -612,211 +623,309 @@
                             }
                         }
                     }
-                });
-                
-                // Update the icon
-                if (isVisible) {
-                    icon.className = 'fas fa-chevron-up';
-                } else {
-                    icon.className = 'fas fa-chevron-down';
                 }
             });
-        });
-        
-        // Handle delete confirmations
-        const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
-        
-        deleteButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const confirmMessage = this.getAttribute('data-delete-confirm');
-                
-                if (confirm(confirmMessage)) {
-                    this.closest('form').submit();
-                }
-            });
-        });
-        
-        // Handle modal opening
-        const modalTriggers = document.querySelectorAll('[data-open-modal]');
-        let currentMenuId = null;
-        
-        modalTriggers.forEach(trigger => {
-            trigger.addEventListener('click', function() {
-                const modalId = this.getAttribute('data-open-modal');
-                const modal = document.getElementById(modalId);
-                
-                if (modal) {
-                    const editUrl = this.getAttribute('data-edit-url');
-                    
-                    if (editUrl && modalId === 'editMenuModal') {
-                        // Extract the menu ID from the URL
-                        const matches = editUrl.match(/\/(\d+)\/edit$/);
-                        if (matches && matches[1]) {
-                            currentMenuId = matches[1];
-                        }
-                        
-                        // Load edit form via AJAX
-                        fetch(editUrl)
-                            .then(response => response.json())
-                            .then(data => {
-                                if (data.success) {
-                                    const formContainer = modal.querySelector('.modal-body');
-                                    formContainer.innerHTML = data.html;
-                                    
-                                    // Initialize form scripts
-                                    const scripts = formContainer.querySelectorAll('script');
-                                    scripts.forEach(script => {
-                                        eval(script.innerText);
-                                    });
-                                    
-                                    // Show the modal
-                                    const bsModal = new bootstrap.Modal(modal);
-                                    bsModal.show();
-                                } else {
-                                    alert('Error loading form: ' + data.message);
-                                }
-                            })
-                            .catch(error => {
-                                console.error('Error:', error);
-                                alert('Error loading form. Please try again.');
-                            });
-                    } else {
-                        // Just show the modal
-                        const bsModal = new bootstrap.Modal(modal);
-                        bsModal.show();
-                    }
-                }
-            });
-        });
-        
-        // Handle save edit button click
-        document.getElementById('saveEditButton').addEventListener('click', function() {
-            console.log("Save button clicked");
             
-            if (!currentMenuId) {
-                console.error("Error: No menu ID found", currentMenuId);
-                alert('Error: No menu ID found');
-                return;
+            // Update the icon
+            if (icon) {
+                icon.className = isVisible ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
             }
-            
-            console.log("Current menu ID:", currentMenuId);
-            
-            // Debug info
-            if (!document.getElementById('debug-info')) {
-                const debugDiv = document.createElement('div');
-                debugDiv.id = 'debug-info';
-                debugDiv.style.padding = '10px';
-                debugDiv.style.backgroundColor = '#f8f9fa';
-                debugDiv.style.border = '1px solid #dee2e6';
-                debugDiv.style.marginBottom = '10px';
-                debugDiv.innerHTML = `
-                    <h5>Debug Information</h5>
-                    <p>Menu ID: ${currentMenuId}</p>
-                    <p>Form URL: {{ url('/admin/menus') }}/${currentMenuId}</p>
-                `;
-                document.querySelector('#editMenuModal .modal-body').prepend(debugDiv);
-            }
-            
-            // Get the form from the modal body
-            const formElement = document.querySelector('#formContent');
-            if (!formElement) {
-                console.error("Error: Form content not found");
-                alert('Error: Form content not found');
-                return;
-            }
-            
-            // Create a FormData object from all form inputs in the modal
-            const formData = new FormData();
-            const inputs = document.querySelectorAll('#editMenuModal input, #editMenuModal select, #editMenuModal textarea');
-            
-            console.log("Found inputs:", inputs.length);
-            
-            inputs.forEach(input => {
-                // Skip hidden inputs that might cause issues
-                if (input.type === 'hidden' && (input.name === '_method' || input.name === '_token')) {
-                    console.log("Skipping existing method or token field:", input.name);
-                    return;
-                }
-                
-                // Handle checkboxes
-                if (input.type === 'checkbox') {
-                    if (input.checked) {
-                        formData.append(input.name, input.value);
-                        console.log("Adding checkbox:", input.name, input.value);
-                    } else {
-                        // Send unchecked checkboxes as 0
-                        if (input.name) {
-                            formData.append(input.name, '0');
-                            console.log("Adding unchecked checkbox:", input.name, '0');
-                        }
-                    }
-                } else if (input.name) {
-                    formData.append(input.name, input.value);
-                    console.log("Adding field:", input.name, input.value);
-                }
-            });
-            
-            // Add method-spoofing field for PUT
-            formData.append('_method', 'PUT');
-            // Add CSRF token
-            const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            formData.append('_token', csrfToken);
-            
-            console.log("CSRF token:", csrfToken);
-            console.log("Submitting to URL:", `{{ url('/admin/menus') }}/${currentMenuId}`);
-            
-            // Create a temporary form and submit it instead of using fetch
-            const tempForm = document.createElement('form');
-            tempForm.method = 'POST';
-            tempForm.action = `{{ url('/admin/menus') }}/${currentMenuId}`;
-            tempForm.style.display = 'none';
-            
-            // Add method-spoofing field
-            const methodInput = document.createElement('input');
-            methodInput.type = 'hidden';
-            methodInput.name = '_method';
-            methodInput.value = 'PUT';
-            tempForm.appendChild(methodInput);
-            
-            // Add CSRF token
-            const csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = '_token';
-            csrfInput.value = csrfToken;
-            tempForm.appendChild(csrfInput);
-            
-            // Add all other form data
-            inputs.forEach(input => {
-                if (input.type === 'checkbox') {
-                    if (input.checked) {
-                        const hiddenInput = document.createElement('input');
-                        hiddenInput.type = 'hidden';
-                        hiddenInput.name = input.name;
-                        hiddenInput.value = input.value;
-                        tempForm.appendChild(hiddenInput);
-                    } else {
-                        // Send unchecked checkboxes as 0
-                        if (input.name) {
-                            const hiddenInput = document.createElement('input');
-                            hiddenInput.type = 'hidden';
-                            hiddenInput.name = input.name;
-                            hiddenInput.value = '0';
-                            tempForm.appendChild(hiddenInput);
-                        }
-                    }
-                } else if (input.name && input.name !== '_method' && input.name !== '_token') {
-                    const hiddenInput = document.createElement('input');
-                    hiddenInput.type = 'hidden';
-                    hiddenInput.name = input.name;
-                    hiddenInput.value = input.value;
-                    tempForm.appendChild(hiddenInput);
-                }
-            });
-            
-            // Append the form to the body and submit it
-            document.body.appendChild(tempForm);
-            tempForm.submit();
         });
     });
+    
+    // Handle delete confirmations
+    const deleteButtons = document.querySelectorAll('[data-delete-confirm]');
+    
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const confirmMessage = this.getAttribute('data-delete-confirm');
+            
+            if (confirm(confirmMessage)) {
+                const form = this.closest('form');
+                if (form) {
+                form.submit();
+                }
+            }
+        });
+    });
+    
+    // Handle modal opening
+    document.querySelectorAll('[data-open-modal]').forEach(button => {
+        button.addEventListener('click', function() {
+            const modalId = this.getAttribute('data-open-modal');
+            const modal = document.getElementById(modalId);
+            
+            if (!modal) {
+                console.error(`Modal with ID "${modalId}" not found`);
+                return;
+            }
+            
+            if (modalId === 'editMenuModal') {
+                const editUrl = this.getAttribute('data-edit-url');
+                if (editUrl) {
+                    // Set the form action with the menu ID
+                    const menuId = editUrl.split('/').pop();
+                    
+                    // Extract numeric ID from the URL pattern
+                    const numericId = editUrl.match(/\/edit\/(\d+)/)?.[1] || editUrl.match(/\/(\d+)\/edit/)?.[1] || menuId;
+                    
+                    // Store the menu ID for later use
+                    window.currentEditMenuId = numericId;
+                    
+                    // Show loading state
+                    const formContent = modal.querySelector('.modal-body');
+                    if (formContent) {
+                        formContent.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2">Loading menu data...</p></div>';
+                    
+                        // Fetch menu data
+                        fetch(editUrl, {
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json'
+                            }
+                        })
+                        .then(response => {
+                            if (!response.ok) {
+                                throw new Error('Network response was not ok: ' + response.status);
+                            }
+                            return response.json();
+                        })
+                        .then(data => {
+                            console.log('Response data:', data);
+                            if (data.success && data.html) {
+                                // Update form content
+                                if (formContent) {
+                                    formContent.innerHTML = data.html;
+                                    
+                                    // Make sure the form action is set correctly
+                const editForm = document.getElementById('editMenuForm');
+                                    if (editForm) {
+                                        editForm.action = editForm.action.replace(':id', numericId);
+                                    }
+                                    
+                                    // Initialize form behaviors after it's loaded
+                                    initializeEditFormBehaviors();
+                                }
+                            } else {
+                                throw new Error(data.message || 'Error loading menu data');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error:', error);
+                            if (formContent) {
+                                formContent.innerHTML = `<div class="alert alert-danger">Error loading menu data: ${error.message}</div>`;
+                            }
+                        });
+                    }
+                }
+            }
+            
+            // Show the modal
+            try {
+                const bsModal = new bootstrap.Modal(modal);
+                bsModal.show();
+            } catch (error) {
+                console.error('Error showing modal:', error);
+            }
+        });
+    });
+
+    // Initialize behaviors for the edit form after it's loaded dynamically
+    function initializeEditFormBehaviors() {
+        try {
+            // Handle dynamic page fields toggle
+            const isDynamicCheckbox = document.getElementById('is_dynamic_page');
+            const dynamicFields = document.getElementById('dynamic-page-fields');
+            const brandSection = document.getElementById('brand_section');
+            const autoGenerateSection = document.getElementById('auto_generate_section');
+            
+            if (isDynamicCheckbox && dynamicFields) {
+                isDynamicCheckbox.addEventListener('change', function() {
+                    dynamicFields.style.display = this.checked ? 'block' : 'none';
+                    if (brandSection) brandSection.style.display = this.checked ? 'none' : 'block';
+                    if (autoGenerateSection) autoGenerateSection.style.display = this.checked ? 'none' : 'block';
+                });
+                
+                // Initialize visibility on load
+                if (isDynamicCheckbox.checked) {
+                    dynamicFields.style.display = 'block';
+                    if (brandSection) brandSection.style.display = 'none';
+                    if (autoGenerateSection) autoGenerateSection.style.display = 'none';
+                } else {
+                    dynamicFields.style.display = 'none';
+                    if (brandSection) brandSection.style.display = 'block';
+                    if (autoGenerateSection) autoGenerateSection.style.display = 'block';
+                }
+            }
+            
+            // Handle parent menu selection affecting location
+            const parentSelect = document.getElementById('parent_id');
+            if (parentSelect) {
+                parentSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    if (selectedOption && selectedOption.value) {
+                        const locationText = selectedOption.textContent.match(/\((.*?)\)/);
+                        if (locationText && locationText[1]) {
+                            const location = locationText[1];
+                            const locationSelect = document.getElementById('location');
+                            if (locationSelect) {
+                                locationSelect.value = location;
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (error) {
+            console.error('Error initializing form behaviors:', error);
+        }
+    }
+
+    // Handle form submission - using event delegation for dynamically loaded content
+    document.addEventListener('submit', function(e) {
+        if (e.target && e.target.id === 'editMenuForm') {
+            e.preventDefault();
+            
+            try {
+                // Show processing state
+                const form = e.target;
+                const submitButton = form.querySelector('button[type="submit"]') || 
+                                    document.querySelector('button[form="editMenuForm"]');
+                
+                let originalButtonText = 'Update Menu Item';
+                if (submitButton) {
+                    originalButtonText = submitButton.innerHTML;
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Saving...';
+                }
+                
+                // Get the menu ID
+                const menuId = window.currentEditMenuId || form.action.split('/').pop();
+                if (!menuId) {
+                    throw new Error('Menu ID not found');
+                }
+                
+                // Capture all form data before any DOM manipulation
+                const formData = new FormData(form);
+                
+                // Make sure boolean values are properly represented
+                // If checkboxes aren't checked, they won't be included in the FormData
+                if (!formData.has('active')) {
+                    formData.append('active', '0');
+                }
+                
+                if (!formData.has('is_mega_menu')) {
+                    formData.append('is_mega_menu', '0');
+                }
+                
+                if (!formData.has('is_dynamic_page')) {
+                    formData.append('is_dynamic_page', '0');
+                }
+                
+                if (!formData.has('auto_generate_models')) {
+                    formData.append('auto_generate_models', '0');
+                }
+                
+                // Log form data for debugging
+                const formDataObj = {};
+                formData.forEach((value, key) => {
+                    formDataObj[key] = value;
+                    // Add console logging for specific fields of interest
+                    if (key === 'url' || key === 'route_name') {
+                        console.log(`Form data - ${key}: "${value}"`);
+                    }
+                });
+                console.log('Form data being submitted:', formDataObj);
+                console.log('Menu ID for update:', menuId);
+                
+                // Get base URL from the current page
+                const baseUrl = window.location.pathname.split('/menus')[0];
+                
+                // Submit form via fetch API using menuItem parameter
+                const updateUrl = `${baseUrl}/menus/${menuId}/debug-update`;
+                console.log('Submitting to URL:', updateUrl);
+                
+                // Make sure form data has the method set correctly
+                formData.append('_method', 'POST'); // Ensure we're using POST method
+                
+                // Explicitly set URL field even if it's empty to ensure it's included in the request
+                if (!formData.has('url')) {
+                    formData.append('url', '');
+                    console.log('Added empty URL field to ensure it\'s included');
+                }
+                
+                // Explicitly set route_name field even if it's empty to ensure it's included
+                if (!formData.has('route_name')) {
+                    formData.append('route_name', '');
+                    console.log('Added empty route_name field to ensure it\'s included');
+                }
+                
+                fetch(updateUrl, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(data => {
+                            throw new Error(data.message || `HTTP error: ${response.status}`);
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Server response:', data);
+                    
+                    // Reset button state
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    }
+                    
+                    if (data.success) {
+                        // Show success message
+                        const alertDiv = document.createElement('div');
+                        alertDiv.className = 'alert alert-success alert-dismissible fade show mt-3';
+                        alertDiv.innerHTML = `
+                            <strong>Success!</strong> ${data.message || 'Menu item updated successfully.'}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        `;
+                        form.insertAdjacentElement('beforebegin', alertDiv);
+                        
+                        // Reload the page after a short delay
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        throw new Error(data.message || 'Unknown error occurred');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    
+                    // Reset button state
+                    if (submitButton) {
+                        submitButton.disabled = false;
+                        submitButton.innerHTML = originalButtonText;
+                    }
+                    
+                    // Show error message
+                    const alertDiv = document.createElement('div');
+                    alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+                    alertDiv.innerHTML = `
+                        <strong>Error!</strong> ${error.message}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    `;
+                    form.insertAdjacentElement('beforebegin', alertDiv);
+                });
+            } catch (error) {
+                console.error('Error handling form submission:', error);
+                alert('Error submitting form: ' + error.message);
+            }
+        }
+    });
+});
 </script>
 @endpush 

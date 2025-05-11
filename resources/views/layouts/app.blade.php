@@ -454,179 +454,46 @@
         /* End Quick View Styles */
         
         /* Mega menu styles */
-        .dropdown-mega .mega-menu {
+        .dropdown-mega .dropdown-menu {
             width: 100%;
-            border-radius: 0;
             margin-top: 0;
-            border-top: 1px solid rgba(0,0,0,.1);
+            border-radius: 0;
+            border-top: 3px solid var(--bs-primary);
+        }
+        
+        .dropdown-mega:hover .dropdown-menu {
+            display: block;
+        }
+        
+        .mega-menu {
+            padding: 1rem;
+        }
+        
+        .mega-menu .dropdown-header {
+            font-weight: 600;
+            color: var(--bs-primary);
         }
         
         .mega-menu-header {
+            color: var(--bs-primary);
             font-weight: 600;
-            margin-bottom: 15px;
-            color: #333;
-            border-bottom: 2px solid #f8f9fa;
-            padding-bottom: 5px;
+            margin-bottom: 10px;
         }
         
-        .mega-menu-column {
-            margin-bottom: 15px;
-        }
-        
-        .mega-menu .dropdown-item {
-            padding: 8px 15px;
-            font-size: 14px;
-            border-radius: 4px;
-        }
-        
-        .mega-menu .dropdown-item:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .see-all {
-            display: block;
-            margin-top: 10px;
-            color: #007bff;
-            font-size: 14px;
-            font-weight: 500;
-        }
-        
-        /* Brand grid styles */
-        .brand-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 15px;
-            margin-bottom: 15px;
-        }
-        
-        .brand-item {
-            text-align: center;
-            color: #333;
-            text-decoration: none;
-            transition: all 0.2s;
-        }
-        
-        .brand-item:hover {
-            transform: translateY(-3px);
-            color: #007bff;
-        }
-        
-        .brand-logo {
-            width: 60px;
-            height: 60px;
-            margin-bottom: 5px;
-            object-fit: contain;
-        }
-        
-        .brand-name {
-            font-size: 12px;
-            display: block;
-        }
-        
-        /* Search box styles */
-        .search-box-wrapper {
-            position: relative;
-        }
-        
-        /* Dropdown submenu support */
         .dropdown-submenu {
             position: relative;
         }
         
-        .dropdown-submenu .submenu-indicator {
-            font-size: 10px;
-        }
-        
-        .dropdown-submenu .submenu {
+        .dropdown-submenu .dropdown-menu.level-three {
+            position: absolute;
             top: 0;
             left: 100%;
-            margin-top: -1px;
             display: none;
             min-width: 200px;
-            border-radius: 4px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            transition: all 0.3s ease;
-            opacity: 0;
-            visibility: hidden;
         }
         
-        .dropdown-submenu:hover .submenu {
+        .dropdown-submenu:hover .dropdown-menu.level-three {
             display: block;
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .dropdown-submenu > a:hover {
-            background-color: rgba(var(--bs-primary-rgb), 0.1);
-        }
-        
-        .dropdown-submenu .dropdown-item {
-            padding: 10px 15px;
-            font-size: 14px;
-            display: flex;
-            align-items: center;
-        }
-        
-        .dropdown-submenu .dropdown-item i {
-            margin-right: 8px;
-            width: 16px;
-            text-align: center;
-        }
-        
-        /* Mobile support for submenu */
-        @media (max-width: 991.98px) {
-            .dropdown-submenu .submenu {
-                left: 0;
-                position: relative;
-                box-shadow: none;
-                margin-left: 15px;
-                border-left: 2px solid #ddd;
-                opacity: 1;
-                visibility: visible;
-            }
-        }
-        
-        /* Custom Child Menu Animations */
-        .dropdown-submenu .submenu {
-            transform: translateX(20px);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            will-change: transform, opacity;
-        }
-        
-        .dropdown-submenu:hover .submenu {
-            transform: translateX(0);
-        }
-        
-        .dropdown-mega .dropdown-menu {
-            transform: translateY(15px);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
-            will-change: transform, opacity;
-        }
-        
-        .dropdown-mega:hover .dropdown-menu {
-            transform: translateY(0);
-        }
-        
-        /* Child menu item hover effect */
-        .mega-menu .dropdown-item {
-            position: relative;
-            transition: all 0.25s ease;
-        }
-        
-        .mega-menu .dropdown-item:not(.submenu .dropdown-item):after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            width: 0;
-            height: 2px;
-            background-color: var(--bs-primary);
-            transition: all 0.25s ease;
-        }
-        
-        .mega-menu .dropdown-item:not(.submenu .dropdown-item):hover:after {
-            width: 60%;
-            left: 20%;
         }
     </style>
 </head>
@@ -660,144 +527,203 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarSupportedContent">
                 <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                    @foreach($mainMenu as $menuItem)
-                        @if($menuItem->children->isEmpty() && $menuItem->name !== 'Brands')
-                            <li class="nav-item">
-                                <a class="nav-link {{ request()->routeIs($menuItem->route_name) ? 'active' : '' }}" 
-                                   href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
-                                    @if($menuItem->icon)
-                                        <i class="{{ $menuItem->icon }} me-1"></i>
-                                    @endif
-                                    {{ $menuItem->name }}
-                                </a>
-                            </li>
-                        @elseif($menuItem->name === 'Brands')
-                            <li class="nav-item dropdown dropdown-mega position-static">
-                                <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" 
-                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fas fa-trademark me-1"></i>
-                                    Brands
-                                </a>
-                                <div class="dropdown-menu mega-menu p-4" aria-labelledby="brandsDropdown">
-                                    <div class="container">
-                                        <div class="row">
-                                            <div class="col-md-9">
-                                                <h5 class="mega-menu-header">Popular Brands</h5>
-                                                <div class="brand-grid">
-                                                    @foreach($allBrands->take(15) as $brand)
-                                                        <a href="{{ route('brand.show', $brand->slug) }}" class="brand-item">
-                                                            @if($brand->logo)
-                                                                <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="brand-logo">
-                                                            @else
-                                                                <div class="brand-logo d-flex align-items-center justify-content-center bg-light rounded-circle">
-                                                                    <i class="fas fa-trademark text-primary"></i>
-                                                                </div>
-                                                            @endif
-                                                            <span class="brand-name">{{ $brand->name }}</span>
-                                                        </a>
-                                                    @endforeach
-                                                </div>
-                                                <a href="{{ route('brands.all') }}" class="see-all">See all brands <i class="fas fa-arrow-right ms-1"></i></a>
-                                            </div>
-                                            <div class="col-md-3">
-                                                <h5 class="mega-menu-header">Featured</h5>
-                                                <div class="card border-0 shadow-sm">
-                                                    @if($allBrands->isNotEmpty() && $allBrands->first()->logo)
-                                                        <img src="{{ asset('storage/' . $allBrands->first()->logo) }}" class="card-img-top p-3" alt="Featured Brand">
-                                                    @endif
-                                                    <div class="card-body">
-                                                        <h6 class="card-title">Browse by Category</h6>
-                                                        <p class="card-text small">Find the best brands in each category for your needs.</p>
-                                                        <a href="{{ route('categories') }}" class="btn btn-sm btn-primary">Explore Categories</a>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </li>
-                        @else
-                            <li class="nav-item dropdown dropdown-mega position-static">
-                                <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown{{ $menuItem->id }}" 
-                                   role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                    @if($menuItem->icon)
-                                        <i class="{{ $menuItem->icon }} me-1"></i>
-                                    @endif
-                                    {{ $menuItem->name }}
-                                </a>
-                                <div class="dropdown-menu mega-menu p-4" aria-labelledby="navbarDropdown{{ $menuItem->id }}">
-                                    <div class="container">
-                                        <div class="row">
-                                            @if($menuItem->children->count() > 0)
-                                                <div class="col-md-9">
-                                                    <div class="row">
-                                                        @foreach($menuItem->children->chunk(4) as $chunk)
-                                                            <div class="col-md-4 mega-menu-column">
-                                                                @foreach($chunk as $child)
-                                                                    <div class="dropdown-submenu">
-                                                                        <a class="dropdown-item d-flex justify-content-between align-items-center" 
-                                                                           href="{{ $child->is_dynamic_page ? route('dynamic.page', $child->slug) : ($child->url ?? ($child->route_name ? route($child->route_name) : '#')) }}">
-                                                                            <span>
-                                                                                @if($child->icon)
-                                                                                    <i class="{{ $child->icon }} me-2"></i>
+                    @if(isset($show_admin_menus) && $show_admin_menus)
+                        <!-- Admin Menus - only visible to admins -->
+                        @foreach($mainMenu as $menuItem)
+                            @if(!$menuItem->is_mega_menu)
+                                <li class="nav-item">
+                                    <a class="nav-link {{ request()->url() == url($menuItem->url ?? '') || (request()->routeIs($menuItem->route_name ?? '') && !$menuItem->url) ? 'active' : '' }}" 
+                                       href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
+                                        @if($menuItem->icon)
+                                            <i class="{{ $menuItem->icon }} me-1"></i>
+                                        @endif
+                                        {{ $menuItem->name }}
+                                    </a>
+                                </li>
+                            @else
+                                <li class="nav-item dropdown dropdown-mega position-static">
+                                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown{{ $menuItem->id }}" 
+                                       role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        @if($menuItem->icon)
+                                            <i class="{{ $menuItem->icon }} me-1"></i>
+                                        @endif
+                                        {{ $menuItem->name }}
+                                    </a>
+                                    <div class="dropdown-menu mega-menu p-4" aria-labelledby="navbarDropdown{{ $menuItem->id }}">
+                                        <div class="container">
+                                            <div class="row">
+                                                @if($menuItem->children->count() > 0)
+                                                    <div class="col-md-9">
+                                                        <div class="row">
+                                                            @foreach($menuItem->children->chunk(4) as $chunk)
+                                                                <div class="col-md-4 mega-menu-column">
+                                                                    @foreach($chunk as $child)
+                                                                        <div class="dropdown-submenu">
+                                                                            <a class="dropdown-item d-flex justify-content-between align-items-center" 
+                                                                               href="{{ $child->is_dynamic_page ? route('dynamic.page', $child->slug) : ($child->url ?? ($child->route_name ? route($child->route_name) : '#')) }}">
+                                                                                <span>
+                                                                                    @if($child->icon)
+                                                                                        <i class="{{ $child->icon }} me-1"></i>
+                                                                                    @endif
+                                                                                    {{ $child->name }}
+                                                                                </span>
+                                                                                @if($child->children->count() > 0)
+                                                                                    <i class="fas fa-chevron-right text-muted small"></i>
                                                                                 @endif
-                                                                                {{ $child->name }}
-                                                                            </span>
-                                                                            @if($child->children && $child->children->count() > 0)
-                                                                            <i class="fas fa-chevron-right submenu-indicator ms-2"></i>
-                                                                            @endif
-                                                                        </a>
-                                                                        
-                                                                        @if($child->children && $child->children->count() > 0)
-                                                                        <div class="submenu dropdown-menu">
-                                                                            @foreach($child->children as $grandchild)
-                                                                            <a class="dropdown-item" 
-                                                                                href="{{ $grandchild->is_dynamic_page ? route('dynamic.page', $grandchild->slug) : ($grandchild->url ?? ($grandchild->route_name ? route($grandchild->route_name) : '#')) }}">
-                                                                                @if($grandchild->icon)
-                                                                                    <i class="{{ $grandchild->icon }} me-2"></i>
-                                                                                @else
-                                                                                    <i class="fas fa-angle-right me-2 text-secondary"></i>
-                                                                                @endif
-                                                                                <span>{{ $grandchild->name }}</span>
                                                                             </a>
-                                                                            @endforeach
+                                                                            
+                                                                            @if($child->children->count() > 0)
+                                                                                <div class="dropdown-menu level-three">
+                                                                                    @foreach($child->children as $grandchild)
+                                                                                        <a class="dropdown-item" 
+                                                                                           href="{{ $grandchild->is_dynamic_page ? route('dynamic.page', $grandchild->slug) : ($grandchild->url ?? ($grandchild->route_name ? route($grandchild->route_name) : '#')) }}">
+                                                                                            @if($grandchild->icon)
+                                                                                                <i class="{{ $grandchild->icon }} me-1"></i>
+                                                                                            @endif
+                                                                                            {{ $grandchild->name }}
+                                                                                        </a>
+                                                                                    @endforeach
+                                                                                </div>
+                                                                            @endif
                                                                         </div>
-                                                                        @endif
-                                                                    </div>
-                                                                @endforeach
-                                                            </div>
-                                                        @endforeach
+                                                                    @endforeach
+                                                                </div>
+                                                            @endforeach
+                                                        </div>
                                                     </div>
-                                                </div>
-                                                <div class="col-md-3">
-                                                    <div class="p-3 bg-light rounded">
-                                                        <h5 class="mega-menu-header">{{ $menuItem->name }}</h5>
-                                                        <p class="mb-2 small">Explore all options in our {{ strtolower($menuItem->name) }} section.</p>
-                                                        @if($menuItem->category_id && $menuItem->category && $menuItem->category->slug)
-                                                            <a href="{{ route('category.all', ['slug' => $menuItem->category->slug]) }}" class="btn btn-sm btn-primary">
-                                                                View All <i class="fas fa-arrow-right ms-1"></i>
-                                                            </a>
-                                                        @elseif($menuItem->slug)
-                                                            <a href="{{ route('category.all', ['slug' => $menuItem->slug]) }}" class="btn btn-sm btn-primary">
-                                                                View All <i class="fas fa-arrow-right ms-1"></i>
-                                                            </a>
-                                                        @else
-                                                            <a href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}" class="btn btn-sm btn-primary">
-                                                                View All <i class="fas fa-arrow-right ms-1"></i>
-                                                            </a>
-                                                        @endif
+                                                    <div class="col-md-3">
+                                                        <div class="p-3 bg-light rounded">
+                                                            <h5 class="mega-menu-header">{{ $menuItem->name }}</h5>
+                                                            <p class="mb-2 small">Explore all options in our {{ strtolower($menuItem->name) }} section.</p>
+                                                            @if($menuItem->category_id && $menuItem->category && $menuItem->category->slug)
+                                                                <a href="{{ route('category.all', ['slug' => $menuItem->category->slug]) }}" class="btn btn-sm btn-primary">
+                                                                    View All <i class="fas fa-arrow-right ms-1"></i>
+                                                                </a>
+                                                            @elseif($menuItem->slug)
+                                                                <a href="{{ route('category.all', ['slug' => $menuItem->slug]) }}" class="btn btn-sm btn-primary">
+                                                                    View All <i class="fas fa-arrow-right ms-1"></i>
+                                                                </a>
+                                                            @else
+                                                                <a href="{{ $menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#') }}" class="btn btn-sm btn-primary">
+                                                                    View All <i class="fas fa-arrow-right ms-1"></i>
+                                                                </a>
+                                                            @endif
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            @else
-                                                <div class="col-12 text-center py-4">
-                                                    <p>No items found in this category.</p>
-                                                </div>
-                                            @endif
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </div>
+                                </li>
+                            @endif
+                        @endforeach
+                    @endif
+                    
+                    <!-- Public Navigation Structure - visible to all users -->
+                    <!-- Categories Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="categoriesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-tags me-1"></i> Categories
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="categoriesDropdown">
+                            @foreach(\App\Models\Category::where('is_active', true)->orderBy('name')->get() as $category)
+                            <li>
+                                <a class="dropdown-item" href="{{ route('category.all', $category->slug) }}">
+                                    @if($category->icon)
+                                        <i class="{{ $category->icon }} me-1"></i>
+                                    @endif
+                                    {{ $category->name }}
+                                </a>
+                            </li>
+                            @endforeach
+                        </ul>
+                    </li>
+                    
+                    <!-- Brands Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="brandsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-building me-1"></i> Brands
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="brandsDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('brands.all') }}">
+                                    <i class="fas fa-list me-1"></i> All Brands
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            @foreach(\App\Models\Brand::where('is_active', true)->orderBy('name')->take(10)->get() as $brand)
+                            <li>
+                                <a class="dropdown-item" href="{{ route('brand.show', $brand->slug) }}">
+                                    {{ $brand->name }}
+                                </a>
+                            </li>
+                            @endforeach
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a class="dropdown-item text-primary" href="{{ route('brands.all') }}">
+                                    <i class="fas fa-ellipsis-h me-1"></i> View All Brands
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    
+                    <!-- Popular Categories with Brand Models -->
+                    @foreach(\App\Models\Category::where('is_featured', true)->take(3)->get() as $featuredCategory)
+                    <li class="nav-item dropdown dropdown-mega position-static">
+                        <a class="nav-link dropdown-toggle" href="#" id="category{{ $featuredCategory->id }}Dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            @if($featuredCategory->icon)
+                                <i class="{{ $featuredCategory->icon }} me-1"></i>
+                            @endif
+                            {{ $featuredCategory->name }}
+                        </a>
+                        <div class="dropdown-menu mega-menu p-4" aria-labelledby="category{{ $featuredCategory->id }}Dropdown">
+                            <div class="container">
+                                <div class="row">
+                                    <div class="col-md-9">
+                                        <div class="row">
+                                            @foreach(\App\Models\Brand::where('is_active', true)->orderBy('name')->take(12)->get() as $brand)
+                                            <div class="col-md-3 mb-3">
+                                                <h6 class="dropdown-header border-bottom pb-2">{{ $brand->name }}</h6>
+                                                <!-- <a class="dropdown-item" href="{{ route('products.by.brand', [$featuredCategory->slug, $brand->slug]) }}">
+                                                    All {{ $brand->name }} {{ $featuredCategory->name }}
+                                                </a> -->
+
+                                                <a class="dropdown-item" href="{{ route('brand.show', $brand->slug) }}">
+                                                     All {{ $brand->name }} {{ $featuredCategory->name }}
+                                                </a>
+                                                
+                                                @php
+                                                    $models = \App\Models\Product::where('category_id', $featuredCategory->id)
+                                                        ->where('brand', $brand->name)
+                                                        ->where('is_active', true)
+                                                        ->distinct()
+                                                        ->pluck('model')
+                                                        ->filter()
+                                                        ->take(3);
+                                                @endphp
+                                                
+                                                @foreach($models as $model)
+                                                    <a class="dropdown-item" href="{{ route('products.by.brand.model', [$featuredCategory->slug, $brand->slug, $model]) }}">
+                                                        {{ $model }}
+                                                    </a>
+                                                @endforeach
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3">
+                                        <div class="p-3 bg-light rounded">
+                                            <h5 class="mega-menu-header">{{ $featuredCategory->name }}</h5>
+                                            <p class="mb-2 small">Explore all options in our {{ strtolower($featuredCategory->name) }} section.</p>
+                                            <a href="{{ route('category.all', $featuredCategory->slug) }}" class="btn btn-sm btn-primary">
+                                                View All <i class="fas fa-arrow-right ms-1"></i>
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
-                            </li>
-                        @endif
+                            </div>
+                        </div>
+                    </li>
                     @endforeach
                 </ul>
                 
@@ -956,17 +882,24 @@
                 <div class="col-md-3">
                     <h5>Quick Links</h5>
                     <ul class="list-unstyled">
-                        @foreach($footerMenu as $menuItem)
-                            <li>
-                                <a class="text-white" 
-                                   href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
-                                    @if($menuItem->icon)
-                                        <i class="{{ $menuItem->icon }} me-1"></i>
-                                    @endif
-                                    {{ $menuItem->name }}
-                                </a>
-                            </li>
-                        @endforeach
+                        @if(isset($show_admin_menus) && $show_admin_menus)
+                            @foreach($footerMenu as $menuItem)
+                                <li>
+                                    <a class="text-white" 
+                                       href="{{ $menuItem->is_dynamic_page ? route('dynamic.page', $menuItem->slug) : ($menuItem->url ?? ($menuItem->route_name ? route($menuItem->route_name) : '#')) }}">
+                                        @if($menuItem->icon)
+                                            <i class="{{ $menuItem->icon }} me-1"></i>
+                                        @endif
+                                        {{ $menuItem->name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        @else
+                            <li><a class="text-white" href="{{ route('home') }}"><i class="fas fa-home me-1"></i> Home</a></li>
+                            <li><a class="text-white" href="{{ route('about') }}"><i class="fas fa-info-circle me-1"></i> About Us</a></li>
+                            <li><a class="text-white" href="{{ route('contact') }}"><i class="fas fa-envelope me-1"></i> Contact</a></li>
+                            <li><a class="text-white" href="{{ route('brands.all') }}"><i class="fas fa-building me-1"></i> Brands</a></li>
+                        @endif
                     </ul>
                 </div>
                 <div class="col-md-3">

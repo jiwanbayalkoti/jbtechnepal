@@ -1,6 +1,7 @@
-<div id="formContent">
+<form id="editMenuForm" method="POST" action="{{ route('admin.menus.update', ['menuItem' => $menu->id]) }}">
+    @csrf
     <input type="hidden" name="_method" value="PUT">
-    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="menu_id" value="{{ $menu->id }}">
     
     <div class="mb-3">
         <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
@@ -12,27 +13,23 @@
     
     <div class="row mb-3">
         <div class="col-md-6">
-            <label for="url" class="form-label">URL <small class="text-muted">(Auto-generated)</small></label>
-            <div class="input-group">
-                <span class="input-group-text">/</span>
-                <input type="text" class="form-control @error('url') is-invalid @enderror" id="url_display" value="{{ ltrim(old('url', $menu->url), '/') }}" readonly>
-                <input type="hidden" id="url" name="url" value="{{ old('url', $menu->url) }}">
-            </div>
-            <small class="form-text text-muted">URL is auto-generated from the menu name</small>
+            <label for="url" class="form-label">URL</label>
+            <input type="text" class="form-control @error('url') is-invalid @enderror" id="url" name="url" value="{{ old('url', $menu->url) }}">
+            <small class="form-text text-muted">External or internal URL (e.g., /contact, https://example.com)</small>
             @error('url')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
         
         <div class="col-md-6">
-            <label for="route_name" class="form-label">Route Name <small class="text-muted">(Auto-generated)</small></label>
-            <input type="text" class="form-control @error('route_name') is-invalid @enderror" id="route_name_display" value="{{ old('route_name', $menu->route_name) }}" readonly>
-            <input type="hidden" id="route_name" name="route_name" value="{{ old('route_name', $menu->route_name) }}">
-            <small class="form-text text-muted">Route name is auto-generated from the menu name</small>
+            <label for="route_name" class="form-label">Route Name</label>
+            <input type="text" class="form-control @error('route_name') is-invalid @enderror" id="route_name" name="route_name" value="{{ old('route_name', $menu->route_name) }}">
+            <small class="form-text text-muted">Laravel route name (e.g., home, contact.index)</small>
             @error('route_name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
+        <div class="form-text text-danger mt-2">Either URL or Route Name must be provided.</div>
     </div>
     
     <div class="mb-3">
@@ -51,11 +48,9 @@
         <div class="col-md-4">
             <label for="location" class="form-label">Location <span class="text-danger">*</span></label>
             <select class="form-select @error('location') is-invalid @enderror" id="location" name="location" required>
-                @foreach($locations as $location)
-                    <option value="{{ $location }}" {{ old('location', $menu->location) == $location ? 'selected' : '' }}>
-                        {{ ucfirst($location) }}
-                    </option>
-                @endforeach
+                <option value="main" {{ old('location', $menu->location) == 'main' ? 'selected' : '' }}>Main Menu</option>
+                <option value="footer" {{ old('location', $menu->location) == 'footer' ? 'selected' : '' }}>Footer Menu</option>
+                <option value="admin" {{ old('location', $menu->location) == 'admin' ? 'selected' : '' }}>Admin Menu</option>
             </select>
             @error('location')
                 <div class="invalid-feedback">{{ $message }}</div>
@@ -75,29 +70,42 @@
             <select class="form-select @error('parent_id') is-invalid @enderror" id="parent_id" name="parent_id">
                 <option value="">None (Top Level)</option>
                 @foreach($menuItems as $item)
-                    <option value="{{ $item['id'] }}" data-url="{{ $item['url'] ?? '' }}" {{ old('parent_id', $menu->parent_id) == $item['id'] ? 'selected' : '' }}>
+                    <option value="{{ $item['id'] }}" {{ old('parent_id', $menu->parent_id) == $item['id'] ? 'selected' : '' }}>
                         {{ $item['display_name'] }}
                     </option>
                 @endforeach
             </select>
-            <small class="form-text text-muted">Select a parent menu (can be a top-level or sub-menu)</small>
             @error('parent_id')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
     </div>
-
+    
+    <div class="row mb-3">
+        <div class="col-md-6">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="active" name="active" value="1" {{ old('active', $menu->active) ? 'checked' : '' }}>
+                <label class="form-check-label" for="active">Active</label>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-check">
+                <input type="checkbox" class="form-check-input" id="is_mega_menu" name="is_mega_menu" value="1" {{ old('is_mega_menu', $menu->is_mega_menu) ? 'checked' : '' }}>
+                <label class="form-check-label" for="is_mega_menu">Mega Menu</label>
+            </div>
+        </div>
+    </div>
+    
     <div class="mb-3">
-        <label for="category_id" class="form-label">Associated Category</label>
+        <label for="category_id" class="form-label">Related Category</label>
         <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id">
             <option value="">None</option>
             @foreach($categories as $category)
-                <option value="{{ $category->id }}" data-slug="{{ $category->slug }}" {{ old('category_id', $menu->category_id) == $category->id ? 'selected' : '' }}>
+                <option value="{{ $category->id }}" {{ old('category_id', $menu->category_id) == $category->id ? 'selected' : '' }}>
                     {{ $category->name }}
                 </option>
             @endforeach
         </select>
-        <small class="form-text text-muted">Link this menu item to a category (optional)</small>
         @error('category_id')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
@@ -125,18 +133,9 @@
     
     <div class="mb-3 form-check" id="auto_generate_section">
         <input type="checkbox" class="form-check-input" id="auto_generate_models" name="auto_generate_models" value="1" 
-        <?php
-        // Check if the URL has a specific brand that isn't 'all'
-        $hasBrand = preg_match('/\/([^\/]+)-by-brand\/([^\/]+)/', $menu->url, $matches) && $matches[2] !== 'all';
-        echo ($hasBrand) ? 'checked' : '';
-        ?>>
+        {{ old('auto_generate_models', $menu->auto_generate_models) ? 'checked' : '' }}>
         <label class="form-check-label" for="auto_generate_models">Auto-generate model submenus</label>
         <small class="form-text text-muted d-block">Automatically create child menu items for all models associated with this brand and category</small>
-    </div>
-    
-    <div class="mb-3 form-check">
-        <input type="checkbox" class="form-check-input" id="active" name="active" value="1" {{ old('active', $menu->active) ? 'checked' : '' }}>
-        <label class="form-check-label" for="active">Active</label>
     </div>
     
     <div class="mb-3 form-check">
@@ -145,7 +144,7 @@
         <small class="form-text text-muted d-block">Check this if you want to create a custom page with content</small>
     </div>
     
-    <div id="dynamic-page-fields" class="mb-3" style="display: none;">
+    <div id="dynamic-page-fields" class="mb-3" {{ !old('is_dynamic_page', $menu->is_dynamic_page) ? 'style="display: none;"' : '' }}>
         <div class="mb-3">
             <label for="slug" class="form-label">Page Slug</label>
             <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug', $menu->slug) }}">
@@ -163,256 +162,66 @@
             @enderror
         </div>
     </div>
-
-    <!-- Hidden input to store the menu ID -->
-    <input type="hidden" name="menu_id" value="{{ $menu->id }}">
-</div>
+</form>
 
 <script>
-// Execute immediately to ensure it runs right away
-(function() {
-    // Show/hide dynamic page fields
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle dynamic page fields based on checkbox
     const isDynamicCheckbox = document.getElementById('is_dynamic_page');
     const dynamicFields = document.getElementById('dynamic-page-fields');
-    const urlSection = document.getElementById('url').parentNode.parentNode.parentNode;
-    const nameInput = document.getElementById('name');
-    const slugInput = document.getElementById('slug');
-    const urlInput = document.getElementById('url');
-    const urlDisplayInput = document.getElementById('url_display');
-    const routeNameInput = document.getElementById('route_name');
-    const routeNameDisplayInput = document.getElementById('route_name_display');
-    const categorySelect = document.getElementById('category_id');
-    // const brandSection = document.getElementById('brand_section');
-    const brandSelect = document.getElementById('brand_for_url');
+    const brandSection = document.getElementById('brand_section');
+    const autoGenerateSection = document.getElementById('auto_generate_section');
+    
+    if (isDynamicCheckbox && dynamicFields) {
+        isDynamicCheckbox.addEventListener('change', function() {
+            dynamicFields.style.display = this.checked ? 'block' : 'none';
+            brandSection.style.display = this.checked ? 'none' : 'block';
+            autoGenerateSection.style.display = this.checked ? 'none' : 'block';
+        });
+        
+        // Initialize visibility on load
+        if (isDynamicCheckbox.checked) {
+            dynamicFields.style.display = 'block';
+            brandSection.style.display = 'none';
+            autoGenerateSection.style.display = 'none';
+        } else {
+            dynamicFields.style.display = 'none';
+            brandSection.style.display = 'block';
+            autoGenerateSection.style.display = 'block';
+        }
+    }
+    
+    // Handle parent menu selection affecting location
     const parentSelect = document.getElementById('parent_id');
-    
-    // Store parent menu data
-    const parentMenus = {};
-    
-    // Initialize parent menu data
     if (parentSelect) {
-        Array.from(parentSelect.options).forEach(option => {
-            if (option.value) {
-                // Extract name without the indentation and location
-                let fullText = option.textContent.trim();
-                let matches = fullText.match(/(?:— )*(.+?) \(([^)]+)\)$/);
-                
-                if (matches) {
-                    const parentName = matches[1]; // The actual name without indentation
-                    const parentLocation = matches[2]; // The location portion
-                    const url = option.getAttribute('data-url') || '';
-                    
-                    // Try to extract category and brand from parent URL
-                    const match = url.match(/\/([^\/]+)-by-brand\/([^\/]+)/);
-                    
-                    if (match) {
-                        parentMenus[option.value] = {
-                            categorySlug: match[1],
-                            brand: match[2],
-                            url: url,
-                            name: parentName
-                        };
-                    } else {
-                        // Store the parent's name even if it doesn't have a category-by-brand URL
-                        parentMenus[option.value] = {
-                            name: parentName,
-                            url: url
-                        };
+        parentSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            if (selectedOption.value) {
+                const locationText = selectedOption.textContent.match(/\((.*?)\)/);
+                if (locationText && locationText[1]) {
+                    const location = locationText[1];
+                    const locationSelect = document.getElementById('location');
+                    if (locationSelect) {
+                        locationSelect.value = location;
                     }
                 }
             }
         });
     }
     
-    function toggleDynamicFields() {
-        if (isDynamicCheckbox && isDynamicCheckbox.checked) {
-            dynamicFields.style.display = 'block';
-            urlSection.style.display = 'none';
-            // brandSection.style.display = 'block';
-            document.getElementById('brand_section').style.display = 'none';
-            document.getElementById('auto_generate_section').style.display = 'none';
-        } else {
-            dynamicFields.style.display = 'none';
-            urlSection.style.display = 'flex';
-            
-            // Always show brand section when not a dynamic page
-            document.getElementById('brand_section').style.display = 'block';
-            
-            // Initialize auto-generate visibility immediately
-            const isBrandMenu = (brandSelect && brandSelect.value !== 'all') || 
-                                (parentSelect && parentSelect.value && parentMenus[parentSelect.value] && 
-                                parentMenus[parentSelect.value].brand && 
-                                parentMenus[parentSelect.value].brand !== 'all');
-            
-            document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
-        }
-    }
-    
-    // Set initial state immediately
-    toggleDynamicFields();
-    
-    // Add event listener
-    if (isDynamicCheckbox) {
-        isDynamicCheckbox.addEventListener('change', toggleDynamicFields);
-    }
-    
-    // Parent select change handler
-    if (parentSelect) {
-        parentSelect.addEventListener('change', function() {
-            toggleDynamicFields();
-            updateUrls();
-            
-            // Update auto-generate section visibility
-            if (!isDynamicCheckbox.checked) {
-                const parentId = parentSelect.value;
-                const isBrandMenu = (brandSelect && brandSelect.value !== 'all') || 
-                                 (parentId && parentMenus[parentId] && 
-                                  parentMenus[parentId].brand && 
-                                  parentMenus[parentId].brand !== 'all');
-                
-                document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
-            }
+    // Initialize TinyMCE if it exists
+    if (typeof tinymce !== 'undefined' && document.getElementById('content')) {
+        tinymce.init({
+            selector: '#content',
+            height: 400,
+            plugins: [
+                'advlist autolink lists link image charmap print preview anchor',
+                'searchreplace visualblocks code fullscreen',
+                'insertdatetime media table paste code help wordcount'
+            ],
+            toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
+            menubar: 'file edit view insert format tools table help'
         });
-    }
-    
-    // Category select change handler
-    if (categorySelect) {
-        categorySelect.addEventListener('change', function() {
-            updateUrls();
-        });
-    }
-    
-    // Brand select change handler
-    if (brandSelect) {
-        brandSelect.addEventListener('change', function() {
-            updateUrls();
-            
-            // Update auto-generate section visibility
-            if (!isDynamicCheckbox.checked) {
-                const isBrandMenu = brandSelect.value !== 'all' || 
-                                  (parentSelect && parentSelect.value && parentMenus[parentSelect.value] && 
-                                   parentMenus[parentSelect.value].brand && 
-                                   parentMenus[parentSelect.value].brand !== 'all');
-                
-                document.getElementById('auto_generate_section').style.display = isBrandMenu ? 'block' : 'none';
-            }
-        });
-    }
-    
-    function generateURLSafeString(name) {
-        return name
-            .toLowerCase()
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-    }
-    
-    function updateUrls() {
-        const name = nameInput.value;
-        const slug = generateURLSafeString(name);
-        
-        // For dynamic pages
-        if (isDynamicCheckbox && isDynamicCheckbox.checked) {
-            if (slugInput && slugInput.value === '') {
-                slugInput.value = slug;
-            }
-        } 
-        // For regular menu items
-        else {
-            // Check for parent menu first
-            const parentId = parentSelect ? parentSelect.value : '';
-            
-            if (parentId) {
-                const parentInfo = parentMenus[parentId];
-                const brandValue = brandSelect.value;
-                
-                let categorySlug;
-                
-                // If parent already has a category-by-brand format, use its category
-                if (parentInfo.categorySlug) {
-                    categorySlug = parentInfo.categorySlug;
-                }
-                // Otherwise use parent's name as the category
-                else {
-                    categorySlug = generateURLSafeString(parentInfo.name);
-                }
-                
-                // Format based on parent: category-by-brand/brand
-                const newUrl = '/' + categorySlug + '-by-brand/' + brandValue;
-                urlInput.value = newUrl;
-                urlDisplayInput.value = categorySlug + '-by-brand/' + brandValue;
-                
-                // Format route name
-                routeNameInput.value = 'products.by.brand';
-                routeNameDisplayInput.value = 'products.by.brand';
-            }
-            // Check if category is selected (only if no parent)
-            else if (categorySelect && categorySelect.value) {
-                // Get selected option
-                const selectedOption = categorySelect.options[categorySelect.selectedIndex];
-                // Get category slug
-                const categorySlug = selectedOption.getAttribute('data-slug');
-                // Get brand
-                const brandValue = brandSelect.value;
-                
-                // Format: category-by-brand/brand
-                const newUrl = '/' + categorySlug + '-by-brand/' + brandValue;
-                urlInput.value = newUrl;
-                urlDisplayInput.value = categorySlug + '-by-brand/' + brandValue;
-                
-                // Format route name
-                routeNameInput.value = 'products.by.brand';
-                routeNameDisplayInput.value = 'products.by.brand';
-            } else {
-                // Default behavior if no parent or category selected
-                const newUrl = '/' + slug;
-                urlInput.value = newUrl;
-                urlDisplayInput.value = slug;
-                
-                // Set route name input values
-                routeNameInput.value = slug;
-                routeNameDisplayInput.value = slug;
-            }
-        }
-    }
-    
-    if (nameInput) {
-        // Update immediately on load
-        updateUrls();
-        
-        // Use both 'input' (live typing) and 'blur' events
-        nameInput.addEventListener('input', updateUrls);
-        nameInput.addEventListener('blur', updateUrls);
-        nameInput.addEventListener('keyup', updateUrls);
-    }
-    
-    // Wait for TinyMCE to be available
-    function initTinyMCE() {
-        if (typeof tinymce !== 'undefined') {
-            tinymce.init({
-                selector: '#content',
-                height: 400,
-                plugins: [
-                    'advlist autolink lists link image charmap print preview anchor',
-                    'searchreplace visualblocks code fullscreen',
-                    'insertdatetime media table paste code help wordcount'
-                ],
-                toolbar: 'undo redo | formatselect | bold italic backcolor | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | removeformat | help',
-                menubar: 'file edit view insert format tools table help'
-            });
-        }
-    }
-    
-    // Initialize TinyMCE
-    initTinyMCE();
-})();
-
-// Also run when DOM is fully loaded
-document.addEventListener('DOMContentLoaded', function() {
-    // Re-trigger the updateUrls function to ensure everything is properly set
-    if (document.getElementById('name')) {
-        const event = new Event('input');
-        document.getElementById('name').dispatchEvent(event);
     }
 });
 </script> 

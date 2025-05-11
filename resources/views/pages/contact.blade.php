@@ -95,7 +95,7 @@
                                 </div>
                             @endif
                             
-                            <form action="{{ route('contact.send') }}" method="POST" class="contact-form">
+                            <form action="{{ route('contact.submit') }}" method="POST" class="contact-form">
                                 @csrf
                                 
                                 <div class="row">

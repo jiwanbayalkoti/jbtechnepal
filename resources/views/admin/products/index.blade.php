@@ -59,20 +59,6 @@
                 </div>
                 
                 <div class="col-md-3">
-                    <label for="filter_subcategory" class="form-label">Subcategory</label>
-                    <select class="form-select" id="filter_subcategory" name="subcategory">
-                        <option value="">All Subcategories</option>
-                        @if(request('category') && isset($subcategories))
-                            @foreach($subcategories as $subcategory)
-                                <option value="{{ $subcategory->id }}" {{ request('subcategory') == $subcategory->id ? 'selected' : '' }}>
-                                    {{ $subcategory->name }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                </div>
-                
-                <div class="col-md-3">
                     <label for="filter_brand" class="form-label">Brand</label>
                     <select class="form-select" id="filter_brand" name="brand">
                         <option value="">All Brands</option>
@@ -126,13 +112,6 @@
                     <span class="badge bg-primary">
                         Category: {{ $categories->where('id', request('category'))->first()->name ?? 'Unknown' }}
                         <a href="{{ request()->fullUrlWithoutQuery(['category', 'subcategory']) }}" class="text-white ms-1 text-decoration-none">×</a>
-                    </span>
-                @endif
-                
-                @if(request('subcategory'))
-                    <span class="badge bg-secondary">
-                        Subcategory: {{ $subcategories->where('id', request('subcategory'))->first()->name ?? 'Unknown' }}
-                        <a href="{{ request()->fullUrlWithoutQuery(['subcategory']) }}" class="text-white ms-1 text-decoration-none">×</a>
                     </span>
                 @endif
                 
@@ -280,12 +259,7 @@
     <div class="mb-3">
         <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
         <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id" required>
-            <option value="">Select Category</option>
-            @foreach($categories as $category)
-                <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
-                    {{ $category->name }}
-                </option>
-            @endforeach
+            <option value="">Please select a brand first</option>
         </select>
         @error('category_id')
             <div class="invalid-feedback">{{ $message }}</div>
@@ -293,27 +267,11 @@
     </div>
     
     <div class="mb-3">
-        <label for="subcategory_id" class="form-label">Subcategory</label>
-        <select class="form-select @error('subcategory_id') is-invalid @enderror" id="subcategory_id" name="subcategory_id">
-            <option value="">Select Subcategory</option>
-            <!-- Subcategories will be loaded dynamically based on selected category -->
+        <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
+        <select class="form-select @error('model') is-invalid @enderror" id="model" name="model" required>
+            <option value="">Please select a category first</option>
         </select>
-        @error('subcategory_id')
-            <div class="invalid-feedback">{{ $message }}</div>
-        @enderror
-    </div>
-    
-    <div class="mb-3">
-            <label for="model" class="form-label">Model <span class="text-danger">*</span></label>
-            <select class="form-select @error('model') is-invalid @enderror" id="model" name="model" required>
-                <option value="">Select Model</option>
-                @foreach(\App\Models\Model::orderBy('name')->get() as $modelOption)
-                    <option value="{{ $modelOption->name }}" {{ old('model') == $modelOption->name ? 'selected' : '' }}>
-                        {{ $modelOption->name }}
-                    </option>
-                @endforeach
-            </select>
-            @error('model')
+        @error('model')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
         </div>
@@ -371,62 +329,6 @@
         const filterForm = document.getElementById('filterForm');
         const resetButton = document.getElementById('resetFilters');
         const filterCategory = document.getElementById('filter_category');
-        const filterSubcategory = document.getElementById('filter_subcategory');
-
-        // Category change handler for filter form
-        if (filterCategory && filterSubcategory) {
-            filterCategory.addEventListener('change', function() {
-                const categoryId = this.value;
-                
-                // Clear existing options except the first one
-                while (filterSubcategory.options.length > 1) {
-                    filterSubcategory.remove(1);
-                }
-                
-                if (categoryId) {
-                    // Show loading indicator
-                    const loadingOption = document.createElement('option');
-                    loadingOption.textContent = 'Loading...';
-                    loadingOption.disabled = true;
-                    filterSubcategory.appendChild(loadingOption);
-                    
-                    // Fetch subcategories for the selected category
-                    fetch(`{{ url('admin/subcategories') }}/${categoryId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Remove loading option
-                            filterSubcategory.remove(filterSubcategory.options.length - 1);
-                            
-                            if (data.success && data.subcategories) {
-                                // Add new options
-                                data.subcategories.forEach(subcategory => {
-                                    const option = document.createElement('option');
-                                    option.value = subcategory.id;
-                                    option.textContent = subcategory.name;
-                                    filterSubcategory.appendChild(option);
-                                });
-                                
-                                if (data.subcategories.length === 0) {
-                                    const noOption = document.createElement('option');
-                                    noOption.textContent = 'No subcategories available';
-                                    noOption.disabled = true;
-                                    filterSubcategory.appendChild(noOption);
-                                }
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error fetching subcategories:', error);
-                            // Remove loading option on error
-                            filterSubcategory.remove(filterSubcategory.options.length - 1);
-                            
-                            const errorOption = document.createElement('option');
-                            errorOption.textContent = 'Error loading subcategories';
-                            errorOption.disabled = true;
-                            filterSubcategory.appendChild(errorOption);
-                        });
-                }
-            });
-        }
 
         if (filterForm) {
             filterForm.addEventListener('submit', function(e) {
@@ -450,227 +352,149 @@
             });
         }
 
-        // Category change handler for the create form
-        const createForm = document.getElementById('createProductForm');
-        if (createForm) {
-            const categorySelect = createForm.querySelector('select[name="category_id"]');
-            const subcategorySelect = createForm.querySelector('select[name="subcategory_id"]');
+        // Helper function to add event handlers to a form
+        function addCascadingDropdowns(form) {
+            if (!form) return;
             
-            if (categorySelect && subcategorySelect) {
-                categorySelect.addEventListener('change', function() {
-                    loadSubcategories(this, subcategorySelect);
-                });
-            }
-        }
-        
-        // Function to load subcategories
-        function loadSubcategories(categorySelect, subcategorySelect) {
-            const categoryId = categorySelect.value;
+            const brandSelect = form.querySelector('select[name="brand"]');
+            const categorySelect = form.querySelector('select[name="category_id"]');
+            const modelSelect = form.querySelector('select[name="model"]');
             
-            // Clear existing options except the first one
-            while (subcategorySelect.options.length > 1) {
-                subcategorySelect.remove(1);
+            // Initialize dropdowns - disable category and model initially
+            if (categorySelect) {
+                categorySelect.innerHTML = '<option value="">Please select a brand first</option>';
+                categorySelect.disabled = true;
             }
             
-            // Clear model dropdown when category changes
-            const createModalForm = document.getElementById('createProductForm');
-            if (createModalForm) {
-                const modelSelect = createModalForm.querySelector('select[name="model"]');
                 if (modelSelect) {
-                    while (modelSelect.options.length > 1) {
-                        modelSelect.remove(1);
-                    }
-                }
+                modelSelect.innerHTML = '<option value="">Please select a category first</option>';
+                modelSelect.disabled = true;
             }
             
-            if (categoryId) {
-                console.log(categoryId);
-                // Show loading indicator in the subcategory dropdown
-                const loadingOption = document.createElement('option');
-                loadingOption.textContent = 'Loading...';
-                loadingOption.disabled = true;
-                subcategorySelect.appendChild(loadingOption);
-                
-                // Fetch subcategories for the selected category
-                fetch(`{{ url('admin/subcategories') }}/${categoryId}`)
+            // Handle brand changes
+            if (brandSelect) {
+                brandSelect.addEventListener('change', function() {
+                    const brandValue = this.value;
+                    
+                    // Clear and disable category dropdown while loading
+                    if (categorySelect) {
+                        if (brandValue) {
+                            categorySelect.innerHTML = '<option value="">Loading categories...</option>';
+                            categorySelect.disabled = true;
+                            
+                            // Fetch categories for the selected brand
+                            fetch(`/admin/api/categories-by-brand?brand=${encodeURIComponent(brandValue)}`)
                     .then(response => response.json())
                     .then(data => {
-                        // Remove loading option
-                        subcategorySelect.remove(subcategorySelect.options.length - 1);
+                                    // Enable and populate category dropdown
+                                    categorySelect.innerHTML = '<option value="">Select Category</option>';
                         
-                        if (data && data.subcategories) {
-                            // Add new options
-                            data.subcategories.forEach(subcategory => {
+                                    if (data.success && data.categories.length > 0) {
+                                        data.categories.forEach(category => {
                                 const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                subcategorySelect.appendChild(option);
-                            });
-                            
-                            if (data.subcategories.length === 0) {
-                                const noOption = document.createElement('option');
-                                noOption.textContent = 'No subcategories available';
-                                noOption.disabled = true;
-                                subcategorySelect.appendChild(noOption);
-                                }
+                                            option.value = category.id;
+                                            option.textContent = category.name;
+                                            categorySelect.appendChild(option);
+                                        });
+                                        categorySelect.disabled = false;
                             } else {
-                                const errorOption = document.createElement('option');
-                                errorOption.textContent = 'Error: Invalid data received';
-                                errorOption.disabled = true;
-                                subcategorySelect.appendChild(errorOption);
+                                        categorySelect.innerHTML = '<option value="">No categories found for this brand</option>';
+                                        categorySelect.disabled = true;
                             }
                         })
                     .catch(error => {
-                        console.error('Error fetching subcategories:', error);
-                        // Remove loading option on error
-                        subcategorySelect.remove(subcategorySelect.options.length - 1);
-                        
-                        const errorOption = document.createElement('option');
-                        errorOption.textContent = 'Error loading subcategories';
-                        errorOption.disabled = true;
-                        subcategorySelect.appendChild(errorOption);
-                    });
-            }
-        }
-
-        // Add event listeners for subcategory changes (for loading models)
-        document.addEventListener('change', function(e) {
-            if (e.target && e.target.matches('select[name="subcategory_id"]')) {
-                const subcategoryId = e.target.value;
-                // Find the closest form to this subcategory select
-                const form = e.target.closest('form');
-                if (!form) return;
-                
-                const modelSelect = form.querySelector('select[name="model"]');
-                if (!modelSelect) return;
-                
-                // Clear existing model options except the first one
-                while (modelSelect.options.length > 1) {
-                    modelSelect.remove(1);
-                }
-                
-                if (subcategoryId) {
-                    // Add loading option
-                    const loadingOption = document.createElement('option');
-                    loadingOption.textContent = 'Loading models...';
-                    loadingOption.disabled = true;
-                    modelSelect.appendChild(loadingOption);
+                                    console.error('Error fetching categories:', error);
+                                    categorySelect.innerHTML = '<option value="">Error loading categories</option>';
+                                    categorySelect.disabled = true;
+                                });
+                        } else {
+                            // If no brand selected, reset category dropdown
+                            categorySelect.innerHTML = '<option value="">Please select a brand first</option>';
+                            categorySelect.disabled = true;
+                        }
+                    }
                     
-                    // Fetch models for the selected subcategory
-                    fetch(`{{ url('admin/models-by-subcategory') }}/${subcategoryId}`)
-                        .then(response => response.json())
-                        .then(data => {
-                            // Remove loading option
-                            modelSelect.remove(modelSelect.options.length - 1);
+                    // Also reset model dropdown
+                    if (modelSelect) {
+                        modelSelect.innerHTML = '<option value="">Please select a category first</option>';
+                        modelSelect.disabled = true;
+                    }
+                });
+            }
+            
+            // Handle category changes
+            if (categorySelect) {
+                categorySelect.addEventListener('change', function() {
+                    const categoryId = this.value;
+                    
+                    // Clear model dropdown
+                    if (modelSelect) {
+                        if (categoryId) {
+                            modelSelect.innerHTML = '<option value="">Loading models...</option>';
+                            modelSelect.disabled = true;
                             
-                            if (data.success && data.models) {
-                                // Add new options
+                            // Fetch models for the selected category
+                            fetch(`/admin/api/models-by-category/${categoryId}`)
+                                .then(response => response.json())
+                                .then(data => {
+                                    // Enable and populate model dropdown
+                                    modelSelect.innerHTML = '<option value="">Select Model</option>';
+                                    
+                                    if (data.success && data.models.length > 0) {
                                 data.models.forEach(model => {
                                     const option = document.createElement('option');
                                     option.value = model.name;
                                     option.textContent = model.name;
                                     modelSelect.appendChild(option);
                                 });
-                                
-                                if (data.models.length === 0) {
-                                    const noOption = document.createElement('option');
-                                    noOption.textContent = 'No models available for this subcategory';
-                                    noOption.disabled = true;
-                                    modelSelect.appendChild(noOption);
-                                }
+                                        modelSelect.disabled = false;
                             } else {
-                                const errorOption = document.createElement('option');
-                                errorOption.textContent = 'Error: Invalid data received';
-                                errorOption.disabled = true;
-                                modelSelect.appendChild(errorOption);
+                                        modelSelect.innerHTML = '<option value="">No models available for this category</option>';
+                                        modelSelect.disabled = true;
                             }
                         })
                         .catch(error => {
                             console.error('Error fetching models:', error);
-                            // Remove loading option on error
-                            modelSelect.remove(modelSelect.options.length - 1);
-                            
-                            const errorOption = document.createElement('option');
-                            errorOption.textContent = 'Error loading models';
-                            errorOption.disabled = true;
-                            modelSelect.appendChild(errorOption);
-                        });
+                                    modelSelect.innerHTML = '<option value="">Error loading models</option>';
+                                    modelSelect.disabled = true;
+                                });
+                        } else {
+                            // If no category selected, reset model dropdown
+                            modelSelect.innerHTML = '<option value="">Please select a category first</option>';
+                            modelSelect.disabled = true;
                 }
             }
         });
+            }
+        }
 
-        // When Edit button is clicked, update the form action
-        const editButtons = document.querySelectorAll('[data-edit-url]');
-        editButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const url = this.getAttribute('data-edit-url');
-                const modalId = this.getAttribute('data-open-modal');
-                
-                if (url) {
-                    // This will be processed by the admin-modals.js script
-                    console.log('Edit URL clicked:', url);
-                    
-                    // Form action will be without the /edit suffix
-                    const formAction = url.replace('/edit', '');
-                    
-                    // Define a function to find and setup the form
-                    const setupEditForm = () => {
-                        // First, try to find the form by ID
-                        let editForm = document.getElementById('editProductForm');
-                        
-                        // If not found, look for any form in the modal
-                        if (!editForm) {
-                            const modalElement = document.getElementById(modalId);
-                            if (modalElement) {
-                                const modalBody = modalElement.querySelector('.modal-body');
-                                if (modalBody) {
-                                    // Find first form in the modal or in the formContent div
-                                    const formContent = modalBody.querySelector('#formContent');
-                                    editForm = modalBody.querySelector('form') || 
-                                             (formContent ? formContent.querySelector('form') : null);
-                                    
-                                    // If found a form but it has no ID, assign the expected ID
-                                    if (editForm && !editForm.id) {
-                                        console.log('Found form without ID, assigning ID: editProductForm');
-                                        editForm.id = 'editProductForm';
-                                    }
-                                }
-                            }
+        // Initialize cascading dropdowns for create form
+        const createProductForm = document.getElementById('createProductForm');
+        addCascadingDropdowns(createProductForm);
+        
+        // Event delegation for edit modal
+        document.addEventListener('click', function(e) {
+            // When edit modal is opened and loaded
+            if (e.target && e.target.hasAttribute('data-edit-url')) {
+                const editUrl = e.target.getAttribute('data-edit-url');
+                if (editUrl) {
+                    // Wait for the modal content to be loaded
+                    const observer = new MutationObserver(function(mutations, observer) {
+                        const editForm = document.getElementById('editProductForm');
+                        if (editForm && !editForm.querySelector('.spinner-border')) {
+                            // Add cascading dropdowns to the edit form
+                            addCascadingDropdowns(editForm);
+                            observer.disconnect();
                         }
-                        
-                        // Now setup the form if found
-                        if (editForm) {
-                            console.log('Found and setting up form:', editForm.id);
-                            editForm.action = formAction;
-                            
-                            // Add method override for PUT
-                            let methodInput = editForm.querySelector('input[name="_method"]');
-                            if (!methodInput) {
-                                methodInput = document.createElement('input');
-                                methodInput.type = 'hidden';
-                                methodInput.name = '_method';
-                                editForm.appendChild(methodInput);
-                            }
-                            methodInput.value = 'PUT';
-                            return true;
-                        }
-                        
-                        console.warn('Edit form not found');
-                        return false;
-                    };
+                    });
                     
-                    // Try immediately (in case form is already in the page)
-                    if (!setupEditForm()) {
-                        // If not successful, try again after a short delay (for AJAX loading)
-                        setTimeout(() => {
-                            if (!setupEditForm()) {
-                                // Try one more time after a longer delay
-                                setTimeout(setupEditForm, 500);
-                            }
-                        }, 100);
+                    // Observe the edit form container
+                    const editFormContainer = document.querySelector('#editProductModal .modal-body');
+                    if (editFormContainer) {
+                        observer.observe(editFormContainer, { childList: true, subtree: true });
                     }
                 }
-            });
+            }
         });
     });
 </script>

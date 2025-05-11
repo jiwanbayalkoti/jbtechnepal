@@ -25,6 +25,7 @@
                         <select class="form-select" id="sort" name="sort">
                             <option value="name" {{ request('sort', 'name') == 'name' ? 'selected' : '' }}>Name</option>
                             <option value="created_at" {{ request('sort') == 'created_at' ? 'selected' : '' }}>Date Created</option>
+                            <option value="brand_id" {{ request('sort') == 'brand_id' ? 'selected' : '' }}>Brand</option>
                         </select>
                         <select class="form-select" id="direction" name="direction">
                             <option value="asc" {{ request('direction', 'asc') == 'asc' ? 'selected' : '' }}>Ascending</option>
@@ -81,6 +82,7 @@
                         <th>ID</th>
                         <th>Name</th>
                         <th>Slug</th>
+                        <th>Brand</th>
                         <th>Products</th>
                         <th>Specs</th>
                         <th width="200">Actions</th>
@@ -95,17 +97,30 @@
                                     <i class="{{ $category->icon }} me-1"></i>
                                 @endif
                                 {{ $category->name }}
+                                @if($category->is_featured)
+                                    <span class="badge bg-success ms-1">Featured</span>
+                                @endif
+                                @if($category->brand_featured)
+                                    <span class="badge bg-info ms-1">Brand Featured</span>
+                                @endif
                             </td>
                             <td>{{ $category->slug }}</td>
+                            <td>
+                                @if($category->brand)
+                                    <a href="{{ route('admin.brands.edit', $category->brand_id) }}" class="text-decoration-none">
+                                        {{ $category->brand->name }}
+                                    </a>
+                                @else
+                                    <span class="text-muted">General</span>
+                                @endif
+                            </td>
                             <td>{{ $category->products->count() }}</td>
                             <td>{{ $category->specificationTypes->count() }}</td>
                             <td>
                                 <div class="btn-group">
-                                    <button type="button" class="btn btn-sm btn-primary" 
-                                            data-edit-url="{{ route('admin.categories.edit', $category->id) }}"
-                                            data-open-modal="editCategoryModal">
+                                    <a href="{{ route('admin.categories.edit', $category->id) }}" class="btn btn-sm btn-primary">
                                         <i class="fas fa-edit"></i> Edit
-                                    </button>
+                                    </a>
                                     <a href="{{ route('admin.specifications', $category->id) }}" class="btn btn-sm btn-info">
                                         <i class="fas fa-list"></i> Specs
                                     </a>
@@ -121,7 +136,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center">No categories found.</td>
+                            <td colspan="7" class="text-center">No categories found.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -154,6 +169,29 @@
     </div>
     
     <div class="mb-3">
+        <label for="slug" class="form-label">Slug</label>
+        <input type="text" class="form-control @error('slug') is-invalid @enderror" id="slug" name="slug" value="{{ old('slug') }}">
+        <small class="form-text text-muted">Leave blank to auto-generate from name</small>
+        @error('slug')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <div class="mb-3">
+        <label for="brand_id" class="form-label">Associated Brand</label>
+        <select class="form-select @error('brand_id') is-invalid @enderror" id="brand_id" name="brand_id">
+            <option value="">None (General Category)</option>
+            @foreach(\App\Models\Brand::orderBy('name')->get() as $brand)
+                <option value="{{ $brand->id }}" {{ old('brand_id') == $brand->id ? 'selected' : '' }}>{{ $brand->name }}</option>
+            @endforeach
+        </select>
+        <small class="form-text text-muted">Select a brand if this category is brand-specific</small>
+        @error('brand_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+    
+    <div class="mb-3">
         <label for="icon" class="form-label">Icon Class (FontAwesome)</label>
         <div class="input-group">
             <span class="input-group-text"><i class="fas fa-icons"></i></span>
@@ -171,6 +209,18 @@
         @error('description')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
+    </div>
+    
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="is_featured" name="is_featured" value="1" {{ old('is_featured') ? 'checked' : '' }}>
+        <label class="form-check-label" for="is_featured">Featured Category</label>
+        <small class="form-text text-muted d-block">Display this category prominently on the homepage</small>
+    </div>
+    
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="brand_featured" name="brand_featured" value="1" {{ old('brand_featured') ? 'checked' : '' }}>
+        <label class="form-check-label" for="brand_featured">Featured for Brand</label>
+        <small class="form-text text-muted d-block">Display this category prominently on the brand page</small>
     </div>
 </x-admin-form-modal>
 

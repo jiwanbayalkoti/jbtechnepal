@@ -8,10 +8,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ route('category.all', $product->category->slug) }}">{{ $product->category->name }}</a></li>
-            @if($product->subcategory)
-                <li class="breadcrumb-item"><a href="{{ route('category.all', $product->category->slug) }}?subcategory={{ $product->subcategory_id }}">{{ $product->subcategory->name }}</a></li>
-            @endif
-            <li class="breadcrumb-item active" aria-current="page">{{ $product->name }}</li>
+            <li class="breadcrumb-item active">{{ $product->name }}</li>
         </ol>
     </nav>
 
@@ -66,11 +63,10 @@
             <h1 class="product-title mb-2">{{ $product->name }}</h1>
             
             <div class="product-meta mb-3">
-                <span class="badge bg-primary">{{ $product->category->name }}</span>
-                @if($product->subcategory)
-                    <span class="badge bg-secondary">{{ $product->subcategory->name }}</span>
+                <span class="badge bg-info">{{ $product->category->name }}</span>
+                @if($product->brand)
+                    <span class="badge bg-primary">{{ $product->brand }}</span>
                 @endif
-                <span class="badge bg-info">{{ $product->brand }}</span>
                 <span class="badge bg-dark">Model: {{ $product->model }}</span>
             </div>
             

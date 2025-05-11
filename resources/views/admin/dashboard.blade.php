@@ -811,49 +811,9 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
     $(document).ready(function() {
-        // Handle subcategory changes for model loading
+        // Handle category changes for model loading
         $(document).on('change', 'select[name="category_id"]', function() {
             const categoryId = $(this).val();
-            const form = $(this).closest('form');
-            const subcategorySelect = form.find('select[name="subcategory_id"]');
-            const modelSelect = form.find('select[name="model"]');
-            
-            // Clear subcategory and model dropdowns
-            if (subcategorySelect.length) {
-                subcategorySelect.empty().append('<option value="">Select Subcategory</option>');
-            }
-            
-            if (modelSelect.length) {
-                modelSelect.empty().append('<option value="">Select Model</option>');
-            }
-            
-            if (categoryId && subcategorySelect.length) {
-                // Load subcategories for the selected category
-                $.ajax({
-                    url: `/admin/subcategories/${categoryId}`,
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(response) {
-                        if (response.success && response.subcategories.length > 0) {
-                            // Add subcategories to dropdown
-                            $.each(response.subcategories, function(index, subcategory) {
-                                subcategorySelect.append(`<option value="${subcategory.id}">${subcategory.name}</option>`);
-                            });
-                        } else {
-                            subcategorySelect.append('<option value="" disabled>No subcategories available</option>');
-                        }
-                    },
-                    error: function(xhr) {
-                        console.error('Error loading subcategories:', xhr.responseText);
-                        subcategorySelect.append('<option value="" disabled>Error loading subcategories</option>');
-                    }
-                });
-            }
-        });
-        
-        // Handle model loading when subcategory changes
-        $(document).on('change', 'select[name="subcategory_id"]', function() {
-            const subcategoryId = $(this).val();
             const form = $(this).closest('form');
             const modelSelect = form.find('select[name="model"]');
             
@@ -861,10 +821,10 @@
             if (modelSelect.length) {
                 modelSelect.empty().append('<option value="">Select Model</option>');
                 
-                if (subcategoryId) {
-                    // Load models for the selected subcategory
+                if (categoryId) {
+                    // Load models for the selected category
                     $.ajax({
-                        url: `/admin/models-by-subcategory/${subcategoryId}`,
+                        url: `/admin/api/models-by-category/${categoryId}`,
                         type: 'GET',
                         dataType: 'json',
                         success: function(response) {
@@ -874,7 +834,7 @@
                                     modelSelect.append(`<option value="${model.name}">${model.name}</option>`);
                                 });
                             } else {
-                                modelSelect.append('<option value="" disabled>No models available for this subcategory</option>');
+                                modelSelect.append('<option value="" disabled>No models available for this category</option>');
                             }
                         },
                         error: function(xhr) {

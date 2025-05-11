@@ -32,7 +32,7 @@ class Product extends Model
     {
         return $this->belongsTo(Category::class);
     }
-    
+
     /**
      * Get the subcategory that owns the product.
      */
@@ -98,5 +98,15 @@ class Product extends Model
         }
         
         return $this->inventory->isLow();
+    }
+
+    /**
+     * Get the route key for the model.
+     *
+     * @return string
+     */
+    public function getRouteKeyName()
+    {
+        return 'id';
     }
 }

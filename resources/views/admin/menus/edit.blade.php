@@ -8,7 +8,7 @@
         <h5 class="mb-0">Edit Menu Item</h5>
     </div>
     <div class="card-body">
-        <form action="{{ route('admin.menus.update', $menu->id) }}" method="POST">
+        <form action="{{ route('admin.menus.update', ['menuItem' => $menu->id]) }}" method="POST">
             @csrf
             @method('PUT')
             

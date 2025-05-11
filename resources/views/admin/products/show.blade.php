@@ -161,7 +161,7 @@
     <div class="alert alert-info mt-4">
         <h5 class="alert-heading">No Specifications</h5>
         <p class="mb-0">This product doesn't have any specifications defined. 
-            <a href="{{ route('admin.products.edit', $product) }}">Edit this product</a> to add specifications.</p>
+            <a href="{{ route('admin.products.edit', $product->id) }}">Edit this product</a> to add specifications.</p>
     </div>
 @endif
 

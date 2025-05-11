@@ -21,7 +21,7 @@
         <p>You need at least 2 products to make a comparison. Please add more products to your comparison list.</p>
         <hr>
         <p class="mb-0">
-            <a href="{{ route('categories.show', $products->first()->category->slug) }}" class="btn btn-primary">
+            <a href="{{ route('category.all', $products->first()->category->slug) }}" class="btn btn-primary">
                 Add more {{ $products->first()->category->name }}
             </a>
         </p>

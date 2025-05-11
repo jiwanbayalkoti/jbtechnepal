@@ -176,6 +176,27 @@
                             <i class="fas fa-home me-1"></i>View Site
                         </a>
                     </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>{{ Auth::user()->name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <a class="dropdown-item" href="{{ route('admin.profile') }}">
+                                    <i class="fas fa-user me-2"></i>Profile
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <form method="POST" action="{{ route('admin.logout') }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -192,18 +213,15 @@
                         <i class="fas fa-users me-2"></i>Customers
                     </a>
                     <!-- Categories dropdown with submenu -->
-                    <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategories.*') ? 'active' : '' }}">
+                    <div class="list-group-item list-group-item-action p-0 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                         <a href="#categoriesSubmenu" data-bs-toggle="collapse" data-parent-menu="true"
-                           class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.categories.*') || request()->routeIs('admin.subcategories.*') ? 'text-white' : '' }}">
+                           class="d-flex justify-content-between align-items-center text-decoration-none px-3 py-2 {{ request()->routeIs('admin.categories.*') ? 'text-white' : '' }}">
                             <span><i class="fas fa-tags me-2"></i>Categories</span>
                             <i class="fas fa-chevron-down"></i>
                         </a>
                         <div class="collapse" id="categoriesSubmenu">
                             <a href="{{ route('admin.categories.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.categories.*') ? 'active' : '' }}">
                                 <i class="fas fa-folder me-2"></i>Manage Categories
-                            </a>
-                            <a href="{{ route('admin.subcategories.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.subcategories.*') ? 'active' : '' }}">
-                                <i class="fas fa-sitemap me-2"></i>Manage Subcategories
                             </a>
                         </div>
                     </div>
@@ -364,6 +382,9 @@
                             </a>
                             <a href="{{ route('admin.pages.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.pages.*') ? 'active' : '' }}">
                                 <i class="fas fa-file-alt me-2"></i>Pages Management
+                            </a>
+                            <a href="{{ route('admin.banners.index') }}" class="list-group-item list-group-item-action border-0 ps-5 py-2 {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+                                <i class="fas fa-images me-2"></i>Banner Management
                             </a>
                         </div>
                     </div>

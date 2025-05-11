@@ -17,11 +17,11 @@ class HomeController extends Controller
     public function index()
     {
         $featuredCategories = Category::where('is_featured', true)->take(6)->get();
-        $latestProducts = Product::with(['category', 'subcategory', 'images'])
+        $latestProducts = Product::with(['category', 'images'])
             ->orderBy('created_at', 'desc')
             ->take(8)
             ->get();
-        $randomProducts = Product::with(['category', 'subcategory', 'images'])
+        $randomProducts = Product::with(['category', 'images'])
             ->inRandomOrder()
             ->take(4)
             ->get();
@@ -160,15 +160,7 @@ class HomeController extends Controller
                 }
             }
 
-            // Apply subcategory filter (multiple subcategories)
-            if ($request->has('subcategory') && !empty($request->subcategory)) {
-                if (is_array($request->subcategory)) {
-                    $query->whereIn('subcategory_id', $request->subcategory);
-                } else {
-                    $query->where('subcategory_id', $request->subcategory);
-                }
-            }
-
+            // Remove the subcategory filter since subcategory_id column no longer exists
             // Apply brand filter (multiple brands)
             if ($request->has('brand') && !empty($request->brand)) {
                 if (is_array($request->brand)) {
@@ -213,7 +205,7 @@ class HomeController extends Controller
             }
 
             // Get the products with pagination
-            $products = $query->with(['category', 'subcategory', 'images'])->paginate(6);
+            $products = $query->with(['category', 'images'])->paginate(6);
             $lastPage = $products->currentPage() >= $products->lastPage();
 
             // Generate HTML for products
@@ -278,7 +270,7 @@ class HomeController extends Controller
             // Get products matching the search query
             $products = Product::where('name', 'like', "%{$query}%")
                 ->orWhere('description', 'like', "%{$query}%")
-                ->with(['category', 'brand'])
+                ->with(['category', 'specifications.specificationType'])
                 ->take(5)
                 ->get();
 
@@ -325,11 +317,11 @@ class HomeController extends Controller
             $suggestion = [
                 'id' => $product->id,
                 'name' => $product->name,
-                'brand' => $product->brand->name,
+                'brand' => $product->brand,
                 'category' => $product->category->name,
                 'highlight' => $this->generateHighlight($product, $query, $specs),
                 'features' => $this->extractKeyFeatures($specs),
-                'url' => route('products.show', $product->slug)
+                'url' => route('product', $product->slug)
             ];
 
             $suggestions[] = $suggestion;

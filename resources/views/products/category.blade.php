@@ -183,19 +183,12 @@
                                 </div>
                                 
                                 <div class="card-body">
-                                    <p class="product-category">
-                                        <span class="badge bg-primary">{{ $product->category->name }}</span>
-                                        @if($product->subcategory)
-                                            <span class="badge bg-secondary">{{ $product->subcategory->name }}</span>
+                                    <h5 class="card-title">{{ $product->name }}</h5>
+                                    <p class="card-text">
+                                        <span class="badge bg-info">{{ $product->category->name }}</span>
+                                        @if($product->brand)
+                                            <span class="badge bg-light text-dark">{{ $product->brand }}</span>
                                         @endif
-                                    </p>
-                                    <h5 class="card-title product-title">
-                                        <a href="{{ route('product', $product->slug) }}" class="text-decoration-none text-dark">
-                                            {{ $product->name }}
-                                        </a>
-                                    </h5>
-                                    <p class="product-brand mb-1">
-                                        <strong>Brand:</strong> {{ $product->brand }}
                                     </p>
                                     <p class="product-model mb-2">
                                         <strong>Model:</strong> {{ $product->model }}

@@ -35,7 +35,7 @@ class CompareController extends Controller
     public function product($slug)
     {
         $product = Product::where('slug', $slug)
-            ->with(['category', 'subcategory', 'images', 'specifications.specificationType'])
+            ->with(['category', 'images', 'specifications.specificationType'])
             ->firstOrFail();
             
         $relatedProducts = Product::where('category_id', $product->category_id)
@@ -65,7 +65,7 @@ class CompareController extends Controller
         
         if (!empty($compareList)) {
             $products = Product::whereIn('id', $compareList)
-                ->with(['category', 'subcategory', 'images', 'specifications.specificationType'])
+                ->with(['category', 'images', 'specifications.specificationType'])
                 ->get();
                 
             // Get all specification types used by these products
@@ -231,7 +231,7 @@ class CompareController extends Controller
 
             // Get the products being compared
             $products = Product::whereIn('id', $request->product_ids)
-                ->with(['specifications.specificationType', 'category', 'subcategory'])
+                ->with(['specifications.specificationType', 'category'])
                 ->get();
 
             \Log::info('Products retrieved', [

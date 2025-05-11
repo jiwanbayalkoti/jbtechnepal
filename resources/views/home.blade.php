@@ -143,7 +143,7 @@
                                 <div class="card-body">
                                     <h5 class="card-title">{{ $category->name }}</h5>
                                     <p class="card-text">{{ $category->products->count() }} products available</p>
-                                    <a href="{{ route('categories.show', $category->slug) }}" class="btn btn-sm btn-outline-primary">Browse Products</a>
+                                    <a href="{{ route('category.all', $category->slug) }}" class="btn btn-sm btn-outline-primary">Browse Products</a>
                                 </div>
                             </div>
                         </div>

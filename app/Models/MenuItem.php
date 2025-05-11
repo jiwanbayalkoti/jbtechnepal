@@ -27,6 +27,7 @@ class MenuItem extends Model
         'slug',
         'content',
         'is_dynamic_page',
+        'is_mega_menu',
     ];
 
     /**
@@ -38,6 +39,7 @@ class MenuItem extends Model
         'active' => 'boolean',
         'order' => 'integer',
         'is_dynamic_page' => 'boolean',
+        'is_mega_menu' => 'boolean',
     ];
 
     /**

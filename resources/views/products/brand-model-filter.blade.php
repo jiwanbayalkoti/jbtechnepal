@@ -8,7 +8,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('home') }}">Home</a></li>
             <li class="breadcrumb-item"><a href="{{ route('category.all', $categoryObj->slug) }}">{{ $categoryObj->name }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ route('products.by.brand', [$category, $brand]) }}">{{ $brand }}</a></li>
+            <li class="breadcrumb-item"><a href="{{ route('products.by.brand', [$categoryObj->slug, $brand]) }}">{{ $brand }}</a></li>
             <li class="breadcrumb-item active">{{ $model }}</li>
         </ol>
     </nav>
@@ -41,7 +41,7 @@
                     <h5 class="mb-0">Filters</h5>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('products.by.brand.model', [$category, $brand, $model]) }}" method="GET" id="filterForm">
+                    <form action="{{ route('products.by.brand.model', [$categoryObj->slug, $brand, $model]) }}" method="GET" id="filterForm">
                         @if(request()->filled('sort_by'))
                             <input type="hidden" name="sort_by" value="{{ request('sort_by') }}">
                         @endif
@@ -55,35 +55,26 @@
                                 <h6 class="fw-bold mb-3">Subcategories</h6>
                                 <div class="list-group">
                                     @foreach($subcategories as $subcategory)
-                                        <label class="list-group-item d-flex">
-                                            <input class="form-check-input me-2" type="radio" name="subcategory" 
-                                                value="{{ $subcategory->id }}" 
-                                                {{ request('subcategory') == $subcategory->id ? 'checked' : '' }}
-                                                onchange="document.getElementById('filterForm').submit()">
-                                            {{ $subcategory->name }}
-                                        </label>
-                                    @endforeach
-                                    @if(request()->filled('subcategory'))
-                                        <a href="{{ route('products.by.brand.model', [$category, $brand, $model]) }}" 
-                                           class="list-group-item list-group-item-action text-primary">
-                                            <i class="fas fa-times-circle me-2"></i> Clear Selection
+                                        <a href="{{ route('products.by.brand.model', [$categoryObj->slug, $brand, $model, 'subcategory' => $subcategory->id]) }}" 
+                                           class="list-group-item list-group-item-action {{ request('subcategory') == $subcategory->id ? 'active' : '' }}">
+                                           {{ $subcategory->name }}
                                         </a>
-                                    @endif
+                                    @endforeach
                                 </div>
                             </div>
                         @endif
-                        
-                        <!-- Model Filter -->
+
+                        <!-- Models Filter -->
                         @if($models->count() > 0)
                             <div class="mb-4">
                                 <h6 class="fw-bold mb-3">{{ $brand }} Models</h6>
                                 <div class="list-group">
-                                    <a href="{{ route('products.by.brand', [$category, $brand]) }}" 
+                                    <a href="{{ route('products.by.brand', [$categoryObj->slug, $brand]) }}" 
                                        class="list-group-item list-group-item-action">
                                        All {{ $brand }} Models
                                     </a>
                                     @foreach($models as $modelItem)
-                                        <a href="{{ route('products.by.brand.model', [$category, $brand, $modelItem]) }}" 
+                                        <a href="{{ route('products.by.brand.model', [$categoryObj->slug, $brand, $modelItem]) }}" 
                                            class="list-group-item list-group-item-action {{ $model === $modelItem ? 'active' : '' }}">
                                            {{ $modelItem }}
                                         </a>
@@ -97,38 +88,17 @@
                             <h6 class="fw-bold mb-3">Price Range</h6>
                             <div class="row g-2">
                                 <div class="col-6">
-                                    <label for="price_min" class="form-label">Min</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control" id="price_min" name="price_min" 
-                                            value="{{ request('price_min', '') }}" 
-                                            min="{{ $priceRange['min'] }}" max="{{ $priceRange['max'] }}" step="1">
-                                    </div>
+                                    <input type="number" class="form-control form-control-sm" name="price_min" 
+                                           placeholder="Min" value="{{ request('price_min', $priceRange['min']) }}">
                                 </div>
                                 <div class="col-6">
-                                    <label for="price_max" class="form-label">Max</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" class="form-control" id="price_max" name="price_max" 
-                                            value="{{ request('price_max', '') }}" 
-                                            min="{{ $priceRange['min'] }}" max="{{ $priceRange['max'] }}" step="1">
-                                    </div>
-                                </div>
-                                <div class="col-12 mt-2">
-                                    <button type="submit" class="btn btn-sm btn-outline-primary w-100">
-                                        Apply Price Filter
-                                    </button>
+                                    <input type="number" class="form-control form-control-sm" name="price_max" 
+                                           placeholder="Max" value="{{ request('price_max', $priceRange['max']) }}">
                                 </div>
                             </div>
                         </div>
 
-                        @if(request()->anyFilled(['subcategory', 'price_min', 'price_max']))
-                            <div class="d-grid">
-                                <a href="{{ route('products.by.brand.model', [$category, $brand, $model]) }}" class="btn btn-outline-danger">
-                                    <i class="fas fa-filter me-2"></i> Clear All Filters
-                                </a>
-                            </div>
-                        @endif
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                     </form>
                 </div>
             </div>
@@ -138,158 +108,136 @@
         <div class="col-lg-9">
             <div class="d-flex justify-content-between align-items-center mb-4">
                 <div>
-                    <span class="text-muted">Showing {{ $products->firstItem() ?? 0 }} - {{ $products->lastItem() ?? 0 }} of {{ $products->total() }} products</span>
+                    <span class="text-muted">Showing {{ $products->firstItem() ?? 0 }}-{{ $products->lastItem() ?? 0 }} of {{ $products->total() }} products</span>
                 </div>
-                <div class="d-flex align-items-center">
-                    <label for="sortOrder" class="me-2 mb-0">Sort by:</label>
-                    <select id="sortOrder" class="form-select form-select-sm" style="width: 200px;" onchange="updateSort(this.value)">
-                        <option value="created_at-desc" {{ $sortBy == 'created_at' && $sortDir == 'desc' ? 'selected' : '' }}>Newest First</option>
-                        <option value="created_at-asc" {{ $sortBy == 'created_at' && $sortDir == 'asc' ? 'selected' : '' }}>Oldest First</option>
-                        <option value="price-asc" {{ $sortBy == 'price' && $sortDir == 'asc' ? 'selected' : '' }}>Price: Low to High</option>
-                        <option value="price-desc" {{ $sortBy == 'price' && $sortDir == 'desc' ? 'selected' : '' }}>Price: High to Low</option>
-                        <option value="name-asc" {{ $sortBy == 'name' && $sortDir == 'asc' ? 'selected' : '' }}>Name: A-Z</option>
-                        <option value="name-desc" {{ $sortBy == 'name' && $sortDir == 'desc' ? 'selected' : '' }}>Name: Z-A</option>
+                <div>
+                    <select class="form-select form-select-sm" id="sortProducts">
+                        <option value="newest" {{ request('sort_by') == 'created_at' && request('sort_dir') == 'desc' ? 'selected' : '' }}>Newest First</option>
+                        <option value="price_low" {{ request('sort_by') == 'price' && request('sort_dir') == 'asc' ? 'selected' : '' }}>Price: Low to High</option>
+                        <option value="price_high" {{ request('sort_by') == 'price' && request('sort_dir') == 'desc' ? 'selected' : '' }}>Price: High to Low</option>
+                        <option value="name_asc" {{ request('sort_by') == 'name' && request('sort_dir') == 'asc' ? 'selected' : '' }}>Name: A to Z</option>
+                        <option value="name_desc" {{ request('sort_by') == 'name' && request('sort_dir') == 'desc' ? 'selected' : '' }}>Name: Z to A</option>
                     </select>
                 </div>
             </div>
 
             @if($products->isEmpty())
                 <div class="alert alert-info">
-                    <i class="fas fa-info-circle me-2"></i> No products found matching your criteria.
-                    @if(request()->anyFilled(['subcategory', 'price_min', 'price_max']))
-                        <a href="{{ route('products.by.brand.model', [$category, $brand, $model]) }}" class="alert-link">Clear all filters</a> to see all products.
-                    @endif
+                    No products found matching your criteria. Try adjusting your filters.
                 </div>
             @else
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 mb-4">
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                     @foreach($products as $product)
                         <div class="col">
-                            <div class="card h-100 product-card shadow-sm">
+                            <div class="card h-100 shadow-sm product-card">
                                 <div class="position-relative">
                                     @if($product->images->isNotEmpty())
-                                        <a href="{{ route('product', $product->slug) }}">
-                                            <img src="{{ asset('storage/' . $product->images->first()->path) }}" 
-                                                class="card-img-top product-img" 
-                                                alt="{{ $product->name }}">
-                                        </a>
+                                        <img src="{{ asset('storage/' . $product->images->first()->path) }}" 
+                                             alt="{{ $product->name }}" 
+                                             class="card-img-top product-image">
                                     @else
-                                        <a href="{{ route('product', $product->slug) }}">
-                                            <div class="card-img-top product-img-placeholder d-flex align-items-center justify-content-center bg-light">
-                                                <i class="fas fa-image fa-3x text-muted"></i>
-                                            </div>
-                                        </a>
+                                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                                            <i class="fas fa-image fa-3x text-muted"></i>
+                                        </div>
                                     @endif
-                                    
-                                    <button type="button" 
-                                            class="btn btn-sm btn-outline-primary rounded-circle add-to-compare-btn"
-                                            onclick="addToCompare({{ $product->id }}, '{{ $product->name }}')">
-                                        <i class="fas fa-balance-scale"></i>
-                                    </button>
+                                    <div class="position-absolute top-0 end-0 p-2">
+                                        <button class="btn btn-sm btn-light rounded-circle compare-btn" 
+                                                data-product-id="{{ $product->id }}"
+                                                title="Add to Compare">
+                                            <i class="fas fa-balance-scale"></i>
+                                        </button>
+                                    </div>
                                 </div>
-                                
                                 <div class="card-body">
-                                    <p class="product-category">
-                                        <span class="badge bg-primary">{{ $product->category->name }}</span>
-                                        @if($product->subcategory)
-                                            <span class="badge bg-secondary">{{ $product->subcategory->name }}</span>
-                                        @endif
-                                    </p>
-                                    <h5 class="card-title product-title">
+                                    <h5 class="card-title">
                                         <a href="{{ route('product', $product->slug) }}" class="text-decoration-none text-dark">
                                             {{ $product->name }}
                                         </a>
                                     </h5>
-                                    <p class="card-text product-brand">{{ $product->brand }} {{ $product->model }}</p>
+                                    <p class="card-text text-muted small mb-2">{{ $product->model }}</p>
                                     <div class="d-flex justify-content-between align-items-center">
-                                        <span class="product-price">${{ number_format($product->price, 2) }}</span>
                                         <div>
-                                            <a href="{{ route('product', $product->slug) }}" class="btn btn-sm btn-outline-primary">
-                                                View Details
-                                            </a>
+                                            @if($product->discount_price)
+                                                <span class="text-decoration-line-through text-muted">${{ number_format($product->price, 2) }}</span>
+                                                <span class="text-danger fw-bold ms-2">${{ number_format($product->discount_price, 2) }}</span>
+                                            @else
+                                                <span class="fw-bold">${{ number_format($product->price, 2) }}</span>
+                                            @endif
                                         </div>
+                                        <a href="{{ route('product', $product->slug) }}" class="btn btn-sm btn-outline-primary">
+                                            View Details
+                                        </a>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     @endforeach
                 </div>
-                
+
                 <div class="d-flex justify-content-center mt-4">
-                    {{ $products->links() }}
+                    {{ $products->withQueryString()->links() }}
                 </div>
             @endif
         </div>
     </div>
 </div>
-@endsection
 
 @push('scripts')
 <script>
-    function updateSort(value) {
-        const [sortBy, sortDir] = value.split('-');
-        const url = new URL(window.location.href);
-        url.searchParams.set('sort_by', sortBy);
-        url.searchParams.set('sort_dir', sortDir);
-        window.location.href = url.toString();
-    }
-    
-    function addToCompare(productId, productName) {
-        // Send AJAX request to add to compare
-        fetch('{{ route("add.to.compare") }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ product_id: productId })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // Show success toast
-                Toastify({
-                    text: `Added ${productName} to comparison`,
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "var(--bs-success)",
-                    stopOnFocus: true,
-                    onClick: function() {
-                        window.location.href = '{{ route("compare") }}';
-                    }
-                }).showToast();
-                
-                // Update compare count in nav if it exists
-                const compareCountElem = document.getElementById('compare-count');
-                if (compareCountElem) {
-                    compareCountElem.textContent = data.count;
-                    compareCountElem.style.display = 'inline-flex';
-                }
-            } else {
-                Toastify({
-                    text: data.message || "Error adding to comparison",
-                    duration: 3000,
-                    close: true,
-                    gravity: "top",
-                    position: "right",
-                    backgroundColor: "var(--bs-danger)",
-                    stopOnFocus: true
-                }).showToast();
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle sorting
+    const sortSelect = document.getElementById('sortProducts');
+    if (sortSelect) {
+        sortSelect.addEventListener('change', function() {
+            const form = document.getElementById('filterForm');
+            const sortBy = document.createElement('input');
+            sortBy.type = 'hidden';
+            sortBy.name = 'sort_by';
+            
+            const sortDir = document.createElement('input');
+            sortDir.type = 'hidden';
+            sortDir.name = 'sort_dir';
+            
+            switch(this.value) {
+                case 'newest':
+                    sortBy.value = 'created_at';
+                    sortDir.value = 'desc';
+                    break;
+                case 'price_low':
+                    sortBy.value = 'price';
+                    sortDir.value = 'asc';
+                    break;
+                case 'price_high':
+                    sortBy.value = 'price';
+                    sortDir.value = 'desc';
+                    break;
+                case 'name_asc':
+                    sortBy.value = 'name';
+                    sortDir.value = 'asc';
+                    break;
+                case 'name_desc':
+                    sortBy.value = 'name';
+                    sortDir.value = 'desc';
+                    break;
             }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            Toastify({
-                text: "Error adding to comparison",
-                duration: 3000,
-                close: true,
-                gravity: "top",
-                position: "right",
-                backgroundColor: "var(--bs-danger)",
-                stopOnFocus: true
-            }).showToast();
+            
+            form.appendChild(sortBy);
+            form.appendChild(sortDir);
+            form.submit();
         });
     }
+
+    // Handle compare button
+    const compareButtons = document.querySelectorAll('.compare-btn');
+    compareButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.dataset.productId;
+            // Add your compare functionality here
+            alert('Compare functionality will be implemented here');
+        });
+    });
+});
 </script>
-@endpush 
+@endpush
+@endsection 

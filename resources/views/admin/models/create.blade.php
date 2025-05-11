@@ -34,7 +34,7 @@
             
             <div class="row mb-3">
                 <!-- Brand Dropdown (First Level) -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="brand_id" class="form-label">Brand <span class="text-danger">*</span></label>
                     <select name="brand_id" id="brand_id" class="form-select @error('brand_id') is-invalid @enderror" required>
                         <option value="">Select Brand</option>
@@ -50,7 +50,7 @@
                 </div>
                 
                 <!-- Category Dropdown (Second Level - Depends on Brand) -->
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
                     <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
                         <option value="">Select Category</option>
@@ -63,24 +63,6 @@
                         @endif
                     </select>
                     @error('category_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                
-                <!-- Subcategory Dropdown (Third Level - Depends on Category) -->
-                <div class="col-md-4">
-                    <label for="subcategory_id" class="form-label">Subcategory <span class="text-danger">*</span></label>
-                    <select name="subcategory_id" id="subcategory_id" class="form-select @error('subcategory_id') is-invalid @enderror" required disabled>
-                        <option value="">Select Subcategory</option>
-                        @if(old('category_id') && $subcategories->count() > 0)
-                            @foreach($subcategories as $subcategory)
-                                <option value="{{ $subcategory->id }}" {{ old('subcategory_id') == $subcategory->id ? 'selected' : '' }}>
-                                    {{ $subcategory->name }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
-                    @error('subcategory_id')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
                 </div>
@@ -159,15 +141,12 @@
 document.addEventListener('DOMContentLoaded', function() {
     const brandSelect = document.getElementById('brand_id');
     const categorySelect = document.getElementById('category_id');
-    const subcategorySelect = document.getElementById('subcategory_id');
     
     // Event listener for brand select
     brandSelect.addEventListener('change', function() {
         const brandId = this.value;
         categorySelect.disabled = true;
         categorySelect.innerHTML = '<option value="">Loading categories...</option>';
-        subcategorySelect.disabled = true;
-        subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
         
         if (brandId) {
             // Fetch categories based on selected brand
@@ -194,7 +173,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         });
                         categorySelect.disabled = false;
                     } else {
-                        categorySelect.innerHTML = '<option value="">No categories found</option>';
+                        categorySelect.innerHTML = '<option value="">No categories found for this brand</option>';
                     }
                 })
                 .catch(error => {
@@ -205,62 +184,6 @@ document.addEventListener('DOMContentLoaded', function() {
             categorySelect.innerHTML = '<option value="">Select Category</option>';
         }
     });
-    
-    // Event listener for category select
-    categorySelect.addEventListener('change', function() {
-        const categoryId = this.value;
-        subcategorySelect.disabled = true;
-        subcategorySelect.innerHTML = '<option value="">Loading subcategories...</option>';
-        
-        if (categoryId) {
-            // Fetch subcategories based on selected category
-            fetch(`{{ route('admin.api.subcategories-by-category') }}?category_id=${categoryId}`, {
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest',
-                    'Accept': 'application/json'
-                }
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-                    if (data.success && data.subcategories.length > 0) {
-                        data.subcategories.forEach(subcategory => {
-                            const option = document.createElement('option');
-                            option.value = subcategory.id;
-                            option.textContent = subcategory.name;
-                            subcategorySelect.appendChild(option);
-                        });
-                        subcategorySelect.disabled = false;
-                    } else {
-                        subcategorySelect.innerHTML = '<option value="">No subcategories found</option>';
-                    }
-                })
-                .catch(error => {
-                    console.error('Error fetching subcategories:', error);
-                    subcategorySelect.innerHTML = '<option value="">Error loading subcategories</option>';
-                });
-        } else {
-            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-        }
-    });
-    
-    // Initialize dropdowns if there are old values
-    if (brandSelect.value) {
-        brandSelect.dispatchEvent(new Event('change'));
-        
-        // We need to wait for the categories to load before triggering category change
-        setTimeout(() => {
-            if ('{{ old('category_id') }}') {
-                categorySelect.value = '{{ old('category_id') }}';
-                categorySelect.dispatchEvent(new Event('change'));
-            }
-        }, 500);
-    }
     
     // Features and Specifications dynamic fields
     document.getElementById('addFeature').addEventListener('click', function() {

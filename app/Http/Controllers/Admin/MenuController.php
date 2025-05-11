@@ -7,6 +7,7 @@ use App\Models\MenuItem;
 use App\Models\Brand;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class MenuController extends Controller
 {
@@ -47,8 +48,9 @@ class MenuController extends Controller
         $footerMenu = $footerQuery->orderBy('order')->get();
         $parentMenuItems = MenuItem::whereNull('parent_id')->get();
         $locations = MenuItem::select('location')->distinct()->pluck('location');
+        $categories = \App\Models\Category::orderBy('name')->get();
         
-        return view('admin.menus.index', compact('mainMenu', 'footerMenu', 'parentMenuItems', 'locations', 'location'));
+        return view('admin.menus.index', compact('mainMenu', 'footerMenu', 'parentMenuItems', 'locations', 'location', 'categories'));
     }
     
     /**
@@ -243,11 +245,11 @@ class MenuController extends Controller
     /**
      * Show the form for editing the specified menu item.
      */
-    public function edit($menu)
+    public function edit($menuItem)
     {
         try {
             // Get the menu item by ID
-            $menu = MenuItem::findOrFail($menu);
+            $menu = MenuItem::findOrFail($menuItem);
             
             // Get categories for dropdown
             $categories = \App\Models\Category::orderBy('name')->get();
@@ -275,7 +277,7 @@ class MenuController extends Controller
             return view('admin.menus.edit', compact('menu', 'menuItems', 'locations', 'categories', 'brands'));
         } catch (\Exception $e) {
             \Log::error('Error in menu edit: ' . $e->getMessage(), [
-                'menu_id' => $menu,
+                'menu_id' => $menuItem,
                 'exception' => $e
             ]);
             
@@ -294,18 +296,18 @@ class MenuController extends Controller
     /**
      * Update the specified menu item in storage.
      */
-    public function update(Request $request, $menu)
+    public function update(Request $request, $menuItem)
     {
-        \Log::info('Menu update called with ID: ' . $menu);
+        \Log::info('Menu update called with ID: ' . $menuItem);
         \Log::info('Full request data: ', $request->all());
         
         // Get the menu item by ID
-        $menu = MenuItem::findOrFail($menu);
+        $menu = MenuItem::findOrFail($menuItem);
         
         // Define validation rules
         $rules = [
             'name' => 'required|string|max:255',
-                'location' => 'required|string|max:255',
+            'location' => 'required|string|max:255',
             'order' => 'required|integer|min:0',
             'parent_id' => 'nullable|exists:menu_items,id',
             'icon' => 'nullable|string|max:255',
@@ -323,116 +325,128 @@ class MenuController extends Controller
             $rules['route_name'] = 'nullable|string|max:255';
         }
 
-        // Validate the request
-        $validated = $request->validate($rules);
+        try {
+            // Validate the request
+            $validated = $request->validate($rules);
 
-        // Handle booleans that might not be present in the request
-        if (!$request->has('active')) {
-            $validated['active'] = false;
-        }
-        
-        if (!$request->has('is_dynamic_page')) {
-            $validated['is_dynamic_page'] = false;
-        }
-        
-        if (!$request->has('auto_generate_models')) {
-            $validated['auto_generate_models'] = false;
-        }
-        
-        $shouldGenerateModels = $request->boolean('auto_generate_models');
-        $brandSlug = $request->brand_for_url ?? 'all';
-        $categoryId = $validated['category_id'] ?? null;
-        $categorySlug = null;
-
-        // If this is a dynamic page, make sure we have a slug
-        if ($request->boolean('is_dynamic_page')) {
-            if (empty($validated['slug'])) {
-                // Generate slug from name
-                $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
+            // Handle booleans that might not be present in the request
+            if (!$request->has('active')) {
+                $validated['active'] = false;
+            } else {
+                $validated['active'] = (bool) $request->input('active');
             }
-        } else {
-            // Check for parent menu first - this takes priority
-            if (!empty($validated['parent_id'])) {
-                $parentMenu = MenuItem::find($validated['parent_id']);
-                
-                if ($parentMenu) {
-                    $brandValue = $request->brand_for_url ?? 'all';
+            
+            if (!$request->has('is_mega_menu')) {
+                $validated['is_mega_menu'] = false;
+            } else {
+                $validated['is_mega_menu'] = (bool) $request->input('is_mega_menu');
+            }
+            
+            if (!$request->has('is_dynamic_page')) {
+                $validated['is_dynamic_page'] = false;
+            } else {
+                $validated['is_dynamic_page'] = (bool) $request->input('is_dynamic_page');
+            }
+            
+            if (!$request->has('auto_generate_models')) {
+                $validated['auto_generate_models'] = false;
+            } else {
+                $validated['auto_generate_models'] = (bool) $request->input('auto_generate_models');
+            }
+            
+            $shouldGenerateModels = $request->boolean('auto_generate_models');
+            $brandSlug = $request->brand_for_url ?? 'all';
+            $categoryId = $validated['category_id'] ?? null;
+            $categorySlug = null;
+
+            // If this is a dynamic page, make sure we have a slug
+            if ($request->boolean('is_dynamic_page')) {
+                if (empty($validated['slug'])) {
+                    // Generate slug from name
+                    $validated['slug'] = \Illuminate\Support\Str::slug($validated['name']);
+                }
+            } else {
+                // Check for parent menu first - this takes priority
+                if (!empty($validated['parent_id'])) {
+                    $parentMenu = MenuItem::find($validated['parent_id']);
                     
-                    // Check if parent menu already has a category-by-brand format
-                    if (preg_match('/\/([^\/]+)-by-brand\/([^\/]+)$/', $parentMenu->url, $matches)) {
-                        // This is a direct child of a category-by-brand menu (child level 1)
-                        $categorySlug = $matches[1];
-                        $brandSlug = $matches[2];
+                    if ($parentMenu) {
+                        $brandValue = $request->brand_for_url ?? 'all';
                         
-                        // For child menu items under a brand, use the model/series format
-                        // Format: /category-by-brand/brand/model
-                        $modelSlug = \Illuminate\Support\Str::slug($validated['name']);
-                        $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandSlug . '/' . $modelSlug;
-                        $validated['route_name'] = 'products.by.brand.model';
-                    }
-                    // Check if parent menu already has a model format (third level)
-                    elseif (preg_match('/\/([^\/]+)-by-brand\/([^\/]+)\/([^\/]+)$/', $parentMenu->url, $matches)) {
-                        // This is a grandchild (child level 2) - we'll keep the same URL pattern but append the slug
-                        $categorySlug = $matches[1];
-                        $brandSlug = $matches[2]; 
-                        $modelSlug = $matches[3];
-                        $subModelSlug = \Illuminate\Support\Str::slug($validated['name']);
-                        
-                        // We'll use the same URL but add a query parameter for filtering
-                        $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandSlug . '/' . $modelSlug . '?submodel=' . $subModelSlug;
-                        $validated['route_name'] = 'products.by.brand.model';
-                    }
-                    // If parent has a category associated
-                    elseif ($parentMenu->category_id) {
-                        $category = \App\Models\Category::find($parentMenu->category_id);
-                        $categorySlug = $category ? $category->slug : \Illuminate\Support\Str::slug($parentMenu->name);
-                        $categoryId = $parentMenu->category_id;
-                        
-                        // Format: /category-by-brand/brand
-                        $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandValue;
-                        $validated['route_name'] = 'products.by.brand';
-                    } 
-                    // Otherwise use parent's name as category
-                    else {
-                        $categorySlug = \Illuminate\Support\Str::slug($parentMenu->name);
-                        
-                        // Format: /category-by-brand/brand
-                        $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandValue;
-                        $validated['route_name'] = 'products.by.brand';
+                        // Check if parent menu already has a category-by-brand format
+                        if (preg_match('/\/([^\/]+)-by-brand\/([^\/]+)$/', $parentMenu->url, $matches)) {
+                            // This is a direct child of a category-by-brand menu (child level 1)
+                            $categorySlug = $matches[1];
+                            $brandSlug = $matches[2];
+                            
+                            // For child menu items under a brand, use the model/series format
+                            // Format: /category-by-brand/brand/model
+                            $modelSlug = \Illuminate\Support\Str::slug($validated['name']);
+                            $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandSlug . '/' . $modelSlug;
+                            $validated['route_name'] = 'products.by.brand.model';
+                        }
+                        // Check if parent menu already has a model format (third level)
+                        elseif (preg_match('/\/([^\/]+)-by-brand\/([^\/]+)\/([^\/]+)$/', $parentMenu->url, $matches)) {
+                            // This is a grandchild (child level 2) - we'll keep the same URL pattern but append the slug
+                            $categorySlug = $matches[1];
+                            $brandSlug = $matches[2]; 
+                            $modelSlug = $matches[3];
+                            $subModelSlug = \Illuminate\Support\Str::slug($validated['name']);
+                            
+                            // We'll use the same URL but add a query parameter for filtering
+                            $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandSlug . '/' . $modelSlug . '?submodel=' . $subModelSlug;
+                            $validated['route_name'] = 'products.by.brand.model';
+                        }
+                        // If parent has a category associated
+                        elseif ($parentMenu->category_id) {
+                            $category = \App\Models\Category::find($parentMenu->category_id);
+                            $categorySlug = $category ? $category->slug : \Illuminate\Support\Str::slug($parentMenu->name);
+                            $categoryId = $parentMenu->category_id;
+                            
+                            // Format: /category-by-brand/brand
+                            $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandValue;
+                            $validated['route_name'] = 'products.by.brand';
+                        } 
+                        // Otherwise use parent's name as category
+                        else {
+                            $categorySlug = \Illuminate\Support\Str::slug($parentMenu->name);
+                            
+                            // Format: /category-by-brand/brand
+                            $validated['url'] = '/' . $categorySlug . '-by-brand/' . $brandValue;
+                            $validated['route_name'] = 'products.by.brand';
+                        }
                     }
                 }
+                // Special handling for direct category selection (no parent)
+                else if (!empty($validated['category_id']) && $request->has('brand_for_url')) {
+                    // Get the category slug
+                    $category = \App\Models\Category::findOrFail($validated['category_id']);
+                    $categorySlug = $category->slug;
+                    $brandValue = $request->brand_for_url;
+                    
+                    // Format: /category-by-brand/brand
+                    $validated['url'] = '/' . $category->slug . '-by-brand/' . $brandValue;
+                    $validated['route_name'] = 'products.by.brand';
+                }
+                // For non-dynamic pages with no parent or category, automatically generate URL and route_name
+                else if (empty($validated['url']) && empty($validated['route_name'])) {
+                    // Generate URL from name
+                    $validated['url'] = '/' . \Illuminate\Support\Str::slug($validated['name']);
+                    
+                    // Generate route_name from name
+                    $validated['route_name'] = \Illuminate\Support\Str::slug($validated['name']);
+                }
             }
-            // Special handling for direct category selection (no parent)
-            else if (!empty($validated['category_id']) && $request->has('brand_for_url')) {
-                // Get the category slug
-                $category = \App\Models\Category::findOrFail($validated['category_id']);
-                $categorySlug = $category->slug;
-                $brandValue = $request->brand_for_url;
-                
-                // Format: /category-by-brand/brand
-                $validated['url'] = '/' . $category->slug . '-by-brand/' . $brandValue;
-                $validated['route_name'] = 'products.by.brand';
+            
+            // Remove the brand_for_url field as it's not stored in the database
+            if (isset($validated['brand_for_url'])) {
+                unset($validated['brand_for_url']);
             }
-            // For non-dynamic pages with no parent or category, automatically generate URL and route_name
-            else if (empty($validated['url']) && empty($validated['route_name'])) {
-                // Generate URL from name
-                $validated['url'] = '/' . \Illuminate\Support\Str::slug($validated['name']);
-                
-                // Generate route_name from name
-                $validated['route_name'] = \Illuminate\Support\Str::slug($validated['name']);
+            
+            if (isset($validated['auto_generate_models'])) {
+                unset($validated['auto_generate_models']);
             }
-        }
-        
-        // Remove the brand_for_url field as it's not stored in the database
-        if (isset($validated['brand_for_url'])) {
-            unset($validated['brand_for_url']);
-        }
-        
-        if (isset($validated['auto_generate_models'])) {
-            unset($validated['auto_generate_models']);
-        }
-        
-        try {
+            
             // Update the menu item
             $menu->update($validated);
             
@@ -444,8 +458,41 @@ class MenuController extends Controller
             // Clear menu cache for the affected location
             $this->clearMenuCache($menu->location);
             
+            // Check if this is an AJAX request
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Menu item '{$menu->name}' updated successfully!",
+                    'menu' => [
+                        'id' => $menu->id,
+                        'name' => $menu->name,
+                        'url' => $menu->url,
+                        'route_name' => $menu->route_name,
+                        'location' => $menu->location,
+                        'active' => $menu->active,
+                        'is_mega_menu' => $menu->is_mega_menu,
+                        'order' => $menu->order,
+                        'parent_id' => $menu->parent_id,
+                        'category_id' => $menu->category_id,
+                        'updated_at' => $menu->updated_at->format('Y-m-d H:i:s')
+                    ]
+                ]);
+            }
+            
             return redirect()->route('admin.menus.index')
                 ->with('success', "Menu item '{$menu->name}' updated successfully!");
+        } catch (ValidationException $e) {
+            // For AJAX requests, send back validation errors in a clear format
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            
+            // For regular requests, let Laravel handle it with the default behavior
+            throw $e;
         } catch (\Exception $e) {
             // Log the error
             \Log::error('Error updating menu item: ' . $e->getMessage(), [
@@ -453,6 +500,14 @@ class MenuController extends Controller
                 'exception' => $e,
                 'request_data' => $request->all()
             ]);
+            
+            // Check if this is an AJAX request
+            if (request()->ajax() || request()->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Error updating menu item: ' . $e->getMessage()
+                ], 422);
+            }
             
             return back()
                 ->withInput()
@@ -463,11 +518,11 @@ class MenuController extends Controller
     /**
      * Remove the specified menu item from storage.
      */
-    public function destroy($menu)
+    public function destroy($menuItem)
     {
         try {
             // Get the menu item by ID
-            $menu = MenuItem::findOrFail($menu);
+            $menu = MenuItem::findOrFail($menuItem);
             
             // Check if the menu item has children
             if ($menu->children()->count() > 0) {

@@ -14,7 +14,6 @@ use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\Admin\SettingController;
 use App\Http\Controllers\Admin\MenuController;
 use App\Http\Controllers\Admin\ApiImportController;
-use App\Http\Controllers\Admin\SubCategoryController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\Admin\BrandController as AdminBrandController;
 use App\Http\Controllers\BrandController;
@@ -69,6 +68,7 @@ Route::get('/search', [SearchController::class, 'index'])->name('search');
 // Brand routes
 Route::get('/brands', [BrandController::class, 'index'])->name('brands.all');
 Route::get('/brand/{slug}', [BrandController::class, 'show'])->name('brand.show');
+Route::get('/brand/{brand}/{model}', [ProductController::class, 'productsByBrandModel'])->name('brand.model.show');
 
 // Cart & Checkout Routes
 Route::post('/cart/add', [App\Http\Controllers\CartController::class, 'addToCart'])->name('cart.add');
@@ -126,7 +126,7 @@ Route::get('/debug-customers', function() {
 Route::get('/page/{slug}', [PageController::class, 'show'])->name('page.show');
 Route::get('/dynamic/{slug}', [PageController::class, 'dynamicPage'])->name('dynamic.page');
 Route::get('/about', [PageController::class, 'about'])->name('about');
-Route::get('/contact', [PageController::class, 'contact'])->name('contact');
+Route::get('/contact-us', [PageController::class, 'contact'])->name('contact');
 Route::post('/contact/submit', [PageController::class, 'storeContactForm'])->name('contact.submit');
 
 // Admin Routes
@@ -134,16 +134,12 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::get('/', [App\Http\Controllers\Admin\DashboardController::class, 'index'])->name('dashboard');
     
     // Categories
-    Route::resource('categories', CategoryController::class);
+    Route::resource('categories', App\Http\Controllers\Admin\CategoryController::class);
     
-    // Subcategories AJAX route (must be before resource route to avoid conflict)
-    Route::get('subcategories/{categoryId}', [App\Http\Controllers\Admin\ProductController::class, 'getSubcategories'])->name('subcategories.get');
-
-    // Subcategories resource routes
-    Route::resource('subcategories', App\Http\Controllers\Admin\SubCategoryController::class);
-
     // Products
-    Route::resource('products', App\Http\Controllers\Admin\ProductController::class);
+    Route::resource('products', App\Http\Controllers\Admin\ProductController::class)->parameters([
+        'products' => 'product'
+    ]);
     Route::get('specification-types/{categoryId}', [App\Http\Controllers\Admin\ProductController::class, 'getSpecificationTypes'])->name('specification.types');
     
     // Specification Types
@@ -168,7 +164,24 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     Route::put('/settings/social', [SettingController::class, 'updateSocialSettings'])->name('settings.social.update');
     
     // Menu Management
-    Route::resource('menus', App\Http\Controllers\Admin\MenuController::class);
+    // Route::resource('menus', App\Http\Controllers\Admin\MenuController::class);
+    
+    // Explicitly define menu routes with proper parameter binding
+    Route::get('menus', [App\Http\Controllers\Admin\MenuController::class, 'index'])->name('menus.index');
+    Route::get('menus/create', [App\Http\Controllers\Admin\MenuController::class, 'create'])->name('menus.create');
+    Route::post('menus', [App\Http\Controllers\Admin\MenuController::class, 'store'])->name('menus.store');
+    Route::get('menus/{menuItem}/edit', [App\Http\Controllers\Admin\MenuController::class, 'edit'])->name('menus.edit');
+    Route::put('menus/{menuItem}', [App\Http\Controllers\Admin\MenuController::class, 'update'])->name('menus.update');
+    Route::delete('menus/{menuItem}', [App\Http\Controllers\Admin\MenuController::class, 'destroy'])->name('menus.destroy');
+    
+    // Add a special route for AJAX updates
+    Route::post('menus/{id}/update', [App\Http\Controllers\Admin\MenuController::class, 'update'])->name('menus.update.ajax');
+    
+    // Debug route to help diagnose menu update issues
+    Route::post('menus/{id}/debug-update', [App\Http\Controllers\Admin\DebugMenuController::class, 'update'])->name('menus.debug-update');
+    
+    // Debug route to create test hierarchical menu structure
+    Route::get('menus/create-test-structure', [App\Http\Controllers\Admin\DebugMenuController::class, 'createTestMenuItems'])->name('menus.create-test');
     
     // API Import Management
     Route::get('/imports', [ApiImportController::class, 'index'])->name('imports.index');
@@ -225,10 +238,14 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // API routes for cascading dropdowns
     Route::get('api/categories-by-brand', [\App\Http\Controllers\Admin\ModelController::class, 'getCategoriesByBrand'])
         ->name('api.categories-by-brand');
-    Route::get('api/subcategories-by-category', [\App\Http\Controllers\Admin\ModelController::class, 'getSubcategoriesByCategory'])
-        ->name('api.subcategories-by-category');
-    Route::get('models-by-subcategory/{subcategory_id}', [\App\Http\Controllers\Admin\ModelController::class, 'getModelsBySubcategory'])
-        ->name('models-by-subcategory');
+    Route::get('api/models-by-category/{category_id}', [\App\Http\Controllers\Admin\ModelController::class, 'getModelsByCategory'])
+        ->name('api.models-by-category');
+
+    // Profile routes
+    Route::get('/profile', [App\Http\Controllers\Auth\AdminAuthController::class, 'profile'])->name('profile');
+    Route::get('/profile/edit', [App\Http\Controllers\Auth\AdminAuthController::class, 'editProfile'])->name('profile.edit');
+    Route::put('/profile', [App\Http\Controllers\Auth\AdminAuthController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/logout', [App\Http\Controllers\Auth\AdminAuthController::class, 'logout'])->name('logout');
 });
 
 // Admin User Management Routes
@@ -247,8 +264,9 @@ Route::get('/products', [ProductController::class, 'index'])->name('products.ind
 Route::get('/products/{slug}', [ProductController::class, 'show'])->name('products.show');
 Route::get('/category/{slug}', [CategoryController::class, 'show'])->name('categories.show');
 Route::get('/category/{slug}/all', [ProductController::class, 'categoryProducts'])->name('category.all');
-Route::get('/{category}-by-brand/{brand}', [ProductController::class, 'productsByBrand'])->name('products.by.brand');
-Route::get('/{category}-by-brand/{brand}/{model}', [ProductController::class, 'productsByBrandAndModel'])->name('products.by.brand.model');
+Route::get('/{category}/by-brand/{brand}', [ProductController::class, 'productsByBrand'])->name('products.by.brand');
+Route::get('/{category}/by-brand/{brand}/{model}', [ProductController::class, 'productsByBrandAndModel'])->name('products.by.brand.model');
+Route::get('/brand/{brand}/{model}', [ProductController::class, 'productsByBrandModel'])->name('products.by.brand.model.direct');
 Route::get('/api/newest-products/{limit?}', [HomeController::class, 'getNewestProducts'])->name('api.newest-products');
 
 // Debug routes - remove in production

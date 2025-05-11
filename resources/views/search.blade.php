@@ -146,9 +146,6 @@
                                 <h5 class="card-title">{{ $product->name }}</h5>
                                 <p class="card-text">
                                     <span class="badge bg-info">{{ $product->category->name }}</span>
-                                    @if($product->subcategory)
-                                        <span class="badge bg-secondary">{{ $product->subcategory->name }}</span>
-                                    @endif
                                     @if($product->brand)
                                         <span class="badge bg-light text-dark">{{ $product->brand }}</span>
                                     @endif

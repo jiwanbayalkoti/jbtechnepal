@@ -22,7 +22,7 @@
     <div class="card-body">
         <form action="{{ route('admin.models.index') }}" method="GET">
             <div class="row">
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="brand_id" class="form-label">Brand</label>
                     <select name="brand_id" id="brand_id" class="form-select">
                         <option value="">All Brands</option>
@@ -33,7 +33,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="category_id" class="form-label">Category</label>
                     <select name="category_id" id="category_id" class="form-select">
                         <option value="">All Categories</option>
@@ -44,18 +44,7 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-md-3 mb-3">
-                    <label for="subcategory_id" class="form-label">Subcategory</label>
-                    <select name="subcategory_id" id="subcategory_id" class="form-select">
-                        <option value="">All Subcategories</option>
-                        @foreach($subcategories as $subcategory)
-                            <option value="{{ $subcategory->id }}" {{ request('subcategory_id') == $subcategory->id ? 'selected' : '' }}>
-                                {{ $subcategory->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 mb-3">
+                <div class="col-md-4 mb-3">
                     <label for="is_active" class="form-label">Status</label>
                     <select name="is_active" id="is_active" class="form-select">
                         <option value="">All Statuses</option>
@@ -90,7 +79,6 @@
                         <th>Name</th>
                         <th>Brand</th>
                         <th>Category</th>
-                        <th>Subcategory</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
@@ -102,7 +90,6 @@
                             <td>{{ $model->name }}</td>
                             <td>{{ $model->brand->name ?? 'N/A' }}</td>
                             <td>{{ $model->category->name ?? 'N/A' }}</td>
-                            <td>{{ $model->subcategory->name ?? 'N/A' }}</td>
                             <td>
                                 @if($model->is_active)
                                     <span class="badge bg-success">Active</span>
@@ -123,7 +110,6 @@
                                             data-description="{{ $model->description }}"
                                             data-brand="{{ $model->brand_id }}"
                                             data-category="{{ $model->category_id }}"
-                                            data-subcategory="{{ $model->subcategory_id }}"
                                             data-active="{{ $model->is_active }}">
                                         <i class="fas fa-edit"></i>
                                     </button>
@@ -139,7 +125,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="text-center">No models found</td>
+                            <td colspan="6" class="text-center">No models found</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -173,7 +159,7 @@
                     
                     <div class="row mb-3">
                         <!-- Brand Dropdown -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="create_brand_id" class="form-label">Brand <span class="text-danger">*</span></label>
                             <select name="brand_id" id="create_brand_id" class="form-select" required>
                                 <option value="">Select Brand</option>
@@ -185,7 +171,7 @@
                         </div>
                         
                         <!-- Category Dropdown -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="create_category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <select name="category_id" id="create_category_id" class="form-select" required>
                                 <option value="">Select Category</option>
@@ -194,15 +180,6 @@
                                 @endforeach
                             </select>
                             <div class="invalid-feedback category-error"></div>
-                        </div>
-                        
-                        <!-- Subcategory Dropdown -->
-                        <div class="col-md-4">
-                            <label for="create_subcategory_id" class="form-label">Subcategory <span class="text-danger">*</span></label>
-                            <select name="subcategory_id" id="create_subcategory_id" class="form-select" required>
-                                <option value="">Select Category First</option>
-                            </select>
-                            <div class="invalid-feedback subcategory-error"></div>
                         </div>
                     </div>
                     
@@ -274,7 +251,7 @@
                     
                     <div class="row mb-3">
                         <!-- Brand Dropdown -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="edit_brand_id" class="form-label">Brand <span class="text-danger">*</span></label>
                             <select name="brand_id" id="edit_brand_id" class="form-select" required>
                                 <option value="">Select Brand</option>
@@ -286,7 +263,7 @@
                         </div>
                         
                         <!-- Category Dropdown -->
-                        <div class="col-md-4">
+                        <div class="col-md-6">
                             <label for="edit_category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <select name="category_id" id="edit_category_id" class="form-select" required>
                                 <option value="">Select Category</option>
@@ -295,15 +272,6 @@
                                 @endforeach
                             </select>
                             <div class="invalid-feedback category-error"></div>
-                        </div>
-                        
-                        <!-- Subcategory Dropdown -->
-                        <div class="col-md-4">
-                            <label for="edit_subcategory_id" class="form-label">Subcategory <span class="text-danger">*</span></label>
-                            <select name="subcategory_id" id="edit_subcategory_id" class="form-select" required>
-                                <option value="">Loading subcategories...</option>
-                            </select>
-                            <div class="invalid-feedback subcategory-error"></div>
                         </div>
                     </div>
                     
@@ -350,54 +318,54 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Filter form functionality - Update subcategories when category changes
-        const filterCategorySelect = document.getElementById('category_id');
-        const filterSubcategorySelect = document.getElementById('subcategory_id');
-        
-        if (filterCategorySelect && filterSubcategorySelect) {
-            filterCategorySelect.addEventListener('change', function() {
-                const categoryId = this.value;
-                if (categoryId) {
-                    fetch(`/admin/models/get-subcategories-by-category?category_id=${categoryId}`, {
+    // Filter form brand and category relationships
+    const filterBrand = document.getElementById('brand_id');
+    const filterCategory = document.getElementById('category_id');
+    
+    if (filterBrand && filterCategory) {
+        filterBrand.addEventListener('change', function() {
+            const brandId = this.value;
+            
+            // Reset category dropdown
+            filterCategory.disabled = true;
+            filterCategory.innerHTML = '<option value="">Loading categories...</option>';
+            
+            if (brandId) {
+                // Fetch categories for selected brand
+                fetch(`{{ route('admin.api.categories-by-brand') }}?brand_id=${brandId}`, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
-                            'Content-Type': 'application/json',
                             'Accept': 'application/json'
                         }
                     })
                     .then(response => response.json())
                     .then(data => {
-                        if (data.success) {
-                            filterSubcategorySelect.innerHTML = '<option value="">All Subcategories</option>';
-                            data.subcategories.forEach(subcategory => {
+                    filterCategory.innerHTML = '<option value="">All Categories</option>';
+                    
+                    if (data.success && data.categories.length > 0) {
+                        data.categories.forEach(category => {
                                 const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                filterSubcategorySelect.appendChild(option);
-                            });
-                        }
-                    })
-                    .catch(error => console.error('Error fetching subcategories:', error));
+                            option.value = category.id;
+                            option.textContent = category.name;
+                            filterCategory.appendChild(option);
+                        });
                 } else {
-                    filterSubcategorySelect.innerHTML = '<option value="">All Subcategories</option>';
-                }
-            });
-        }
-
-        // Create Modal functionality
-        const createBrandSelect = document.getElementById('create_brand_id');
-        const createCategorySelect = document.getElementById('create_category_id');
-        const createSubcategorySelect = document.getElementById('create_subcategory_id');
-        
-        // Update subcategories when category changes in create form
-        if (createCategorySelect && createSubcategorySelect) {
-            createCategorySelect.addEventListener('change', function() {
-                const categoryId = this.value;
-                createSubcategorySelect.disabled = true;
-                createSubcategorySelect.innerHTML = '<option value="">Loading subcategories...</option>';
-                
-                if (categoryId) {
-                    fetch(`/admin/api/subcategories-by-category?category_id=${categoryId}`, {
+                        const option = document.createElement('option');
+                        option.disabled = true;
+                        option.textContent = 'No categories found for this brand';
+                        filterCategory.appendChild(option);
+                    }
+                    
+                    filterCategory.disabled = false;
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    filterCategory.innerHTML = '<option value="">Error loading categories</option>';
+                    filterCategory.disabled = false;
+                });
+            } else {
+                // No brand selected, show all categories
+                fetch(`{{ route('admin.categories.index') }}?format=json`, {
                         headers: {
                             'X-Requested-With': 'XMLHttpRequest',
                             'Accept': 'application/json'
@@ -405,207 +373,100 @@
                     })
                     .then(response => response.json())
                     .then(data => {
-                        createSubcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-                        if (data.success && data.subcategories.length > 0) {
-                            data.subcategories.forEach(subcategory => {
+                    filterCategory.innerHTML = '<option value="">All Categories</option>';
+                    
+                    if (data.categories && data.categories.length > 0) {
+                        data.categories.forEach(category => {
                                 const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                createSubcategorySelect.appendChild(option);
-                            });
-                            createSubcategorySelect.disabled = false;
-                        } else {
-                            createSubcategorySelect.innerHTML = '<option value="">No subcategories found</option>';
-                        }
+                            option.value = category.id;
+                            option.textContent = category.name;
+                            filterCategory.appendChild(option);
+                        });
+                    }
+                    
+                    filterCategory.disabled = false;
                     })
                     .catch(error => {
-                        console.error('Error fetching subcategories:', error);
-                        createSubcategorySelect.innerHTML = '<option value="">Error loading subcategories</option>';
+                    console.error('Error:', error);
+                    filterCategory.innerHTML = '<option value="">All Categories</option>';
+                    filterCategory.disabled = false;
                     });
-                } else {
-                    createSubcategorySelect.innerHTML = '<option value="">Select Category First</option>';
-                    createSubcategorySelect.disabled = true;
                 }
             });
         }
         
-        // Add feature in create form
-        document.getElementById('add_create_feature').addEventListener('click', function() {
-            const container = document.getElementById('create_featuresContainer');
+    // Create modal dynamic fields
+    const addCreateFeatureBtn = document.getElementById('add_create_feature');
+    const createFeaturesContainer = document.getElementById('create_featuresContainer');
+    
+    if (addCreateFeatureBtn && createFeaturesContainer) {
+        addCreateFeatureBtn.addEventListener('click', function() {
             const newRow = document.createElement('div');
             newRow.classList.add('input-group', 'mb-2');
             newRow.innerHTML = `
                 <input type="text" name="features[]" class="form-control">
                 <button type="button" class="btn btn-danger remove-create-feature"><i class="fas fa-times"></i></button>
             `;
-            container.appendChild(newRow);
+            createFeaturesContainer.appendChild(newRow);
             
-            // Add event listener to the new remove button
+            // Add event listener to remove button
             newRow.querySelector('.remove-create-feature').addEventListener('click', function() {
-                container.removeChild(newRow);
+                createFeaturesContainer.removeChild(newRow);
             });
         });
         
-        // Remove feature in create form
+        // Add event listeners to existing remove buttons
         document.querySelectorAll('.remove-create-feature').forEach(button => {
             button.addEventListener('click', function() {
                 const row = this.closest('.input-group');
                 row.parentNode.removeChild(row);
             });
         });
+    }
+    
+    const addCreateSpecBtn = document.getElementById('add_create_spec');
+    const createSpecsContainer = document.getElementById('create_specificationsContainer');
         
-        // Add specification in create form
-        document.getElementById('add_create_spec').addEventListener('click', function() {
-            const container = document.getElementById('create_specificationsContainer');
+    if (addCreateSpecBtn && createSpecsContainer) {
+        addCreateSpecBtn.addEventListener('click', function() {
             const newRow = document.createElement('div');
             newRow.classList.add('input-group', 'mb-2');
             newRow.innerHTML = `
                 <input type="text" name="specifications[]" class="form-control">
                 <button type="button" class="btn btn-danger remove-create-spec"><i class="fas fa-times"></i></button>
             `;
-            container.appendChild(newRow);
+            createSpecsContainer.appendChild(newRow);
             
-            // Add event listener to the new remove button
+            // Add event listener to remove button
             newRow.querySelector('.remove-create-spec').addEventListener('click', function() {
-                container.removeChild(newRow);
+                createSpecsContainer.removeChild(newRow);
             });
         });
         
-        // Remove specification in create form
+        // Add event listeners to existing remove buttons
         document.querySelectorAll('.remove-create-spec').forEach(button => {
             button.addEventListener('click', function() {
                 const row = this.closest('.input-group');
                 row.parentNode.removeChild(row);
             });
         });
-        
-        // Edit Modal functionality
-        const editBrandSelect = document.getElementById('edit_brand_id');
-        const editCategorySelect = document.getElementById('edit_category_id');
-        const editSubcategorySelect = document.getElementById('edit_subcategory_id');
-        
-        // Update subcategories when category changes in edit form
-        if (editCategorySelect && editSubcategorySelect) {
-            editCategorySelect.addEventListener('change', function() {
-                const categoryId = this.value;
-                editSubcategorySelect.disabled = true;
-                editSubcategorySelect.innerHTML = '<option value="">Loading subcategories...</option>';
-                
-                if (categoryId) {
-                    fetch(`/admin/api/subcategories-by-category?category_id=${categoryId}`, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        editSubcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-                        if (data.success && data.subcategories.length > 0) {
-                            data.subcategories.forEach(subcategory => {
-                                const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                editSubcategorySelect.appendChild(option);
-                            });
-                            editSubcategorySelect.disabled = false;
-                        } else {
-                            editSubcategorySelect.innerHTML = '<option value="">No subcategories found</option>';
-                        }
-                    })
-                    .catch(error => {
-                        console.error('Error fetching subcategories:', error);
-                        editSubcategorySelect.innerHTML = '<option value="">Error loading subcategories</option>';
-                    });
-                } else {
-                    editSubcategorySelect.innerHTML = '<option value="">Select Category First</option>';
-                    editSubcategorySelect.disabled = true;
-                }
-            });
-        }
-        
-        // Add feature in edit form
-        document.getElementById('add_edit_feature').addEventListener('click', function() {
-            const container = document.getElementById('edit_featuresContainer');
-            const newRow = document.createElement('div');
-            newRow.classList.add('input-group', 'mb-2');
-            newRow.innerHTML = `
-                <input type="text" name="features[]" class="form-control">
-                <button type="button" class="btn btn-danger remove-edit-feature"><i class="fas fa-times"></i></button>
-            `;
-            container.appendChild(newRow);
+    }
+    
+    // Create form brand and category relationship
+    const createBrandSelect = document.getElementById('create_brand_id');
+    const createCategorySelect = document.getElementById('create_category_id');
+    
+    if (createBrandSelect && createCategorySelect) {
+        createBrandSelect.addEventListener('change', function() {
+            const brandId = this.value;
             
-            // Add event listener to the new remove button
-            newRow.querySelector('.remove-edit-feature').addEventListener('click', function() {
-                container.removeChild(newRow);
-            });
-        });
-        
-        // Add specification in edit form
-        document.getElementById('add_edit_spec').addEventListener('click', function() {
-            const container = document.getElementById('edit_specificationsContainer');
-            const newRow = document.createElement('div');
-            newRow.classList.add('input-group', 'mb-2');
-            newRow.innerHTML = `
-                <input type="text" name="specifications[]" class="form-control">
-                <button type="button" class="btn btn-danger remove-edit-spec"><i class="fas fa-times"></i></button>
-            `;
-            container.appendChild(newRow);
+            // Reset category dropdown
+            createCategorySelect.disabled = true;
+            createCategorySelect.innerHTML = '<option value="">Loading categories...</option>';
             
-            // Add event listener to the new remove button
-            newRow.querySelector('.remove-edit-spec').addEventListener('click', function() {
-                container.removeChild(newRow);
-            });
-        });
-        
-        // Load model data into edit form
-        const editModelButtons = document.querySelectorAll('.edit-model-btn');
-        editModelButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const modelId = this.getAttribute('data-id');
-                const name = this.getAttribute('data-name');
-                const description = this.getAttribute('data-description');
-                const brandId = this.getAttribute('data-brand');
-                const categoryId = this.getAttribute('data-category');
-                const subcategoryId = this.getAttribute('data-subcategory');
-                const isActive = this.getAttribute('data-active') === '1' || this.getAttribute('data-active') === 'true';
-                
-                document.getElementById('edit_model_id').value = modelId;
-                document.getElementById('edit_name').value = name;
-                document.getElementById('edit_description').value = description || '';
-                document.getElementById('edit_brand_id').value = brandId;
-                document.getElementById('edit_category_id').value = categoryId;
-                document.getElementById('edit_is_active').checked = isActive;
-                
-                // Update form action
-                document.getElementById('editModelForm').action = `/admin/models/${modelId}`;
-                
-                // Load subcategories based on selected category
-                if (categoryId) {
-                    fetch(`/admin/api/subcategories-by-category?category_id=${categoryId}`, {
-                        headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        editSubcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
-                        if (data.success && data.subcategories.length > 0) {
-                            data.subcategories.forEach(subcategory => {
-                                const option = document.createElement('option');
-                                option.value = subcategory.id;
-                                option.textContent = subcategory.name;
-                                option.selected = subcategory.id == subcategoryId;
-                                editSubcategorySelect.appendChild(option);
-                            });
-                            editSubcategorySelect.disabled = false;
-                        }
-                    });
-                }
-                
-                // Load features and specifications via AJAX
-                fetch(`/admin/models/${modelId}/edit`, {
+            if (brandId) {
+                // Fetch categories for selected brand
+                fetch(`{{ route('admin.api.categories-by-brand') }}?brand_id=${brandId}`, {
                     headers: {
                         'X-Requested-With': 'XMLHttpRequest',
                         'Accept': 'application/json'
@@ -613,81 +474,196 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    if (data.success) {
-                        // Load features
-                        const featuresContainer = document.getElementById('edit_featuresContainer');
-                        featuresContainer.innerHTML = '';
-                        
-                        if (data.model.features && data.model.features.length > 0) {
-                            data.model.features.forEach(feature => {
-                                const featureRow = document.createElement('div');
-                                featureRow.classList.add('input-group', 'mb-2');
-                                featureRow.innerHTML = `
-                                    <input type="text" name="features[]" class="form-control" value="${feature}">
-                                    <button type="button" class="btn btn-danger remove-edit-feature"><i class="fas fa-times"></i></button>
-                                `;
-                                featuresContainer.appendChild(featureRow);
-                                
-                                // Add event listener to remove button
-                                featureRow.querySelector('.remove-edit-feature').addEventListener('click', function() {
-                                    featuresContainer.removeChild(featureRow);
-                                });
-                            });
-                        } else {
-                            // Add one empty row
-                            const featureRow = document.createElement('div');
-                            featureRow.classList.add('input-group', 'mb-2');
-                            featureRow.innerHTML = `
-                                <input type="text" name="features[]" class="form-control">
-                                <button type="button" class="btn btn-danger remove-edit-feature"><i class="fas fa-times"></i></button>
-                            `;
-                            featuresContainer.appendChild(featureRow);
-                            
-                            featureRow.querySelector('.remove-edit-feature').addEventListener('click', function() {
-                                featuresContainer.removeChild(featureRow);
-                            });
-                        }
-                        
-                        // Load specifications
-                        const specificationsContainer = document.getElementById('edit_specificationsContainer');
-                        specificationsContainer.innerHTML = '';
-                        
-                        if (data.model.specifications && data.model.specifications.length > 0) {
-                            data.model.specifications.forEach(spec => {
-                                const specRow = document.createElement('div');
-                                specRow.classList.add('input-group', 'mb-2');
-                                specRow.innerHTML = `
-                                    <input type="text" name="specifications[]" class="form-control" value="${spec}">
-                                    <button type="button" class="btn btn-danger remove-edit-spec"><i class="fas fa-times"></i></button>
-                                `;
-                                specificationsContainer.appendChild(specRow);
-                                
-                                // Add event listener to remove button
-                                specRow.querySelector('.remove-edit-spec').addEventListener('click', function() {
-                                    specificationsContainer.removeChild(specRow);
-                                });
-                            });
-                        } else {
-                            // Add one empty row
-                            const specRow = document.createElement('div');
-                            specRow.classList.add('input-group', 'mb-2');
-                            specRow.innerHTML = `
-                                <input type="text" name="specifications[]" class="form-control">
-                                <button type="button" class="btn btn-danger remove-edit-spec"><i class="fas fa-times"></i></button>
-                            `;
-                            specificationsContainer.appendChild(specRow);
-                            
-                            specRow.querySelector('.remove-edit-spec').addEventListener('click', function() {
-                                specificationsContainer.removeChild(specRow);
-                            });
-                        }
+                    createCategorySelect.innerHTML = '<option value="">Select Category</option>';
+                    
+                    if (data.success && data.categories.length > 0) {
+                        data.categories.forEach(category => {
+                            const option = document.createElement('option');
+                            option.value = category.id;
+                            option.textContent = category.name;
+                            createCategorySelect.appendChild(option);
+                        });
+                    } else {
+                        const option = document.createElement('option');
+                        option.disabled = true;
+                        option.textContent = 'No categories found for this brand';
+                        createCategorySelect.appendChild(option);
                     }
+                    
+                    createCategorySelect.disabled = false;
                 })
                 .catch(error => {
-                    console.error('Error loading model data:', error);
+                    console.error('Error:', error);
+                    createCategorySelect.innerHTML = '<option value="">Error loading categories</option>';
+                    createCategorySelect.disabled = false;
                 });
+            } else {
+                createCategorySelect.innerHTML = '<option value="">Select Brand First</option>';
+                createCategorySelect.disabled = true;
+            }
+        });
+    }
+    
+    // Edit modal
+    const editButtons = document.querySelectorAll('.edit-model-btn');
+    const editForm = document.getElementById('editModelForm');
+    const editNameInput = document.getElementById('edit_name');
+        const editBrandSelect = document.getElementById('edit_brand_id');
+        const editCategorySelect = document.getElementById('edit_category_id');
+    const editDescriptionInput = document.getElementById('edit_description');
+    const editIsActiveCheckbox = document.getElementById('edit_is_active');
+    
+    if (editButtons.length > 0) {
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const modelId = this.getAttribute('data-id');
+                const modelName = this.getAttribute('data-name');
+                const description = this.getAttribute('data-description');
+                const brandId = this.getAttribute('data-brand');
+                const categoryId = this.getAttribute('data-category');
+                const isActive = this.getAttribute('data-active') === '1' || this.getAttribute('data-active') === 'true';
+                
+                // Set form action URL with the model ID
+                editForm.action = `/admin/models/${modelId}`;
+                
+                // Set values in the form
+                editNameInput.value = modelName;
+                editDescriptionInput.value = description || '';
+                editIsActiveCheckbox.checked = isActive;
+                
+                // Set brand
+                for (let i = 0; i < editBrandSelect.options.length; i++) {
+                    if (editBrandSelect.options[i].value == brandId) {
+                        editBrandSelect.options[i].selected = true;
+                        break;
+                    }
+                }
+                
+                // Trigger change event to load categories
+                editBrandSelect.dispatchEvent(new Event('change'));
+                
+                // We'll set category after categories are loaded
+                const setCategory = setInterval(() => {
+                    if (!editCategorySelect.disabled && editCategorySelect.options.length > 1) {
+                        clearInterval(setCategory);
+                        
+                        for (let i = 0; i < editCategorySelect.options.length; i++) {
+                            if (editCategorySelect.options[i].value == categoryId) {
+                                editCategorySelect.options[i].selected = true;
+                                break;
+                            }
+                        }
+                    }
+                }, 100);
             });
         });
+    }
+    
+    // Edit form brand and category relationship
+    if (editBrandSelect && editCategorySelect) {
+        editBrandSelect.addEventListener('change', function() {
+            const brandId = this.value;
+            
+            // Reset category dropdown
+            editCategorySelect.disabled = true;
+            editCategorySelect.innerHTML = '<option value="">Loading categories...</option>';
+            
+            if (brandId) {
+                // Fetch categories for selected brand
+                fetch(`{{ route('admin.api.categories-by-brand') }}?brand_id=${brandId}`, {
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                    editCategorySelect.innerHTML = '<option value="">Select Category</option>';
+                    
+                    if (data.success && data.categories.length > 0) {
+                        data.categories.forEach(category => {
+                                const option = document.createElement('option');
+                            option.value = category.id;
+                            option.textContent = category.name;
+                            editCategorySelect.appendChild(option);
+                        });
+                        } else {
+                        const option = document.createElement('option');
+                        option.disabled = true;
+                        option.textContent = 'No categories found for this brand';
+                        editCategorySelect.appendChild(option);
+                        }
+                    
+                    editCategorySelect.disabled = false;
+                    })
+                    .catch(error => {
+                    console.error('Error:', error);
+                    editCategorySelect.innerHTML = '<option value="">Error loading categories</option>';
+                    editCategorySelect.disabled = false;
+                    });
+                } else {
+                editCategorySelect.innerHTML = '<option value="">Select Brand First</option>';
+                editCategorySelect.disabled = true;
+                }
+            });
+        }
+        
+    // Edit modal dynamic fields
+    const addEditFeatureBtn = document.getElementById('add_edit_feature');
+    const editFeaturesContainer = document.getElementById('edit_featuresContainer');
+    
+    if (addEditFeatureBtn && editFeaturesContainer) {
+        addEditFeatureBtn.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.classList.add('input-group', 'mb-2');
+            newRow.innerHTML = `
+                <input type="text" name="features[]" class="form-control">
+                <button type="button" class="btn btn-danger remove-edit-feature"><i class="fas fa-times"></i></button>
+            `;
+            editFeaturesContainer.appendChild(newRow);
+            
+            // Add event listener to remove button
+            newRow.querySelector('.remove-edit-feature').addEventListener('click', function() {
+                editFeaturesContainer.removeChild(newRow);
+            });
+        });
+        
+        // Add event listeners to existing remove buttons
+        document.querySelectorAll('.remove-edit-feature').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('.input-group');
+                row.parentNode.removeChild(row);
+            });
+        });
+    }
+    
+    const addEditSpecBtn = document.getElementById('add_edit_spec');
+    const editSpecsContainer = document.getElementById('edit_specificationsContainer');
+    
+    if (addEditSpecBtn && editSpecsContainer) {
+        addEditSpecBtn.addEventListener('click', function() {
+            const newRow = document.createElement('div');
+            newRow.classList.add('input-group', 'mb-2');
+            newRow.innerHTML = `
+                <input type="text" name="specifications[]" class="form-control">
+                <button type="button" class="btn btn-danger remove-edit-spec"><i class="fas fa-times"></i></button>
+            `;
+            editSpecsContainer.appendChild(newRow);
+            
+            // Add event listener to remove button
+            newRow.querySelector('.remove-edit-spec').addEventListener('click', function() {
+                editSpecsContainer.removeChild(newRow);
+            });
+        });
+        
+        // Add event listeners to existing remove buttons
+        document.querySelectorAll('.remove-edit-spec').forEach(button => {
+            button.addEventListener('click', function() {
+                const row = this.closest('.input-group');
+                row.parentNode.removeChild(row);
+            });
+        });
+    }
     });
 </script>
 @endsection 
